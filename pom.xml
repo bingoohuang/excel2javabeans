@@ -103,6 +103,12 @@
             <version>1.7.5</version>
         </dependency>
         <dependency>
+            <groupId>com.github.bingoohuang</groupId>
+            <artifactId>asmvalidator</artifactId>
+            <version>0.0.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>

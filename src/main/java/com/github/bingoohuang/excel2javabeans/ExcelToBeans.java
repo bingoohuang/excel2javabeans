@@ -3,41 +3,37 @@ package com.github.bingoohuang.excel2javabeans;
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import com.github.bingoohuang.excel2javabeans.annotations.ExcelColumnIgnore;
-import com.github.bingoohuang.excel2javabeans.annotations.ExcelColumnTitle;
+import com.github.bingoohuang.excel2javabeans.annotations.ExcelColumnTitleContains;
 import com.github.bingoohuang.excel2javabeans.impl.ExcelBeanField;
 import com.google.common.collect.Lists;
 import lombok.val;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.objenesis.ObjenesisStd;
 import org.objenesis.instantiator.ObjectInstantiator;
 
 import java.lang.reflect.Field;
 import java.util.List;
 
-import static org.apache.commons.lang3.StringUtils.capitalize;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.*;
 
 /**
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
 public class ExcelToBeans<T> {
-    private final Class<T> beanClass;
     private final FieldAccess fieldAccess;
     private final MethodAccess methodAccess;
     private final ObjectInstantiator<T> instantiator;
     private final ExcelBeanField[] beanFields;
     private final boolean hasTitle;
+    private final DataFormatter cellFormatter;
 
     public ExcelToBeans(Class<T> beanClass) {
-        this.beanClass = beanClass;
         this.fieldAccess = FieldAccess.get(beanClass);
         this.methodAccess = MethodAccess.get(beanClass);
         this.instantiator = new ObjenesisStd().getInstantiatorOf(beanClass);
         this.beanFields = parseBeanFields(beanClass);
         this.hasTitle = hasTitle();
+        this.cellFormatter = new DataFormatter();
     }
 
     private boolean hasTitle() {
@@ -60,10 +56,8 @@ public class ExcelToBeans<T> {
 
             Row row = sheet.getRow(i);
             for (int j = 0; j < beanFields.length; ++j) {
-                ExcelBeanField beanField = beanFields[j];
-                Cell cell = row.getCell(beanField.getColumnIndex());
-
-                String cellValue = cell.getStringCellValue();
+                Cell cell = row.getCell(beanFields[j].getColumnIndex());
+                String cellValue = getCellValue(cell);
                 if (isEmpty(cellValue)) continue;
 
                 beanFields[j].setFieldValue(fieldAccess, methodAccess, o, cellValue);
@@ -84,6 +78,12 @@ public class ExcelToBeans<T> {
 
         return beans;
     }
+
+    private String getCellValue(Cell cell) {
+        String cellValue = cellFormatter.formatCellValue(cell);
+        return trim(cellValue);
+    }
+
 
     private int jumpToStartRow(Sheet sheet) {
         int i = sheet.getFirstRowNum();
@@ -136,7 +136,7 @@ public class ExcelToBeans<T> {
             beanField.setName(field.getName());
             beanField.setSetter("set" + capitalize(field.getName()));
 
-            val colTitle = field.getAnnotation(ExcelColumnTitle.class);
+            val colTitle = field.getAnnotation(ExcelColumnTitleContains.class);
             if (colTitle != null) beanField.setTitle(colTitle.value());
 
             fields.add(beanField);
