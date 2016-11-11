@@ -12,8 +12,7 @@ import static com.google.common.truth.Truth.assertThat;
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
 public class BeanWithTitleTest {
-    @Test
-    public void test() {
+    @Test public void test() {
         val workbook = getClassPathWorkbook("member.xlsx");
         val excelToBeans = new ExcelToBeans(BeanWithTitle.class);
         List<BeanWithTitle> beans = excelToBeans.convert(workbook);
@@ -24,13 +23,9 @@ public class BeanWithTitleTest {
         assertThat(beans.get(2).getRowNum()).isEqualTo(8);
         assertThat(beans.get(3).getRowNum()).isEqualTo(9);
 
-        assertThat(beans.get(0)).isEqualTo(new BeanWithTitle(
-                "张小凡", "女", "示例次卡（100次次卡）", "2880"));
-        assertThat(beans.get(1)).isEqualTo(new BeanWithTitle(
-                "李红", "男", "示例年卡（一周3次年卡）", "3000"));
-        assertThat(beans.get(2)).isEqualTo(new BeanWithTitle(
-                "李红", "男", "示例私教卡（60次私教卡）", "0"));
-        assertThat(beans.get(3)).isEqualTo(new BeanWithTitle(
-                "张晓", "女", null, null));
+        assertThat(beans.get(0)).isEqualTo(BeanWithTitle.builder().memberName("张小凡").sex("女").cardPrice("2880").cardName("示例次卡（100次次卡）").build());
+        assertThat(beans.get(1)).isEqualTo(BeanWithTitle.builder().memberName("李红").sex("男").cardPrice("3000").cardName("示例年卡（一周3次年卡）").build());
+        assertThat(beans.get(2)).isEqualTo(BeanWithTitle.builder().memberName("李红").sex("男").cardPrice("0").cardName("示例私教卡（60次私教卡）").build());
+        assertThat(beans.get(3)).isEqualTo(BeanWithTitle.builder().memberName("张晓").sex("女").cardPrice(null).cardName(null).build());
     }
 }
