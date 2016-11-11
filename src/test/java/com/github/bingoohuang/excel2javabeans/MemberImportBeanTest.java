@@ -1,5 +1,7 @@
 package com.github.bingoohuang.excel2javabeans;
 
+import com.github.bingoohuang.asmvalidator.AsmValidateResult;
+import com.github.bingoohuang.asmvalidator.AsmValidatorFactory;
 import lombok.val;
 import org.junit.Test;
 
@@ -23,5 +25,9 @@ public class MemberImportBeanTest {
         assertThat(beans.get(1).getRowNum()).isEqualTo(7);
         assertThat(beans.get(2).getRowNum()).isEqualTo(8);
         assertThat(beans.get(3).getRowNum()).isEqualTo(9);
+
+        AsmValidateResult result = new AsmValidateResult();
+        AsmValidatorFactory.validateAll(beans, result);
+        System.out.println(result);
     }
 }

@@ -2,8 +2,8 @@ package com.github.bingoohuang.excel2javabeans;
 
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
-import com.github.bingoohuang.excel2javabeans.annotations.ExcelColumnIgnore;
-import com.github.bingoohuang.excel2javabeans.annotations.ExcelColumnTitleContains;
+import com.github.bingoohuang.excel2javabeans.annotations.ExcelColIgnore;
+import com.github.bingoohuang.excel2javabeans.annotations.ExcelColTitle;
 import com.github.bingoohuang.excel2javabeans.impl.ExcelBeanField;
 import com.google.common.collect.Lists;
 import lombok.val;
@@ -49,7 +49,7 @@ public class ExcelToBeans<T> {
 
         Sheet sheet = workbook.getSheetAt(0);
 
-        val startRowNum = jumpToStartRow(sheet);
+        val startRowNum = jumpToStartDataRow(sheet);
 
         for (int i = startRowNum, ii = sheet.getLastRowNum(); i <= ii; ++i) {
             T o = instantiator.newInstance();
@@ -63,13 +63,13 @@ public class ExcelToBeans<T> {
                 beanFields[j].setFieldValue(fieldAccess, methodAccess, o, cellValue);
             }
 
-            if (o instanceof ExcelRowIgnore) {
-                ExcelRowIgnore ignore = (ExcelRowIgnore) o;
+            if (o instanceof ExcelRowIgnorable) {
+                ExcelRowIgnorable ignore = (ExcelRowIgnorable) o;
                 if (ignore.ignoreRow()) continue;
             }
 
-            if (o instanceof ExcelRowReference) {
-                ExcelRowReference ref = (ExcelRowReference) o;
+            if (o instanceof ExcelRowRef) {
+                ExcelRowRef ref = (ExcelRowRef) o;
                 ref.setRowNum(i);
             }
 
@@ -85,10 +85,11 @@ public class ExcelToBeans<T> {
     }
 
 
-    private int jumpToStartRow(Sheet sheet) {
+    private int jumpToStartDataRow(Sheet sheet) {
         int i = sheet.getFirstRowNum();
         if (!hasTitle) return i;
 
+        // try to find the title row
         for (int ii = sheet.getLastRowNum(); i <= ii; ++i) {
             Row row = sheet.getRow(i);
 
@@ -109,7 +110,7 @@ public class ExcelToBeans<T> {
     }
 
     private boolean findColumn(Row row, ExcelBeanField beanField) {
-        for (int k = row.getFirstCellNum(); k <= row.getLastCellNum(); ++k) {
+        for (int k = row.getFirstCellNum(), kk = row.getLastCellNum(); k <= kk; ++k) {
             Cell cell = row.getCell(k);
             if (cell == null) continue;
 
@@ -119,6 +120,7 @@ public class ExcelToBeans<T> {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -127,7 +129,7 @@ public class ExcelToBeans<T> {
         List<ExcelBeanField> fields = Lists.newArrayList();
 
         for (Field field : declaredFields) {
-            val rowIgnore = field.getAnnotation(ExcelColumnIgnore.class);
+            val rowIgnore = field.getAnnotation(ExcelColIgnore.class);
             if (rowIgnore != null) continue;
 
             val beanField = new ExcelBeanField();
@@ -136,7 +138,7 @@ public class ExcelToBeans<T> {
             beanField.setName(field.getName());
             beanField.setSetter("set" + capitalize(field.getName()));
 
-            val colTitle = field.getAnnotation(ExcelColumnTitleContains.class);
+            val colTitle = field.getAnnotation(ExcelColTitle.class);
             if (colTitle != null) beanField.setTitle(colTitle.value());
 
             fields.add(beanField);

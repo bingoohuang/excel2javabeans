@@ -8,6 +8,6 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ExcelColumnTitleContains {
+public @interface ExcelColTitle {
     String value();
 }

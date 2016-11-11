@@ -1,5 +1,6 @@
 package com.github.bingoohuang.excel2javabeans;
 
+import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.val;
@@ -14,7 +15,7 @@ public class ExcelToBeansUtils {
     @SneakyThrows
     public Workbook getClassPathWorkbook(String classPathExcelName) {
         val classLoader = ExcelToBeansUtils.class.getClassLoader();
-        val is = classLoader.getResourceAsStream(classPathExcelName);
+        @Cleanup val is = classLoader.getResourceAsStream(classPathExcelName);
         return WorkbookFactory.create(is);
     }
 }
