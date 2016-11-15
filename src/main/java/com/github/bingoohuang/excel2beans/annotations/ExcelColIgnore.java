@@ -1,4 +1,4 @@
-package com.github.bingoohuang.excel2javabeans.annotations;
+package com.github.bingoohuang.excel2beans.annotations;
 
 import java.lang.annotation.*;
 
@@ -8,6 +8,5 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ExcelColTitle {
-    String value();
+public @interface ExcelColIgnore {
 }

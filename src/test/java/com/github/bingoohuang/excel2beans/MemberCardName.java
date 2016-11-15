@@ -1,4 +1,4 @@
-package com.github.bingoohuang.excel2javabeans;
+package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.asmvalidator.annotations.AsmConstraint;
 
@@ -11,8 +11,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /**
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/11.
  */
-@AsmConstraint(validateBy = MemberCardDayValidator.class)
+@AsmConstraint(validateBy = CardNameValidator.class)
 @Target(FIELD)
 @Retention(RUNTIME)
-public @interface MemberCardBirthDay {
+public @interface MemberCardName {
 }

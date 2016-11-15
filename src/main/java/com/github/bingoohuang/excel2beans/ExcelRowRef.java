@@ -1,6 +1,6 @@
-package com.github.bingoohuang.excel2javabeans;
+package com.github.bingoohuang.excel2beans;
 
-import com.github.bingoohuang.excel2javabeans.annotations.ExcelColIgnore;
+import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import lombok.Data;
 
 /**

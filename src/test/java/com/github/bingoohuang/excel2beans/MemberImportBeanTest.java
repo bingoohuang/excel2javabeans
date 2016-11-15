@@ -1,4 +1,4 @@
-package com.github.bingoohuang.excel2javabeans;
+package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.asmvalidator.AsmValidateResult;
 import com.github.bingoohuang.asmvalidator.AsmValidatorFactory;
@@ -7,15 +7,14 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static com.github.bingoohuang.excel2javabeans.ExcelToBeansUtils.getClassPathWorkbook;
+import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathWorkbook;
 import static com.google.common.truth.Truth.assertThat;
 
 /**
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
 public class MemberImportBeanTest {
-    @Test
-    public void test() {
+    @Test public void testWithoutBlankHeadRowsAndCols() {
         val workbook = getClassPathWorkbook("member.xlsx");
         val excelToBeans = new ExcelToBeans(MemberImportBean.class);
         List<MemberImportBean> beans = excelToBeans.convert(workbook);

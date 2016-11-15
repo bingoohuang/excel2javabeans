@@ -1,4 +1,4 @@
-package com.github.bingoohuang.excel2javabeans;
+package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.asmvalidator.AsmValidateResult;
 import com.github.bingoohuang.asmvalidator.MsaValidator;

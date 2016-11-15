@@ -1,9 +1,8 @@
-package com.github.bingoohuang.excel2javabeans;
+package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.asmvalidator.AsmValidateResult;
 import com.github.bingoohuang.asmvalidator.MsaValidator;
 import com.github.bingoohuang.asmvalidator.ValidateError;
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -15,8 +14,6 @@ public class MemberCardDayValidator implements MsaValidator<MemberCardBirthDay, 
 
     @Override
     public void validate(MemberCardBirthDay memberCardBirthDay, AsmValidateResult result, String birthday) {
-        if (StringUtils.isEmpty(birthday)) return;
-
         try {
             dateTimeFormatter.parseDateTime(birthday);
         } catch (IllegalArgumentException e) {

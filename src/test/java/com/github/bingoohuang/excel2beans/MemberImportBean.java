@@ -1,14 +1,15 @@
-package com.github.bingoohuang.excel2javabeans;
+package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.asmvalidator.annotations.*;
-import com.github.bingoohuang.excel2javabeans.annotations.ExcelColTitle;
+import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
+import lombok.Builder;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
-@Data
+@Data @Builder
 public class MemberImportBean extends ExcelRowRef implements ExcelRowIgnorable {
     @ExcelColTitle("会员姓名") @AsmMaxSize(12) @AsmMessage("请填写会员姓名") String memberName; // 不超过12字
     @ExcelColTitle("性别") @AsmRange("男,女") @AsmMessage("性别请填男或女") String sex;

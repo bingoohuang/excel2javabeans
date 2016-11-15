@@ -1,4 +1,4 @@
-package com.github.bingoohuang.excel2javabeans.impl;
+package com.github.bingoohuang.excel2beans.impl;
 
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;

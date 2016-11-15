@@ -1,4 +1,4 @@
-package com.github.bingoohuang.excel2javabeans;
+package com.github.bingoohuang.excel2beans;
 
 import lombok.Builder;
 import lombok.Data;

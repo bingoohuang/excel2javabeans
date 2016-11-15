@@ -1,6 +1,6 @@
-package com.github.bingoohuang.excel2javabeans;
+package com.github.bingoohuang.excel2beans;
 
-import com.github.bingoohuang.excel2javabeans.annotations.ExcelColTitle;
+import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import lombok.Builder;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;

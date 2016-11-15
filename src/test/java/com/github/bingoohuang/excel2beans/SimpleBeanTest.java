@@ -1,4 +1,4 @@
-package com.github.bingoohuang.excel2javabeans;
+package com.github.bingoohuang.excel2beans;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static com.github.bingoohuang.excel2javabeans.ExcelToBeansUtils.getClassPathWorkbook;
+import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathWorkbook;
 import static com.google.common.truth.Truth.assertThat;
 
 /**
