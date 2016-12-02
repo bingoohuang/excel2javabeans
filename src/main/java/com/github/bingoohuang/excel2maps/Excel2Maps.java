@@ -46,14 +46,20 @@ public class Excel2Maps {
             Map<String, String> o = Maps.newHashMap();
 
             val row = sheet.getRow(i);
+            if (row == null) continue;
+
+            int emptyNum = 0;
             for (ColumnRef columnRef : columnRefs) {
                 val cell = row.getCell(columnRef.getColumnIndex());
                 val cellValue = getCellValue(cell);
-                if (isEmpty(cellValue)) continue;
-
-                val ignore = columnRef.putMap(o, cellValue);
-                if (ignore == Ignored.Yes) continue ROW;
+                if (isEmpty(cellValue)) {
+                    emptyNum++;
+                } else {
+                    val ignore = columnRef.putMap(o, cellValue);
+                    if (ignore == Ignored.Yes) continue ROW;
+                }
             }
+            if (emptyNum == columnRefs.size()) continue;
 
             o.put("_rowNum", "" + i);
             beans.add(o);
@@ -63,6 +69,8 @@ public class Excel2Maps {
     }
 
     private String getCellValue(Cell cell) {
+        if (cell == null) return null;
+
         val cellValue = cellFormatter.formatCellValue(cell);
         return trim(cellValue);
     }

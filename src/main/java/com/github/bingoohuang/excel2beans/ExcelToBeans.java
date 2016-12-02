@@ -59,13 +59,20 @@ public class ExcelToBeans<T> {
             T o = instantiator.newInstance();
 
             val row = sheet.getRow(i);
+            if (row == null) continue;
+
+            int emptyNum = 0;
             for (int j = 0; j < beanFields.length; ++j) {
                 val cell = row.getCell(beanFields[j].getColumnIndex());
                 val cellValue = getCellValue(cell);
-                if (isEmpty(cellValue)) continue;
-
-                beanFields[j].setFieldValue(fieldAccess, methodAccess, o, cellValue);
+                if (isEmpty(cellValue)) {
+                    ++emptyNum;
+                } else {
+                    beanFields[j].setFieldValue(fieldAccess, methodAccess, o, cellValue);
+                }
             }
+
+            if (emptyNum == beanFields.length) continue;
 
             if (o instanceof ExcelRowIgnorable) {
                 val ignore = (ExcelRowIgnorable) o;
@@ -84,6 +91,8 @@ public class ExcelToBeans<T> {
     }
 
     private String getCellValue(Cell cell) {
+        if (cell == null) return null;
+
         val cellValue = cellFormatter.formatCellValue(cell);
         return trim(cellValue);
     }
