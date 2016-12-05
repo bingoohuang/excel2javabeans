@@ -14,6 +14,7 @@ import static com.google.common.truth.Truth.assertThat;
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
 public class MemberImportBeanTest {
+    @SuppressWarnings("unchecked")
     @Test public void testWithoutBlankHeadRowsAndCols() {
         val workbook = getClassPathWorkbook("member.xlsx");
         val excelToBeans = new ExcelToBeans(MemberImportBean.class);

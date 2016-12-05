@@ -13,6 +13,7 @@ import static com.google.common.truth.Truth.assertThat;
 /**
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
+@SuppressWarnings("unchecked")
 public class SimpleBeanTest {
     @Test @SneakyThrows public void test() {
         Workbook workbook = getClassPathWorkbook("simplebeans.xlsx");

@@ -12,7 +12,7 @@ import static com.google.common.truth.Truth.assertThat;
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/15.
  */
 public class MemberImportBeanWithBlankHeadRowsAndColsTest {
-
+    @SuppressWarnings("unchecked")
     @Test public void testWithBlankHeadRowsAndCols() {
         val workbookInputStream = getClassPathInputStream("member-blankheadrowsandcols.xlsx");
         val excelToBeans = new ExcelToBeans(MemberImportBeanWithBlankHeadRowsAndCols.class);

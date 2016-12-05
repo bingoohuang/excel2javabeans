@@ -11,6 +11,7 @@ import static com.google.common.truth.Truth.assertThat;
 /**
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
+@SuppressWarnings("unchecked")
 public class BeanWithTitleTest {
     @Test public void test() {
         val workbook = getClassPathWorkbook("member.xlsx");
