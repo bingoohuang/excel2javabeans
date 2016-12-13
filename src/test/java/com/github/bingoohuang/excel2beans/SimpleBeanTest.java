@@ -16,7 +16,7 @@ import static com.google.common.truth.Truth.assertThat;
 @SuppressWarnings("unchecked")
 public class SimpleBeanTest {
     @Test @SneakyThrows public void test() {
-        Workbook workbook = getClassPathWorkbook("simplebeans.xlsx");
+        val workbook = getClassPathWorkbook("simplebeans.xlsx");
 
         val excelToBeans = new ExcelToBeans(SimpleBean.class);
         List<SimpleBean> beans = excelToBeans.convert(workbook);
@@ -27,7 +27,7 @@ public class SimpleBeanTest {
     }
 
     @Test @SneakyThrows public void testWithBlanklines() {
-        Workbook workbook = getClassPathWorkbook("simplebeans-blanklines.xlsx");
+        val workbook = getClassPathWorkbook("simplebeans-blanklines.xlsx");
 
         val excelToBeans = new ExcelToBeans(SimpleBean.class);
         List<SimpleBean> beans = excelToBeans.convert(workbook);

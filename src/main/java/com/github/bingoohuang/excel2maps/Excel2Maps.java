@@ -100,8 +100,8 @@ public class Excel2Maps {
             if (cell == null) continue;
 
             val cellValue = cell.getStringCellValue();
-            String upperCellValue = StringUtils.upperCase(cellValue);
-            if (upperCellValue != null && upperCellValue.contains(columnDef.getTitle())) {
+            val upperCellValue = StringUtils.upperCase(cellValue);
+            if (StringUtils.contains(upperCellValue, columnDef.getTitle())) {
                 columnRefs.add(new ColumnRef(columnDef, k));
                 return true;
             }

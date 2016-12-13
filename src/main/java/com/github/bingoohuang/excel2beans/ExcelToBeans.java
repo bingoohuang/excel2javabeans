@@ -18,6 +18,7 @@ import java.util.List;
 import static org.apache.commons.lang3.StringUtils.*;
 
 /**
+ * Mapping excel cell values to java beans.
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
 public class ExcelToBeans<T> {
@@ -34,14 +35,6 @@ public class ExcelToBeans<T> {
         this.instantiator = new ObjenesisStd().getInstantiatorOf(beanClass);
         this.beanFields = parseBeanFields(beanClass);
         this.hasTitle = hasTitle();
-    }
-
-    private boolean hasTitle() {
-        for (ExcelBeanField beanField : beanFields) {
-            if (beanField.hasTitle()) return true;
-        }
-
-        return false;
     }
 
     @SneakyThrows public List<T> convert(InputStream excelInputStream) {
@@ -158,5 +151,13 @@ public class ExcelToBeans<T> {
         }
 
         return fields.toArray(new ExcelBeanField[0]);
+    }
+
+    private boolean hasTitle() {
+        for (ExcelBeanField beanField : beanFields) {
+            if (beanField.hasTitle()) return true;
+        }
+
+        return false;
     }
 }
