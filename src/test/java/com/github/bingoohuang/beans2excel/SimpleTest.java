@@ -4,6 +4,7 @@ import com.github.bingoohuang.beans2excel.beans.Member;
 import com.github.bingoohuang.beans2excel.beans.Schedule;
 import com.github.bingoohuang.beans2excel.beans.Subscribe;
 import com.github.bingoohuang.excel2beans.BeansToExcel;
+import com.github.bingoohuang.excel2beans.ExcelToBeansUtils;
 import com.google.common.collect.Lists;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
@@ -20,9 +21,25 @@ import java.util.List;
  */
 public class SimpleTest {
     @Test
-    @SneakyThrows
     public void test() {
         BeansToExcel beansToExcel = new BeansToExcel();
+        String name = "test-workbook.xlsx";
+
+        createExcel(beansToExcel, name);
+    }
+
+    @Test
+    public void testTemplate() {
+        Workbook workbook = ExcelToBeansUtils.getClassPathWorkbook("template.xlsx");
+        BeansToExcel beansToExcel = new BeansToExcel(workbook);
+        String name = "test-workbook-templ.xlsx";
+
+        createExcel(beansToExcel, name);
+    }
+
+
+    @SneakyThrows
+    private void createExcel(BeansToExcel beansToExcel, String name)  {
         List<Member> members = Lists.newArrayList();
         members.add(new Member(1000, 100, 80));
 
@@ -37,7 +54,7 @@ public class SimpleTest {
 
         Workbook workbook = beansToExcel.create(members, schedules, subscribes);
 
-        @Cleanup val fileOut = new FileOutputStream("test-workbook.xlsx");
+        @Cleanup val fileOut = new FileOutputStream(name);
         workbook.write(fileOut);
     }
 }

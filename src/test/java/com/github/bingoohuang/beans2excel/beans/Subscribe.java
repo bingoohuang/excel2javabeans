@@ -12,7 +12,7 @@ import java.sql.Timestamp;
  */
 @Data
 @AllArgsConstructor
-@ExcelSheet(name = "定课")
+@ExcelSheet(name = "订课情况")
 public class Subscribe {
     @ExcelColTitle("订单日期")
     private Timestamp day;
