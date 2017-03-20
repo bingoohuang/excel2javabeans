@@ -12,7 +12,7 @@ import lombok.val;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.junit.Test;
 
-import java.io.FileOutputStream;
+import java.io.*;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -39,7 +39,7 @@ public class SimpleTest {
 
 
     @SneakyThrows
-    private void createExcel(BeansToExcel beansToExcel, String name)  {
+    private void createExcel(BeansToExcel beansToExcel, String name) {
         List<Member> members = Lists.newArrayList();
         members.add(new Member(1000, 100, 80));
 
@@ -56,5 +56,10 @@ public class SimpleTest {
 
         @Cleanup val fileOut = new FileOutputStream(name);
         workbook.write(fileOut);
+
+    }
+
+    public static InputStream convert(ByteArrayOutputStream out) {
+        return new ByteArrayInputStream(out.toByteArray());
     }
 }
