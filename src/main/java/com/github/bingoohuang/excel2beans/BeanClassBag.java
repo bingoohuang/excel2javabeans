@@ -15,4 +15,10 @@ public class BeanClassBag {
     ExcelBeanField[] beanFields;
     private FieldAccess fieldAccess;
     private MethodAccess methodAccess;
+
+    public BeanClassBag(Class<?> beanClass) {
+        this.beanClass = beanClass;
+        this.fieldAccess = FieldAccess.get(beanClass);
+        this.methodAccess = MethodAccess.get(beanClass);
+    }
 }
