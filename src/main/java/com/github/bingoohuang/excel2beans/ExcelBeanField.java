@@ -1,4 +1,4 @@
-package com.github.bingoohuang.excel2beans.impl;
+package com.github.bingoohuang.excel2beans;
 
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
@@ -13,6 +13,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 public class ExcelBeanField {
     private String name;
     private String setter;
+    private String getter;
     private String title;
     private int columnIndex;
 
@@ -35,6 +36,27 @@ public class ExcelBeanField {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+
+    public Object getFieldValue(
+            FieldAccess fieldAccess,
+            MethodAccess methodAccess,
+            Object o) {
+
+        try {
+            return methodAccess.invoke(o, getter);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            return fieldAccess.get(o, name);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "";
     }
 
     public boolean hasTitle() {

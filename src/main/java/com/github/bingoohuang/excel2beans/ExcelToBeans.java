@@ -2,9 +2,6 @@ package com.github.bingoohuang.excel2beans;
 
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
-import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
-import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
-import com.github.bingoohuang.excel2beans.impl.ExcelBeanField;
 import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -33,7 +30,7 @@ public class ExcelToBeans<T> {
         this.fieldAccess = FieldAccess.get(beanClass);
         this.methodAccess = MethodAccess.get(beanClass);
         this.instantiator = new ObjenesisStd().getInstantiatorOf(beanClass);
-        this.beanFields = parseBeanFields(beanClass);
+        this.beanFields = ExcelToBeansUtils.parseBeanFields(beanClass);
         this.hasTitle = hasTitle();
     }
 
@@ -128,29 +125,6 @@ public class ExcelToBeans<T> {
         }
 
         return false;
-    }
-
-    private ExcelBeanField[] parseBeanFields(Class<T> beanClass) {
-        val declaredFields = beanClass.getDeclaredFields();
-        List<ExcelBeanField> fields = Lists.newArrayList();
-
-        for (val field : declaredFields) {
-            val rowIgnore = field.getAnnotation(ExcelColIgnore.class);
-            if (rowIgnore != null) continue;
-
-            val beanField = new ExcelBeanField();
-
-            beanField.setColumnIndex(fields.size());
-            beanField.setName(field.getName());
-            beanField.setSetter("set" + capitalize(field.getName()));
-
-            val colTitle = field.getAnnotation(ExcelColTitle.class);
-            if (colTitle != null) beanField.setTitle(colTitle.value());
-
-            fields.add(beanField);
-        }
-
-        return fields.toArray(new ExcelBeanField[0]);
     }
 
     private boolean hasTitle() {

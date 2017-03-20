@@ -3,3 +3,5 @@
 target
 *.class
 ~*.xls*
+
+test-*.xls*
