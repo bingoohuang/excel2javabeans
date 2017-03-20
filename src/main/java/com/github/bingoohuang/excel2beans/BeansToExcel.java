@@ -33,7 +33,19 @@ public class BeansToExcel {
             }
         }
 
+        autoSizeColumn(sheets);
+
         return wb;
+    }
+
+    private void autoSizeColumn(Map<Class, BeanClassBag> sheets) {
+        for (val bag : sheets.values()) {
+            Sheet sheet = bag.getSheet();
+            short lastCellNum = sheet.getRow(0).getLastCellNum();
+            for (int i = 0; i <= lastCellNum; ++i) {
+                sheet.autoSizeColumn(i); // adjust width of the column
+            }
+        }
     }
 
     private void writeRowCells(Object bean, BeanClassBag bag, Row row) {
