@@ -10,6 +10,7 @@ import lombok.val;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.List;
 
@@ -18,7 +19,8 @@ import static org.apache.commons.lang3.StringUtils.capitalize;
 /**
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
-@UtilityClass public class ExcelToBeansUtils {
+@UtilityClass
+public class ExcelToBeansUtils {
     @SneakyThrows
     public Workbook getClassPathWorkbook(String classPathExcelName) {
         val classLoader = ExcelToBeansUtils.class.getClassLoader();
@@ -54,5 +56,14 @@ import static org.apache.commons.lang3.StringUtils.capitalize;
         }
 
         return fields.toArray(new ExcelBeanField[0]);
+    }
+
+    @SneakyThrows
+    public static void download(HttpServletResponse response, Workbook workbook, String fileName) {
+        response.setContentType("application/vnd.ms-excel");
+        response.setHeader("Content-disposition", "attachment; filename=" + fileName);
+        @Cleanup val out = response.getOutputStream();
+        workbook.write(out);
+        workbook.close();
     }
 }
