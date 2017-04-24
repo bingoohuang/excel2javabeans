@@ -19,14 +19,19 @@ import java.util.Map;
  */
 public class BeansToExcel {
     private final XSSFWorkbook workbook;
-    private final Workbook templateWorkbook;
+    private final Workbook styleTemplate;
 
     public BeansToExcel() {
         this(null);
     }
 
-    public BeansToExcel(Workbook templateWorkbook) {
-        this.templateWorkbook = templateWorkbook;
+    /**
+     * Construct BeansToExcel with a style template.
+     *
+     * @param styleTemplate style template
+     */
+    public BeansToExcel(Workbook styleTemplate) {
+        this.styleTemplate = styleTemplate;
         this.workbook = new XSSFWorkbook();
     }
 
@@ -99,7 +104,7 @@ public class BeansToExcel {
     }
 
     private void cloneCellStyle(BeanClassBag bag, Row row, ExcelBeanField[] beanFields) {
-        if (templateWorkbook == null) return;
+        if (styleTemplate == null) return;
 
         val templateSheet = parseTemplateSheet(bag);
         for (int colIndex = 0, ii = beanFields.length; colIndex < ii; ++colIndex) {
@@ -113,13 +118,16 @@ public class BeansToExcel {
 
     private Sheet parseTemplateSheet(BeanClassBag bag) {
         val sheetName = bag.getSheet().getSheetName();
-        var templateSheet = templateWorkbook.getSheet(sheetName);
+        var styleSheet = styleTemplate.getSheet(sheetName);
+        if (styleSheet == null) {
+            styleSheet = styleTemplate.getSheetAt(0);
+        }
 
-        return templateSheet != null ? templateSheet : templateWorkbook.getSheetAt(0);
+        return styleSheet;
     }
 
-    private CellStyle cloneCellStyle(Sheet templateSheet, int rowIndex, int colIndex) {
-        val templateRow = templateSheet.getRow(rowIndex);
+    private CellStyle cloneCellStyle(Sheet styleSheet, int rowIndex, int colIndex) {
+        val templateRow = styleSheet.getRow(rowIndex);
         val cellStyle = templateRow.getCell(colIndex).getCellStyle();
         val cloneStyle = workbook.createCellStyle();
         cloneStyle.cloneStyleFrom(cellStyle);
