@@ -15,12 +15,14 @@ import java.util.Map;
     ColumnDef columnDef;
     int columnIndex;
 
-    public Ignored putMap(Map<String, String> map, String cellValue) {
+    public Ignored putMapOrIgnored(Map<String, String> map, String cellValue) {
         val upper = StringUtils.upperCase(cellValue);
-        if (match(upper, columnDef.getIgnorePattern())) return Ignored.Yes;
+        if (match(upper, columnDef.getIgnorePattern())) {
+            return Ignored.YES;
+        }
 
         map.put(columnDef.getColumnName(), cellValue);
-        return Ignored.No;
+        return Ignored.NO;
     }
 
     /**
@@ -34,6 +36,8 @@ import java.util.Map;
     public static boolean match(String text, String pattern) {
         if (pattern == null) return false;
 
-        return text.matches(pattern.replace("?", ".?").replace("*", ".*?"));
+        return text.matches(
+                pattern.replace("?", ".?")
+                .replace("*", ".*?"));
     }
 }

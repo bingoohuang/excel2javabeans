@@ -41,31 +41,46 @@ public class Excel2Maps {
         val sheet = workbook.getSheetAt(0);
         val startRowNum = jumpToStartDataRow(sheet);
 
-        ROW:
         for (int i = startRowNum, ii = sheet.getLastRowNum(); i <= ii; ++i) {
-            Map<String, String> o = Maps.newHashMap();
-
-            val row = sheet.getRow(i);
-            if (row == null) continue;
-
-            int emptyNum = 0;
-            for (ColumnRef columnRef : columnRefs) {
-                val cell = row.getCell(columnRef.getColumnIndex());
-                val cellValue = getCellValue(cell);
-                if (isEmpty(cellValue)) {
-                    emptyNum++;
-                } else {
-                    val ignore = columnRef.putMap(o, cellValue);
-                    if (ignore == Ignored.Yes) continue ROW;
-                }
+            Map<String, String> map = createRowMap(sheet, i);
+            if (map != null) {
+                map.put("_rowNum", Integer.toString(i));
+                beans.add(map);
             }
-            if (emptyNum == columnRefs.size()) continue;
-
-            o.put("_rowNum", "" + i);
-            beans.add(o);
         }
 
         return beans;
+    }
+
+    private Map<String, String> createRowMap(Sheet sheet, int i) {
+        val row = sheet.getRow(i);
+        if (row != null) {
+            Map<String, String> map = Maps.newHashMap();
+            val ignore = processOrIgnoreRow(row, map);
+            if (ignore != Ignored.YES) {
+                return map;
+            }
+        }
+
+        return null;
+    }
+
+    private Ignored processOrIgnoreRow(Row row, Map<String, String> map) {
+        int emptyNum = 0;
+        for (ColumnRef columnRef : columnRefs) {
+            val cell = row.getCell(columnRef.getColumnIndex());
+            val cellValue = getCellValue(cell);
+            if (isEmpty(cellValue)) {
+                emptyNum++;
+            } else {
+                val ignore = columnRef.putMapOrIgnored(map, cellValue);
+                if (ignore == Ignored.YES) {
+                    return Ignored.YES;
+                }
+            }
+        }
+
+        return emptyNum == columnRefs.size() ? Ignored.YES : Ignored.NO;
     }
 
     private String getCellValue(Cell cell) {

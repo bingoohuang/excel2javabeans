@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.util.List;
 
@@ -39,60 +40,69 @@ public class ExcelToBeansUtils {
     }
 
     public static ExcelBeanField[] parseBeanFields(Class<?> beanClass, Sheet sheet) {
-        val declaredFields = beanClass.getDeclaredFields();
         List<ExcelBeanField> fields = Lists.newArrayList();
 
-        for (val field : declaredFields) {
-            val rowIgnore = field.getAnnotation(ExcelColIgnore.class);
-            if (rowIgnore != null) {
-                continue;
-            }
-
-            String fieldName = field.getName();
-            if (fieldName.startsWith("$")) { // ignore un-normal fields like $jacocoData
-                continue;
-            }
-
-            val beanField = new ExcelBeanField();
-
-            beanField.setColumnIndex(fields.size());
-            beanField.setName(fieldName);
-            beanField.setSetter("set" + capitalize(fieldName));
-            beanField.setGetter("get" + capitalize(fieldName));
-
-            val colTitle = field.getAnnotation(ExcelColTitle.class);
-            if (colTitle != null) {
-                beanField.setTitle(colTitle.value());
-            }
-
-            val colStyle = field.getAnnotation(ExcelColStyle.class);
-            if (colStyle != null) {
-                CellStyle style = setAlign(sheet, colStyle);
-                if (style != null) {
-                    beanField.setCellStyle(style);
-                }
-            }
-
-            fields.add(beanField);
+        for (val field : beanClass.getDeclaredFields()) {
+            processField(sheet, fields, field);
         }
 
         return fields.toArray(new ExcelBeanField[0]);
     }
 
+    private static void processField(Sheet sheet, List<ExcelBeanField> fields, Field field) {
+        val rowIgnore = field.getAnnotation(ExcelColIgnore.class);
+        if (rowIgnore != null) {
+            return;
+        }
+
+        String fieldName = field.getName();
+        if (fieldName.startsWith("$")) { // ignore un-normal fields like $jacocoData
+            return;
+        }
+
+        val beanField = new ExcelBeanField();
+
+        beanField.setColumnIndex(fields.size());
+        beanField.setName(fieldName);
+        beanField.setSetter("set" + capitalize(fieldName));
+        beanField.setGetter("get" + capitalize(fieldName));
+
+        setTitle(field, beanField);
+        setStyle(sheet, field, beanField);
+
+        fields.add(beanField);
+    }
+
+    private static void setStyle(Sheet sheet, Field field, ExcelBeanField beanField) {
+        val colStyle = field.getAnnotation(ExcelColStyle.class);
+        if (colStyle != null) {
+            CellStyle style = setAlign(sheet, colStyle);
+            if (style != null) {
+                beanField.setCellStyle(style);
+            }
+        }
+    }
+
+    private static void setTitle(Field field, ExcelBeanField beanField) {
+        val colTitle = field.getAnnotation(ExcelColTitle.class);
+        if (colTitle != null) {
+            beanField.setTitle(colTitle.value());
+        }
+    }
+
     private static CellStyle setAlign(Sheet sheet, ExcelColStyle colStyle) {
-        val style = sheet.getWorkbook().createCellStyle();
+        CellStyle style = sheet.getWorkbook().createCellStyle();
         if (colStyle.align() == LEFT) {
             style.setAlignment(HorizontalAlignment.LEFT);
-            return style;
         } else if (colStyle.align() == CENTER) {
             style.setAlignment(HorizontalAlignment.CENTER);
-            return style;
         } else if (colStyle.align() == RIGHT) {
             style.setAlignment(HorizontalAlignment.RIGHT);
-            return style;
         } else {
-            return null;
+            style = null;
         }
+
+        return style;
     }
 
     @SneakyThrows

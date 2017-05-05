@@ -3,6 +3,7 @@ package com.github.bingoohuang.excel2beans;
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.CellStyle;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -11,6 +12,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
 @Data
+@Slf4j
 public class ExcelBeanField {
     private String name;
     private String setter;
@@ -29,14 +31,14 @@ public class ExcelBeanField {
             methodAccess.invoke(o, setter, cellValue);
             return;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("call setter {} failed", setter, e);
         }
 
         try {
             fieldAccess.set(o, name, cellValue);
             return;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("field set {} failed", name, e);
         }
     }
 
@@ -49,13 +51,13 @@ public class ExcelBeanField {
         try {
             return methodAccess.invoke(o, getter);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("call getter {} failed", getter, e);
         }
 
         try {
             return fieldAccess.get(o, name);
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("field get {} failed", getter, e);
         }
 
         return "";

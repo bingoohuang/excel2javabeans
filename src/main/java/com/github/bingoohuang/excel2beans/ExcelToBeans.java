@@ -16,6 +16,7 @@ import static org.apache.commons.lang3.StringUtils.*;
 
 /**
  * Mapping excel cell values to java beans.
+ *
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
 public class ExcelToBeans<T> {
@@ -34,7 +35,8 @@ public class ExcelToBeans<T> {
         this.hasTitle = hasTitle();
     }
 
-    @SneakyThrows public List<T> convert(InputStream excelInputStream) {
+    @SneakyThrows
+    public List<T> convert(InputStream excelInputStream) {
         val workbook = WorkbookFactory.create(excelInputStream);
         return convert(workbook);
     }
@@ -46,38 +48,59 @@ public class ExcelToBeans<T> {
         val startRowNum = jumpToStartDataRow(sheet);
 
         for (int i = startRowNum, ii = sheet.getLastRowNum(); i <= ii; ++i) {
-            T o = instantiator.newInstance();
-
-            val row = sheet.getRow(i);
-            if (row == null) continue;
-
-            int emptyNum = 0;
-            for (int j = 0; j < beanFields.length; ++j) {
-                val cell = row.getCell(beanFields[j].getColumnIndex());
-                val cellValue = getCellValue(cell);
-                if (isEmpty(cellValue)) {
-                    ++emptyNum;
-                } else {
-                    beanFields[j].setFieldValue(fieldAccess, methodAccess, o, cellValue);
-                }
+            T object = createObject(sheet, i);
+            if (object != null) {
+                addToBeans(beans, i, object);
             }
-
-            if (emptyNum == beanFields.length) continue;
-
-            if (o instanceof ExcelRowIgnorable) {
-                val ignore = (ExcelRowIgnorable) o;
-                if (ignore.ignoreRow()) continue;
-            }
-
-            if (o instanceof ExcelRowRef) {
-                val ref = (ExcelRowRef) o;
-                ref.setRowNum(i);
-            }
-
-            beans.add(o);
         }
 
         return beans;
+    }
+
+    private T createObject(Sheet sheet, int i) {
+        T object = null;
+
+        val row = sheet.getRow(i);
+        if (row != null) {
+            object = instantiator.newInstance();
+            int emptyNum = processRow(object, row);
+            if (emptyNum == beanFields.length) {
+                object = null;
+            }
+        }
+
+        return object;
+    }
+
+    private void addToBeans(List<T> beans, int i, T object) {
+        if (object instanceof ExcelRowIgnorable) {
+            val ignore = (ExcelRowIgnorable) object;
+            if (ignore.ignoreRow()) {
+                return;
+            }
+        }
+
+        if (object instanceof ExcelRowRef) {
+            val ref = (ExcelRowRef) object;
+            ref.setRowNum(i);
+        }
+
+        beans.add(object);
+    }
+
+    private int processRow(T object, Row row) {
+        int emptyNum = 0;
+        for (int j = 0; j < beanFields.length; ++j) {
+            val cell = row.getCell(beanFields[j].getColumnIndex());
+            val cellValue = getCellValue(cell);
+            if (isEmpty(cellValue)) {
+                ++emptyNum;
+            } else {
+                beanFields[j].setFieldValue(fieldAccess, methodAccess, object, cellValue);
+            }
+        }
+
+        return emptyNum;
     }
 
     private String getCellValue(Cell cell) {
