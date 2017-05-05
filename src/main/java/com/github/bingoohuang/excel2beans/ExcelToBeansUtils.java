@@ -1,19 +1,22 @@
 package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
+import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.google.common.collect.Lists;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.val;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.usermodel.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.util.List;
 
+import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.CENTER;
+import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.LEFT;
+import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.RIGHT;
 import static org.apache.commons.lang3.StringUtils.capitalize;
 
 /**
@@ -34,7 +37,7 @@ public class ExcelToBeansUtils {
         return classLoader.getResourceAsStream(classPathExcelName);
     }
 
-    public static ExcelBeanField[] parseBeanFields(Class<?> beanClass) {
+    public static ExcelBeanField[] parseBeanFields(Class<?> beanClass, Sheet sheet) {
         val declaredFields = beanClass.getDeclaredFields();
         List<ExcelBeanField> fields = Lists.newArrayList();
 
@@ -50,12 +53,38 @@ public class ExcelToBeansUtils {
             beanField.setGetter("get" + capitalize(field.getName()));
 
             val colTitle = field.getAnnotation(ExcelColTitle.class);
-            if (colTitle != null) beanField.setTitle(colTitle.value());
+            if (colTitle != null) {
+                beanField.setTitle(colTitle.value());
+            }
+
+            val colStyle = field.getAnnotation(ExcelColStyle.class);
+            if (colStyle != null) {
+                CellStyle style = setAlign(sheet, colStyle);
+                if (style != null) {
+                    beanField.setCellStyle(style);
+                }
+            }
 
             fields.add(beanField);
         }
 
         return fields.toArray(new ExcelBeanField[0]);
+    }
+
+    private static CellStyle setAlign(Sheet sheet, ExcelColStyle colStyle) {
+        val style = sheet.getWorkbook().createCellStyle();
+        if (colStyle.align() == LEFT) {
+            style.setAlignment(HorizontalAlignment.LEFT);
+            return style;
+        } else if (colStyle.align() == CENTER) {
+            style.setAlignment(HorizontalAlignment.CENTER);
+            return style;
+        } else if (colStyle.align() == RIGHT) {
+            style.setAlignment(HorizontalAlignment.RIGHT);
+            return style;
+        } else {
+            return null;
+        }
     }
 
     @SneakyThrows

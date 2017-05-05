@@ -10,11 +10,12 @@ import org.apache.poi.ss.usermodel.Sheet;
  */
 @Data
 public class BeanClassBag {
-    private Class beanClass;
+    private Class<?> beanClass;
     private Sheet sheet;
     ExcelBeanField[] beanFields;
     private FieldAccess fieldAccess;
     private MethodAccess methodAccess;
+    private boolean firstRowCreated;
 
     public BeanClassBag(Class<?> beanClass) {
         this.beanClass = beanClass;

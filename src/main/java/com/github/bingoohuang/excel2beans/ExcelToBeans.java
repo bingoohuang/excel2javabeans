@@ -30,7 +30,7 @@ public class ExcelToBeans<T> {
         this.fieldAccess = FieldAccess.get(beanClass);
         this.methodAccess = MethodAccess.get(beanClass);
         this.instantiator = new ObjenesisStd().getInstantiatorOf(beanClass);
-        this.beanFields = ExcelToBeansUtils.parseBeanFields(beanClass);
+        this.beanFields = ExcelToBeansUtils.parseBeanFields(beanClass, null);
         this.hasTitle = hasTitle();
     }
 

@@ -32,7 +32,6 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
     </properties>
 
-
     <developers>
         <developer>
             <id>bingoohuang</id>
@@ -115,8 +114,13 @@
             <version>1.0.13</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>2.9.4</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-
 
     <build>
         <plugins>
@@ -133,7 +137,6 @@
                     </execution>
                 </executions>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>

@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.List;
@@ -18,7 +19,7 @@ import java.util.Map;
  * Created by bingoohuang on 2017/3/20.
  */
 public class BeansToExcel {
-    private final XSSFWorkbook workbook;
+    private final Workbook workbook;
     private final Workbook styleTemplate;
 
     public BeansToExcel() {
@@ -36,11 +37,16 @@ public class BeansToExcel {
     }
 
     public Workbook create(List<?>... lists) {
+        Map<String, Object> props = Maps.newHashMap();
+        return create(props, lists);
+    }
+
+    public Workbook create(Map<String, Object> props, List<?>... lists) {
         Map<Class, BeanClassBag> beanClassBag = Maps.newHashMap();
 
         for (val list : lists) {
             for (val bean : list) {
-                writeBeanToExcel(beanClassBag, bean);
+                writeBeanToExcel(props, beanClassBag, bean);
             }
         }
 
@@ -49,19 +55,30 @@ public class BeansToExcel {
         return workbook;
     }
 
-    private void writeBeanToExcel(Map<Class, BeanClassBag> beanClassBag, Object bean) {
-        val bag = insureBagCreated(beanClassBag, bean);
+    private void writeBeanToExcel(
+            Map<String, Object> props, Map<Class, BeanClassBag> beanClassBagMap, Object bean) {
+        val bag = insureBagCreated(props, beanClassBagMap, bean);
 
-        val sheet = bag.getSheet();
-        val row = sheet.createRow(sheet.getLastRowNum() + 1);
+        val row = createRow(bag);
         writeRowCells(bean, bag, row);
+    }
+
+    private Row createRow(BeanClassBag bag) {
+        Sheet sheet = bag.getSheet();
+        if (bag.isFirstRowCreated()) {
+            return sheet.createRow(sheet.getLastRowNum() + 1);
+        } else {
+            bag.setFirstRowCreated(true);
+            return sheet.createRow(0);
+        }
     }
 
     private void autoSizeColumn(Map<Class, BeanClassBag> sheets) {
         for (val bag : sheets.values()) {
-            val lastCellNum = bag.getSheet().getRow(0).getLastCellNum();
+            Sheet sheet = bag.getSheet();
+            val lastCellNum = sheet.getRow(sheet.getLastRowNum()).getLastCellNum();
             for (int i = 0; i <= lastCellNum; ++i) {
-                bag.getSheet().autoSizeColumn(i); // adjust width of the column
+                sheet.autoSizeColumn(i); // adjust width of the column
             }
         }
     }
@@ -77,7 +94,8 @@ public class BeansToExcel {
         }
     }
 
-    private BeanClassBag insureBagCreated(Map<Class, BeanClassBag> beanClassBag, Object bean) {
+    private BeanClassBag insureBagCreated(
+            Map<String, Object> props, Map<Class, BeanClassBag> beanClassBag, Object bean) {
         val beanClass = bean.getClass();
         var bag = beanClassBag.get(beanClass);
         if (bag != null) return bag;
@@ -86,15 +104,40 @@ public class BeansToExcel {
         beanClassBag.put(beanClass, bag);
 
         bag.setSheet(createSheet(beanClass));
-        bag.setBeanFields(ExcelToBeansUtils.parseBeanFields(beanClass));
+        bag.setBeanFields(ExcelToBeansUtils.parseBeanFields(beanClass, bag.getSheet()));
 
+        addHeadToSheet(props, bag);
         addTitleToSheet(bag);
 
         return bag;
     }
 
+    private void addHeadToSheet(Map<String, Object> props, BeanClassBag bag) {
+        val excelSheet = bag.getBeanClass().getAnnotation(ExcelSheet.class);
+        if (excelSheet == null) {
+            return;
+        }
+
+        String headKey = excelSheet.headKey();
+        if (!props.containsKey(headKey)) {
+            return;
+        }
+
+        String head = String.valueOf(props.get(headKey));
+        if (StringUtils.isEmpty(head)) {
+            return;
+        }
+
+        val cra = new CellRangeAddress(0, 0,
+                0, bag.getBeanFields().length - 1);
+        bag.getSheet().addMergedRegion(cra);
+
+        val row = createRow(bag);
+        row.createCell(0).setCellValue(head);
+    }
+
     private void addTitleToSheet(BeanClassBag bag) {
-        val row = bag.getSheet().createRow(0);
+        val row = createRow(bag);
         val beanFields = bag.getBeanFields();
         for (int i = 0, ii = beanFields.length; i < ii; ++i) {
             row.createCell(i).setCellValue(beanFields[i].getTitle());
