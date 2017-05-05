@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.util.List;
 
 import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.CENTER;
@@ -96,8 +97,11 @@ public class ExcelToBeansUtils {
 
     @SneakyThrows
     public static void download(HttpServletResponse response, Workbook workbook, String fileName) {
-        response.setContentType("application/vnd.ms-excel");
-        response.setHeader("Content-disposition", "attachment; filename=" + fileName);
+        response.setContentType("application/vnd.ms-excel;charset=UTF-8");
+        val encodedFileName = URLEncoder.encode(fileName, "UTF-8");
+        response.setHeader("Content-disposition", "attachment; " +
+                "filename=\"" + encodedFileName + "\"; " +
+                "filename*=utf-8'zh_cn'" + encodedFileName);
         @Cleanup val out = response.getOutputStream();
         workbook.write(out);
         workbook.close();
