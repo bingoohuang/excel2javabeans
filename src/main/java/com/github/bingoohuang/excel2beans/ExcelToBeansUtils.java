@@ -43,14 +43,21 @@ public class ExcelToBeansUtils {
 
         for (val field : declaredFields) {
             val rowIgnore = field.getAnnotation(ExcelColIgnore.class);
-            if (rowIgnore != null) continue;
+            if (rowIgnore != null) {
+                continue;
+            }
+
+            String fieldName = field.getName();
+            if (fieldName.startsWith("$")) { // ignore un-normal fields like $jacocoData
+                continue;
+            }
 
             val beanField = new ExcelBeanField();
 
             beanField.setColumnIndex(fields.size());
-            beanField.setName(field.getName());
-            beanField.setSetter("set" + capitalize(field.getName()));
-            beanField.setGetter("get" + capitalize(field.getName()));
+            beanField.setName(fieldName);
+            beanField.setSetter("set" + capitalize(fieldName));
+            beanField.setGetter("get" + capitalize(fieldName));
 
             val colTitle = field.getAnnotation(ExcelColTitle.class);
             if (colTitle != null) {

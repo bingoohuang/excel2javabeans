@@ -14,7 +14,10 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +40,7 @@ public class SimpleTest {
 
 
         Map<String, Object> props = Maps.newHashMap();
+        // 增加头行信息
         props.put("memberHead", "会员信息" + DateTime.now().toString("yyyy-MM-dd"));
         val workbook = beansToExcel.create(props, members, schedules);
 
@@ -83,7 +87,6 @@ public class SimpleTest {
         val workbook = beansToExcel.create(members, schedules, subscribes);
 
         writeExcel(name, workbook);
-
     }
 
     public static InputStream convert(ByteArrayOutputStream out) {
