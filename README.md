@@ -83,11 +83,22 @@ public class Subscribe {
 
 
 # Sonarqube
-```
-New token "excel2javabeans" has been created. Make sure you copy it now, you won’t be able to see it again!
-a7fe683637d6e1f54e194817cc36e78936d4fe61
-
+```bash
 travis encrypt a7fe683637d6e1f54e194817cc36e78936d4fe61
 
 mvn clean install sonar:sonar -Dsonar.organization=bingoohuang-github -Dsonar.host.url=https://sonarqube.com -Dsonar.login=a7fe683637d6e1f54e194817cc36e78936d4fe61
+```
+
+# gpg
+```bash
+GPG_TTY=$(tty)
+export GPG_TTY
+```
+
+```fish
+set -gx GPG_TTY (tty)
+```
+
+```bash
+mvn clean install -DskipTests  -Dgpg.passphrase=slgsdmxl
 ```
