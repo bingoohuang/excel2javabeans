@@ -1,5 +1,5 @@
 # excel2javabeans
-convert excel rows to javabeans
+convert excel rows to javabeans and vice visa.
 <br/>
 [![Build Status](https://travis-ci.org/bingoohuang/excel2javabeans.svg?branch=master)](https://travis-ci.org/bingoohuang/excel2javabeans)
 [![Quality Gate](https://sonarqube.com/api/badges/gate?key=com.github.bingoohuang%3Aexcel2javabeans)](https://sonarqube.com/dashboard/index/com.github.bingoohuang%3Aexcel2javabeans)
