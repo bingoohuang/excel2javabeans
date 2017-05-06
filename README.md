@@ -38,17 +38,22 @@ BeansToExcel beansToExcel = new BeansToExcel();
 List<Member> members = // create members
 List<Schedule> schedules = // create schdules
 List<Subscribe> subscribes = // create subcribes
-Workbook workbook = beansToExcel.create(members, schedules, subscribes);
+Map<String, Object> props = Maps.newHashMap();
+// 增加头行信息(如果有的话)
+props.put("memberHead", "会员信息" + DateTime.now().toString("yyyy-MM-dd"));
+Workbook workbook = beansToExcel.create(props, members, schedules, subscribes);
 ```
 
 ```java
-@ExcelSheet(name = "会员")
+@ExcelSheet(name = "会员", headKey = "memberHead")
 public class Member {
     @ExcelColTitle("会员总数")
     private int total;
     @ExcelColTitle("其中：新增")
+    @ExcelColStyle(align = CENTER)
     private int fresh;
     @ExcelColTitle("其中：有效")
+    @ExcelColStyle(align = CENTER)
     private int effective;
     // getters and setters ignored
 }
@@ -81,6 +86,12 @@ public class Subscribe {
 
 ```
 
+# Excel Download Utility
+```java
+// HttpServletResponse response = ...
+// Workbook workbook = ...
+ExcelToBeansUtils.download(response,  workbook, "fileName.xlsx");
+```
 
 # Sonarqube
 ```bash

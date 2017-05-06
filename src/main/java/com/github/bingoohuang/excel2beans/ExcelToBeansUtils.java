@@ -16,9 +16,7 @@ import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.util.List;
 
-import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.CENTER;
-import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.LEFT;
-import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.RIGHT;
+import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.*;
 import static org.apache.commons.lang3.StringUtils.capitalize;
 
 /**
@@ -39,7 +37,7 @@ public class ExcelToBeansUtils {
         return classLoader.getResourceAsStream(classPathExcelName);
     }
 
-    public static ExcelBeanField[] parseBeanFields(Class<?> beanClass, Sheet sheet) {
+    public ExcelBeanField[] parseBeanFields(Class<?> beanClass, Sheet sheet) {
         List<ExcelBeanField> fields = Lists.newArrayList();
 
         for (val field : beanClass.getDeclaredFields()) {
@@ -49,7 +47,7 @@ public class ExcelToBeansUtils {
         return fields.toArray(new ExcelBeanField[0]);
     }
 
-    private static void processField(Sheet sheet, List<ExcelBeanField> fields, Field field) {
+    private void processField(Sheet sheet, List<ExcelBeanField> fields, Field field) {
         val rowIgnore = field.getAnnotation(ExcelColIgnore.class);
         if (rowIgnore != null) {
             return;
@@ -73,7 +71,7 @@ public class ExcelToBeansUtils {
         fields.add(beanField);
     }
 
-    private static void setStyle(Sheet sheet, Field field, ExcelBeanField beanField) {
+    private void setStyle(Sheet sheet, Field field, ExcelBeanField beanField) {
         val colStyle = field.getAnnotation(ExcelColStyle.class);
         if (colStyle != null) {
             CellStyle style = setAlign(sheet, colStyle);
@@ -83,20 +81,21 @@ public class ExcelToBeansUtils {
         }
     }
 
-    private static void setTitle(Field field, ExcelBeanField beanField) {
+    private void setTitle(Field field, ExcelBeanField beanField) {
         val colTitle = field.getAnnotation(ExcelColTitle.class);
         if (colTitle != null) {
             beanField.setTitle(colTitle.value());
         }
     }
 
-    private static CellStyle setAlign(Sheet sheet, ExcelColStyle colStyle) {
+    private CellStyle setAlign(Sheet sheet, ExcelColStyle colStyle) {
         CellStyle style = sheet.getWorkbook().createCellStyle();
-        if (colStyle.align() == LEFT) {
+        val align = colStyle.align();
+        if (align == LEFT) {
             style.setAlignment(HorizontalAlignment.LEFT);
-        } else if (colStyle.align() == CENTER) {
+        } else if (align == CENTER) {
             style.setAlignment(HorizontalAlignment.CENTER);
-        } else if (colStyle.align() == RIGHT) {
+        } else if (align == RIGHT) {
             style.setAlignment(HorizontalAlignment.RIGHT);
         } else {
             style = null;
@@ -106,7 +105,7 @@ public class ExcelToBeansUtils {
     }
 
     @SneakyThrows
-    public static void download(HttpServletResponse response, Workbook workbook, String fileName) {
+    public void download(HttpServletResponse response, Workbook workbook, String fileName) {
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         val encodedFileName = URLEncoder.encode(fileName, "UTF-8");
         response.setHeader("Content-disposition", "attachment; " +
