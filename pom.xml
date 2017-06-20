@@ -4,7 +4,7 @@
 
     <groupId>com.github.bingoohuang</groupId>
     <artifactId>excel2javabeans</artifactId>
-    <version>0.0.6-SNAPSHOT</version>
+    <version>0.0.8-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>excel to java beans</name>
@@ -77,7 +77,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>19.0</version>
+            <version>20.0</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -87,13 +87,7 @@
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>asmvalidator</artifactId>
-            <version>0.0.7</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>2.9.4</version>
+            <version>0.0.13</version>
             <scope>test</scope>
         </dependency>
         <dependency>

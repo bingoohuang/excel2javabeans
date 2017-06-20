@@ -4,17 +4,21 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import lombok.experimental.var;
 import lombok.val;
 import org.apache.poi.ss.usermodel.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Map;
 
 import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.*;
 import static org.apache.commons.lang3.StringUtils.capitalize;
@@ -61,14 +65,20 @@ public class ExcelToBeansUtils {
         val beanField = new ExcelBeanField();
 
         beanField.setColumnIndex(fields.size());
+        beanField.setField(field);
         beanField.setName(fieldName);
         beanField.setSetter("set" + capitalize(fieldName));
         beanField.setGetter("get" + capitalize(fieldName));
 
         setTitle(field, beanField);
         setStyle(sheet, field, beanField);
+        setIsCellData(field, beanField);
 
         fields.add(beanField);
+    }
+
+    private static void setIsCellData(Field field, ExcelBeanField beanField) {
+        beanField.setCellDataType(field.getType() == CellData.class);
     }
 
     private void setStyle(Sheet sheet, Field field, ExcelBeanField beanField) {
@@ -114,5 +124,89 @@ public class ExcelToBeansUtils {
         @Cleanup val out = response.getOutputStream();
         workbook.write(out);
         workbook.close();
+    }
+
+    public static void writeRedComments(Workbook workbook, CellData... cellDatas) {
+        val factory = workbook.getCreationHelper();
+
+        val globalNewCellStyle = reddenBorder(workbook.createCellStyle());
+
+        // 重用cell style，提升性能
+        Map<CellStyle, CellStyle> cellStyleMap = Maps.newHashMap();
+
+        for (val cellData : cellDatas) {
+            val sheet = workbook.getSheetAt(cellData.getSheetIndex());
+            val row = sheet.getRow(cellData.getRow());
+            val cell = row.getCell(cellData.getCol());
+
+            setCellStyle(globalNewCellStyle, cellStyleMap, cell);
+
+            addComment(factory, cellData, cell);
+        }
+    }
+
+    public static CellStyle reddenBorder(CellStyle cellStyle) {
+        val borderStyle = BorderStyle.MEDIUM;
+
+        cellStyle.setBorderLeft(borderStyle);
+        cellStyle.setBorderRight(borderStyle);
+        cellStyle.setBorderTop(borderStyle);
+        cellStyle.setBorderBottom(borderStyle);
+
+        val redColorIndex = IndexedColors.RED.getIndex();
+
+        cellStyle.setBottomBorderColor(redColorIndex);
+        cellStyle.setTopBorderColor(redColorIndex);
+        cellStyle.setLeftBorderColor(redColorIndex);
+        cellStyle.setRightBorderColor(redColorIndex);
+
+        return cellStyle;
+    }
+
+    public static void setCellStyle(
+            CellStyle globalRedBorderCellStyle, Map<CellStyle, CellStyle> cellStyleMap, Cell cell
+    ) {
+        val cellStyle = cell.getCellStyle();
+        if (cellStyle == null) {
+            cell.setCellStyle(globalRedBorderCellStyle);
+            return;
+        }
+
+        var newCellStyle = cellStyleMap.get(cellStyle);
+        if (newCellStyle == null) {
+            newCellStyle = cell.getSheet().getWorkbook().createCellStyle();
+            newCellStyle.cloneStyleFrom(cellStyle);
+            cellStyleMap.put(cellStyle, reddenBorder(newCellStyle));
+        }
+        
+        cell.setCellStyle(newCellStyle);
+    }
+
+    private static void addComment(CreationHelper factory, CellData cellData, Cell cell) {
+        var comment = cell.getCellComment();
+        if (comment == null) {
+            val drawing = cell.getSheet().createDrawingPatriarch();
+            // When the comment box is visible, have it show in a 1x3 space
+            val anchor = factory.createClientAnchor();
+            anchor.setCol1(cell.getColumnIndex());
+            anchor.setCol2(cell.getColumnIndex() + 1);
+            anchor.setRow1(cell.getRow().getRowNum());
+            anchor.setRow2(cell.getRow().getRowNum() + 3);
+
+            // Create the comment and set the text+author
+            comment = drawing.createCellComment(anchor);
+
+            cell.setCellComment(comment);
+        }
+
+        val str = factory.createRichTextString(cellData.getComment());
+        comment.setString(str);
+        comment.setAuthor(cellData.getCommentAuthor());
+    }
+
+    @SneakyThrows
+    public static void writeExcel(Workbook workbook, String name) {
+        @Cleanup val fileOut = new FileOutputStream(name);
+        workbook.write(fileOut);
     }
 }

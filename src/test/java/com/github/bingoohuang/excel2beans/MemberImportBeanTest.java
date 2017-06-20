@@ -2,6 +2,8 @@ package com.github.bingoohuang.excel2beans;
 
 //import com.github.bingoohuang.asmvalidator.AsmValidateResult;
 //import com.github.bingoohuang.asmvalidator.AsmValidatorFactory;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.Test;
 
@@ -14,11 +16,11 @@ import static com.google.common.truth.Truth.assertThat;
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
 public class MemberImportBeanTest {
-    @SuppressWarnings("unchecked")
+    @SneakyThrows
     @Test public void testWithoutBlankHeadRowsAndCols() {
-        val workbook = getClassPathWorkbook("member.xlsx");
-        val excelToBeans = new ExcelToBeans(MemberImportBean.class);
-        List<MemberImportBean> beans = excelToBeans.convert(workbook);
+        @Cleanup val workbook = getClassPathWorkbook("member.xlsx");
+        val excelToBeans = new ExcelSheetToBeans(workbook, MemberImportBean.class);
+        List<MemberImportBean> beans = excelToBeans.convert();
         assertThat(beans).hasSize(4);
 
         assertThat(beans.get(0).getRowNum()).isEqualTo(6);

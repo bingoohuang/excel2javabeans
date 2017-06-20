@@ -1,5 +1,7 @@
 package com.github.bingoohuang.excel2beans;
 
+import lombok.Cleanup;
+import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.Test;
 
@@ -13,10 +15,11 @@ import static com.google.common.truth.Truth.assertThat;
  */
 @SuppressWarnings("unchecked")
 public class BeanWithTitleTest {
+    @SneakyThrows
     @Test public void test() {
-        val workbook = getClassPathWorkbook("member.xlsx");
-        val excelToBeans = new ExcelToBeans(BeanWithTitle.class);
-        List<BeanWithTitle> beans = excelToBeans.convert(workbook);
+        @Cleanup val workbook = getClassPathWorkbook("member.xlsx");
+        val excelToBeans = new ExcelSheetToBeans(workbook, BeanWithTitle.class);
+        List<BeanWithTitle> beans = excelToBeans.convert();
         assertThat(beans).hasSize(4);
 
         assertThat(beans.get(0).getRowNum()).isEqualTo(6);

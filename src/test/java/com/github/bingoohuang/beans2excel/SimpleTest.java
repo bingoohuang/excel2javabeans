@@ -7,16 +7,12 @@ import com.github.bingoohuang.excel2beans.BeansToExcel;
 import com.github.bingoohuang.excel2beans.ExcelToBeansUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import lombok.Cleanup;
-import lombok.SneakyThrows;
 import lombok.val;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.List;
@@ -44,14 +40,9 @@ public class SimpleTest {
         props.put("memberHead", "会员信息" + DateTime.now().toString("yyyy-MM-dd"));
         val workbook = beansToExcel.create(props, members, schedules);
 
-        writeExcel(name, workbook);
+        ExcelToBeansUtils.writeExcel(workbook, name);
     }
 
-    @SneakyThrows
-    private void writeExcel(String name, Workbook workbook) {
-        @Cleanup val fileOut = new FileOutputStream(name);
-        workbook.write(fileOut);
-    }
 
     @Test
     public void test() {
@@ -86,7 +77,7 @@ public class SimpleTest {
 
         val workbook = beansToExcel.create(members, schedules, subscribes);
 
-        writeExcel(name, workbook);
+        ExcelToBeansUtils.writeExcel(workbook, name);
     }
 
     public static InputStream convert(ByteArrayOutputStream out) {

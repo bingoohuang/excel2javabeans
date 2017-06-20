@@ -4,12 +4,10 @@ import com.github.bingoohuang.excel2maps.impl.ColumnRef;
 import com.github.bingoohuang.excel2maps.impl.Ignored;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import lombok.SneakyThrows;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -19,32 +17,28 @@ import static org.apache.commons.lang3.StringUtils.trim;
 /**
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/15.
  */
-public class Excel2Maps {
-    final DataFormatter cellFormatter = new DataFormatter();
-    private final Excel2MapsConfig excel2MapsConfig;
+public class ExcelSheetToMaps {
+    private final Workbook workbook;
+    private final ExcelToMapsConfig excelToMapsConfig;
     private final List<ColumnRef> columnRefs;
+    private final DataFormatter cellFormatter = new DataFormatter();
 
-    public Excel2Maps(Excel2MapsConfig excel2MapsConfig) {
-        this.excel2MapsConfig = excel2MapsConfig;
+    public ExcelSheetToMaps(Workbook workbook, ExcelToMapsConfig excelToMapsConfig) {
+        this.workbook = workbook;
+        this.excelToMapsConfig = excelToMapsConfig;
         this.columnRefs = Lists.newArrayList();
     }
 
-    @SneakyThrows
-    public List<Map<String, String>> convert(InputStream excelInputStream) {
-        val workbook = WorkbookFactory.create(excelInputStream);
-        return convert(workbook);
-    }
-
-    public List<Map<String, String>> convert(Workbook workbook) {
+    public List<Map<String, String>> convert(int sheetIndex) {
         List<Map<String, String>> beans = Lists.newArrayList();
 
-        val sheet = workbook.getSheetAt(0);
+        val sheet = workbook.getSheetAt(sheetIndex);
         val startRowNum = jumpToStartDataRow(sheet);
 
         for (int i = startRowNum, ii = sheet.getLastRowNum(); i <= ii; ++i) {
-            Map<String, String> map = createRowMap(sheet, i);
+            val map = createRowMap(sheet, i);
             if (map != null) {
-                map.put("_rowNum", Integer.toString(i));
+                map.put("_row", Integer.toString(i));
                 beans.add(map);
             }
         }
@@ -67,7 +61,7 @@ public class Excel2Maps {
 
     private Ignored processOrIgnoreRow(Row row, Map<String, String> map) {
         int emptyNum = 0;
-        for (ColumnRef columnRef : columnRefs) {
+        for (val columnRef : columnRefs) {
             val cell = row.getCell(columnRef.getColumnIndex());
             val cellValue = getCellValue(cell);
             if (isEmpty(cellValue)) {
@@ -99,8 +93,10 @@ public class Excel2Maps {
             val row = sheet.getRow(i);
 
             boolean containsTitle = false;
-            for (val columnDef : excel2MapsConfig.getColumnDefs()) {
-                if (findColumn(row, columnDef)) containsTitle = true;
+            for (val columnDef : excelToMapsConfig.getColumnDefs()) {
+                if (findColumn(row, columnDef)) {
+                    containsTitle = true;
+                }
             }
 
             if (containsTitle) return i + 1;
@@ -111,7 +107,7 @@ public class Excel2Maps {
 
     private boolean findColumn(Row row, ColumnDef columnDef) {
         for (int k = row.getFirstCellNum(), kk = row.getLastCellNum(); k <= kk; ++k) {
-            Cell cell = row.getCell(k);
+            val cell = row.getCell(k);
             if (cell == null) continue;
 
             val cellValue = cell.getStringCellValue();

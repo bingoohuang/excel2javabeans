@@ -6,13 +6,14 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.CellStyle;
 
+import java.lang.reflect.Field;
+
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 /**
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
-@Data
-@Slf4j
+@Data @Slf4j
 public class ExcelBeanField {
     private String name;
     private String setter;
@@ -20,6 +21,8 @@ public class ExcelBeanField {
     private String title;
     private int columnIndex;
     private CellStyle cellStyle;
+    private Field field;
+    private boolean cellDataType;
 
     public <T> void setFieldValue(
             FieldAccess fieldAccess,

@@ -1,22 +1,23 @@
 package com.github.bingoohuang.excel2beans;
 
+import lombok.Cleanup;
+import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.Test;
 
 import java.util.List;
 
-import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathInputStream;
 import static com.google.common.truth.Truth.assertThat;
 
 /**
  * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/15.
  */
 public class MemberImportBeanWithBlankHeadRowsAndColsTest {
-    @SuppressWarnings("unchecked")
+    @SneakyThrows
     @Test public void testWithBlankHeadRowsAndCols() {
-        val workbookInputStream = getClassPathInputStream("member-blankheadrowsandcols.xlsx");
-        val excelToBeans = new ExcelToBeans(MemberImportBeanWithBlankHeadRowsAndCols.class);
-        List<MemberImportBeanWithBlankHeadRowsAndCols> beans = excelToBeans.convert(workbookInputStream);
+        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("member-blankheadrowsandcols.xlsx");
+        val excelToBeans = new ExcelSheetToBeans(workbook, MemberImportBeanWithBlankHeadRowsAndCols.class);
+        List<MemberImportBeanWithBlankHeadRowsAndCols> beans = excelToBeans.convert();
         assertThat(beans).hasSize(2);
 
         assertThat(beans.get(0).getRowNum()).isEqualTo(5);
