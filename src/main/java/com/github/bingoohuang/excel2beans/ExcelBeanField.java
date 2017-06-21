@@ -18,6 +18,7 @@ public class ExcelBeanField {
     private String name;
     private String setter;
     private String getter;
+    private boolean titleColumnFound;
     private String title;
     private int columnIndex;
     private CellStyle cellStyle;

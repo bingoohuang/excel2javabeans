@@ -164,14 +164,28 @@ public class ExcelSheetToBeans<T> {
                 if (!beanField.hasTitle()) {
                     beanField.setColumnIndex(j + row.getFirstCellNum());
                 } else {
-                    if (findColumn(row, beanField)) containsTitle = true;
+                    if (findColumn(row, beanField)) {
+                        containsTitle = true;
+                    }
                 }
             }
 
-            if (containsTitle) return i + 1;
+            if (containsTitle) {
+                checkTitleColumnsAllFound();
+                return i + 1;
+            }
         }
 
-        return i;
+        throw new IllegalArgumentException("找不到标题行");
+    }
+
+    private void checkTitleColumnsAllFound() {
+        for (int j = 0; j < beanFields.length; ++j) {
+            val beanField = beanFields[j];
+            if (beanField.hasTitle() && !beanField.isTitleColumnFound()) {
+                throw new IllegalArgumentException("找不到[" + beanField.getTitle() + "]的列");
+            }
+        }
     }
 
     private boolean findColumn(Row row, ExcelBeanField beanField) {
@@ -182,6 +196,7 @@ public class ExcelSheetToBeans<T> {
             val cellValue = cell.getStringCellValue();
             if (beanField.containTitle(cellValue)) {
                 beanField.setColumnIndex(cell.getColumnIndex());
+                beanField.setTitleColumnFound(true);
                 return true;
             }
         }

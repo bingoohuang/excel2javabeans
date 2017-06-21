@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,10 @@ public class ExcelToBeansUtils {
     }
 
     private void processField(Sheet sheet, List<ExcelBeanField> fields, Field field) {
+        if (Modifier.isStatic(field.getModifiers()) || Modifier.isTransient(field.getModifiers())) {
+            return;
+        }
+
         val rowIgnore = field.getAnnotation(ExcelColIgnore.class);
         if (rowIgnore != null) {
             return;
@@ -178,7 +183,7 @@ public class ExcelToBeansUtils {
             newCellStyle.cloneStyleFrom(cellStyle);
             cellStyleMap.put(cellStyle, reddenBorder(newCellStyle));
         }
-        
+
         cell.setCellStyle(newCellStyle);
     }
 
