@@ -2,7 +2,6 @@ package com.github.bingoohuang.excel2beans;
 
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
-import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import com.google.common.collect.Lists;
 import lombok.val;
 import org.apache.poi.ss.usermodel.*;
@@ -30,25 +29,9 @@ public class ExcelSheetToBeans<T> {
         this.fieldAccess = FieldAccess.get(beanClass);
         this.methodAccess = MethodAccess.get(beanClass);
         this.instantiator = new ObjenesisStd().getInstantiatorOf(beanClass);
-        this.sheet = selectSheet(beanClass);
+        this.sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
         this.beanFields = ExcelToBeansUtils.parseBeanFields(beanClass, null);
         this.hasTitle = hasTitle();
-    }
-
-    private Sheet selectSheet(Class<T> beanClass) {
-        val excelSheet = beanClass.getAnnotation(ExcelSheet.class);
-        if (excelSheet == null) {
-            return workbook.getSheetAt(0);
-        }
-
-        for (int i = 0, ii = workbook.getNumberOfSheets(); i < ii; ++i) {
-            val sheetName = workbook.getSheetName(i);
-            if (sheetName.contains(excelSheet.name())) {
-                return workbook.getSheetAt(i);
-            }
-        }
-
-        throw new IllegalArgumentException("Unable to find sheet with name " + excelSheet.name());
     }
 
     public List<T> convert() {

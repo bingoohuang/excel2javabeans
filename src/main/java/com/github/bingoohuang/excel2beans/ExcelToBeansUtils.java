@@ -3,8 +3,10 @@ package com.github.bingoohuang.excel2beans;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
+import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.io.ByteStreams;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
@@ -12,6 +14,7 @@ import lombok.experimental.var;
 import lombok.val;
 import org.apache.poi.ss.usermodel.*;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -50,6 +53,18 @@ public class ExcelToBeansUtils {
         }
 
         return fields.toArray(new ExcelBeanField[0]);
+    }
+
+    public static void removeRow(Sheet sheet, int rowIndex) {
+        int lastRowNum = sheet.getLastRowNum();
+        if (rowIndex >= 0 && rowIndex < lastRowNum) {
+            sheet.shiftRows(rowIndex + 1, lastRowNum, -1);
+        } else if (rowIndex == lastRowNum) {
+            val removingRow = sheet.getRow(rowIndex);
+            if (removingRow != null) {
+                sheet.removeRow(removingRow);
+            }
+        }
     }
 
     private void processField(Sheet sheet, List<ExcelBeanField> fields, Field field) {
@@ -121,14 +136,31 @@ public class ExcelToBeansUtils {
 
     @SneakyThrows
     public void download(HttpServletResponse response, Workbook workbook, String fileName) {
+        @Cleanup val out = prepareDownload(response, fileName);
+        workbook.write(out);
+        workbook.close();
+    }
+
+    @SneakyThrows
+    public void download(HttpServletResponse response, byte[] workbook, String fileName) {
+        @Cleanup val out = prepareDownload(response, fileName);
+        out.write(workbook);
+    }
+
+    @SneakyThrows
+    public void download(HttpServletResponse response, InputStream workbook, String fileName) {
+        @Cleanup val out = prepareDownload(response, fileName);
+        ByteStreams.copy(workbook, out);
+    }
+
+    @SneakyThrows
+    public static ServletOutputStream prepareDownload(HttpServletResponse response, String fileName) {
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         val encodedFileName = URLEncoder.encode(fileName, "UTF-8");
         response.setHeader("Content-disposition", "attachment; " +
                 "filename=\"" + encodedFileName + "\"; " +
                 "filename*=utf-8'zh_cn'" + encodedFileName);
-        @Cleanup val out = response.getOutputStream();
-        workbook.write(out);
-        workbook.close();
+        return response.getOutputStream();
     }
 
     public static void writeRedComments(Workbook workbook, CellData... cellDatas) {
@@ -213,5 +245,21 @@ public class ExcelToBeansUtils {
     public static void writeExcel(Workbook workbook, String name) {
         @Cleanup val fileOut = new FileOutputStream(name);
         workbook.write(fileOut);
+    }
+
+    public static Sheet findSheet(Workbook workbook, Class<?> beanClass) {
+        val excelSheet = beanClass.getAnnotation(ExcelSheet.class);
+        if (excelSheet == null) {
+            return workbook.getSheetAt(0);
+        }
+
+        for (int i = 0, ii = workbook.getNumberOfSheets(); i < ii; ++i) {
+            val sheetName = workbook.getSheetName(i);
+            if (sheetName.contains(excelSheet.name())) {
+                return workbook.getSheetAt(i);
+            }
+        }
+
+        throw new IllegalArgumentException("Unable to find sheet with name " + excelSheet.name());
     }
 }
