@@ -1,8 +1,8 @@
 package com.github.bingoohuang.excel2beans;
 
-import lombok.Cleanup;
-import lombok.SneakyThrows;
-import lombok.val;
+import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
+import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import java.util.List;
@@ -31,5 +31,20 @@ public class BeanWithTitleTest {
         assertThat(beans.get(1)).isEqualTo(BeanWithTitle.builder().memberName("李红").sex("男").cardPrice("3000").cardName("示例年卡（一周3次年卡）").build());
         assertThat(beans.get(2)).isEqualTo(BeanWithTitle.builder().memberName("李红").sex("男").cardPrice("0").cardName("示例私教卡（60次私教卡）").build());
         assertThat(beans.get(3)).isEqualTo(BeanWithTitle.builder().memberName("张晓").sex("女").cardPrice(null).cardName(null).build());
+    }
+
+    /**
+     * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
+     */
+    @Data @Builder
+    public static class BeanWithTitle extends ExcelRowRef implements ExcelRowIgnorable {
+        @ExcelColTitle("会员姓名") String memberName;
+        @ExcelColTitle("卡名称") String cardName;
+        @ExcelColTitle("办卡价格") String cardPrice;
+        @ExcelColTitle("性别") String sex;
+
+        @Override public boolean ignoreRow() {
+            return StringUtils.startsWith(memberName, "示例-");
+        }
     }
 }

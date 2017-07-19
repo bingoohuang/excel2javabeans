@@ -11,5 +11,17 @@ import java.lang.annotation.*;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExcelColTitle {
+    /**
+     * keyword contained in column title.
+     *
+     * @return title keyword.
+     */
     String value();
+
+    /**
+     * The column with title in excel should be required.
+     *
+     * @return true required.
+     */
+    boolean required() default true;
 }

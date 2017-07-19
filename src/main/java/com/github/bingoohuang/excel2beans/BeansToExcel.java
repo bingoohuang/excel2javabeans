@@ -15,9 +15,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by bingoohuang on 2017/3/20.
- */
 public class BeansToExcel {
     private final Workbook workbook;
     private final Workbook styleTemplate;

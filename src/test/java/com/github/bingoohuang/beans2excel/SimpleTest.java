@@ -1,26 +1,24 @@
 package com.github.bingoohuang.beans2excel;
 
-import com.github.bingoohuang.beans2excel.beans.Member;
-import com.github.bingoohuang.beans2excel.beans.Schedule;
-import com.github.bingoohuang.beans2excel.beans.Subscribe;
 import com.github.bingoohuang.excel2beans.BeansToExcel;
 import com.github.bingoohuang.excel2beans.ExcelToBeansUtils;
+import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
+import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
+import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.val;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by bingoohuang on 2017/3/20.
- */
+import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.*;
+
 public class SimpleTest {
     @Test
     public void testHead() {
@@ -43,7 +41,6 @@ public class SimpleTest {
         ExcelToBeansUtils.writeExcel(workbook, name);
     }
 
-
     @Test
     public void test() {
         val beansToExcel = new BeansToExcel();
@@ -60,7 +57,6 @@ public class SimpleTest {
 
         createExcel(beansToExcel, name);
     }
-
 
     private void createExcel(BeansToExcel beansToExcel, String name) {
         List<Member> members = Lists.newArrayList();
@@ -80,7 +76,40 @@ public class SimpleTest {
         ExcelToBeansUtils.writeExcel(workbook, name);
     }
 
-    public static InputStream convert(ByteArrayOutputStream out) {
-        return new ByteArrayInputStream(out.toByteArray());
+    @Data @AllArgsConstructor @ExcelSheet(name = "会员", headKey = "memberHead")
+    public static class Member {
+        @ExcelColTitle("会员总数")
+        @ExcelColStyle(align = LEFT)
+        private int total;
+        @ExcelColTitle("其中：新增")
+        @ExcelColStyle(align = CENTER)
+        private int fresh;
+        @ExcelColTitle("其中：有效")
+        @ExcelColStyle(align = RIGHT)
+        private int effective;
+    }
+
+    @Data @AllArgsConstructor @ExcelSheet(name = "排期")
+    public static class Schedule {
+        @ExcelColTitle("日期")
+        private Timestamp time;
+        @ExcelColTitle("排期数")
+        private int schedules;
+        @ExcelColTitle("定课数")
+        private int subscribes;
+        @ExcelColTitle("其中：小班课")
+        private int publics;
+        @ExcelColTitle("其中：私教课")
+        private int privates;
+    }
+
+    @Data @AllArgsConstructor @ExcelSheet(name = "订课情况")
+    public static class Subscribe {
+        @ExcelColTitle("订单日期")
+        private Timestamp day;
+        @ExcelColTitle("人次")
+        private int times;
+        @ExcelColTitle("人数")
+        private int heads;
     }
 }

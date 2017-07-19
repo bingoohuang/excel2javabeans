@@ -1,5 +1,7 @@
 package com.github.bingoohuang.excel2beans;
 
+import lombok.Builder;
+import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.Test;
@@ -34,5 +36,13 @@ public class SimpleBeanTest {
         assertThat(beans).hasSize(2);
         assertThat(beans.get(0)).isEqualTo(SimpleBean.builder().name("bingoo").addr("nanjing").build());
         assertThat(beans.get(1)).isEqualTo(SimpleBean.builder().name("huang").addr("beijing").build());
+    }
+
+    /**
+     * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
+     */
+    @Data @Builder public static class SimpleBean {
+        private String name;
+        private String addr;
     }
 }

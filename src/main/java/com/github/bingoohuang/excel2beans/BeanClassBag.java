@@ -7,9 +7,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 
 import java.util.List;
 
-/**
- * Created by bingoohuang on 2017/3/20.
- */
 @Data
 public class BeanClassBag {
     private Class<?> beanClass;
