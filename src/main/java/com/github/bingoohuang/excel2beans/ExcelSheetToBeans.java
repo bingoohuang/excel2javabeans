@@ -82,7 +82,13 @@ public class ExcelSheetToBeans<T> {
     private int processRow(T object, Row row) {
         int emptyNum = 0;
         for (val beanField : beanFields) {
-            val cell = row.getCell(beanField.getColumnIndex());
+            int columnIndex = beanField.getColumnIndex();
+            if (columnIndex < 0) {
+                ++emptyNum;
+                continue;
+            }
+
+            val cell = row.getCell(columnIndex);
             val cellStringValue = getCellValue(cell);
             if (isEmpty(cellStringValue)) {
                 ++emptyNum;
@@ -105,7 +111,7 @@ public class ExcelSheetToBeans<T> {
             applyComment(cell, cellData);
             return cellData.build();
         } else {
-            Class<?> type = beanField.getField().getType();
+            val type = beanField.getField().getType();
             if (type == int.class || type == Integer.class) {
                 return Integer.parseInt(cellValue);
             }
@@ -153,6 +159,7 @@ public class ExcelSheetToBeans<T> {
             }
 
             if (containsTitle) {
+                resetNotFoundColumnIndex();
                 checkTitleColumnsAllFound();
                 return i + 1;
             }
@@ -161,9 +168,17 @@ public class ExcelSheetToBeans<T> {
         throw new IllegalArgumentException("找不到标题行");
     }
 
-    private void checkTitleColumnsAllFound() {
+    private void resetNotFoundColumnIndex() {
         for (val beanField : beanFields) {
             if (beanField.hasTitle() && !beanField.isTitleColumnFound()) {
+                beanField.setColumnIndex(-1);
+            }
+        }
+    }
+
+    private void checkTitleColumnsAllFound() {
+        for (val beanField : beanFields) {
+            if (beanField.hasTitle() && beanField.isTitleRequired() && !beanField.isTitleColumnFound()) {
                 throw new IllegalArgumentException("找不到[" + beanField.getTitle() + "]的列");
             }
         }

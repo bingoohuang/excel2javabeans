@@ -1,7 +1,5 @@
 package com.github.bingoohuang.excel2beans;
 
-//import com.github.bingoohuang.asmvalidator.AsmValidateResult;
-//import com.github.bingoohuang.asmvalidator.AsmValidatorFactory;
 import com.github.bingoohuang.asmvalidator.annotations.*;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import lombok.*;
@@ -13,9 +11,6 @@ import java.util.List;
 import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathWorkbook;
 import static com.google.common.truth.Truth.assertThat;
 
-/**
- * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
- */
 public class MemberImportBeanTest {
     @SneakyThrows
     @Test public void testWithoutBlankHeadRowsAndCols() {
@@ -28,15 +23,8 @@ public class MemberImportBeanTest {
         assertThat(beans.get(1).getRowNum()).isEqualTo(7);
         assertThat(beans.get(2).getRowNum()).isEqualTo(8);
         assertThat(beans.get(3).getRowNum()).isEqualTo(9);
-
-//        AsmValidateResult result = new AsmValidateResult();
-//        AsmValidatorFactory.validateAll(beans, result);
-//        System.out.println(result);
     }
 
-    /**
-     * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
-     */
     @Data @Builder
     public static class MemberImportBean extends ExcelRowRef implements ExcelRowIgnorable {
         @ExcelColTitle("会员姓名") @AsmMaxSize(12) @AsmMessage("请填写会员姓名") String memberName; // 不超过12字

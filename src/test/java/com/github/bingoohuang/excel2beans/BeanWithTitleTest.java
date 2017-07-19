@@ -10,9 +10,6 @@ import java.util.List;
 import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathWorkbook;
 import static com.google.common.truth.Truth.assertThat;
 
-/**
- * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
- */
 @SuppressWarnings("unchecked")
 public class BeanWithTitleTest {
     @SneakyThrows
@@ -32,16 +29,14 @@ public class BeanWithTitleTest {
         assertThat(beans.get(2)).isEqualTo(BeanWithTitle.builder().memberName("李红").sex("男").cardPrice("0").cardName("示例私教卡（60次私教卡）").build());
         assertThat(beans.get(3)).isEqualTo(BeanWithTitle.builder().memberName("张晓").sex("女").cardPrice(null).cardName(null).build());
     }
-
-    /**
-     * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
-     */
+    
     @Data @Builder
     public static class BeanWithTitle extends ExcelRowRef implements ExcelRowIgnorable {
         @ExcelColTitle("会员姓名") String memberName;
         @ExcelColTitle("卡名称") String cardName;
         @ExcelColTitle("办卡价格") String cardPrice;
         @ExcelColTitle("性别") String sex;
+        @ExcelColTitle(value = "地址", required = false) String addr;
 
         @Override public boolean ignoreRow() {
             return StringUtils.startsWith(memberName, "示例-");

@@ -13,16 +13,11 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/11.
- */
+
 @AsmConstraint(validateBy = MemberCardEffDay.MemberCardEffDayValidator.class)
 @Target(FIELD)
 @Retention(RUNTIME)
 public @interface MemberCardEffDay {
-    /**
-     * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/11.
-     */
     class MemberCardEffDayValidator implements MsaValidator<MemberCardEffDay, String> {
         DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy-MM-dd");
 

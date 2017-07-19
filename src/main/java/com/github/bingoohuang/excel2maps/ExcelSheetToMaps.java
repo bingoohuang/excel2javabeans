@@ -14,9 +14,6 @@ import java.util.Map;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.trim;
 
-/**
- * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/15.
- */
 public class ExcelSheetToMaps {
     private final Workbook workbook;
     private final ExcelToMapsConfig excelToMapsConfig;

@@ -11,9 +11,6 @@ import java.util.List;
 import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathWorkbook;
 import static com.google.common.truth.Truth.assertThat;
 
-/**
- * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
- */
 @SuppressWarnings("unchecked")
 public class SimpleBeanTest {
     @Test @SneakyThrows public void test() {
@@ -38,9 +35,6 @@ public class SimpleBeanTest {
         assertThat(beans.get(1)).isEqualTo(SimpleBean.builder().name("huang").addr("beijing").build());
     }
 
-    /**
-     * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
-     */
     @Data @Builder public static class SimpleBean {
         private String name;
         private String addr;

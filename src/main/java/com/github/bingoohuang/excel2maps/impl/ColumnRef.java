@@ -8,9 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 
-/**
- * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/15.
- */
 @AllArgsConstructor @Value public class ColumnRef {
     ColumnDef columnDef;
     int columnIndex;

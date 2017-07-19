@@ -2,7 +2,6 @@ package com.github.bingoohuang.excel2beans;
 
 /**
  * Excel row ignoring interface for the mapping javabean.
- * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
 public interface ExcelRowIgnorable {
     /**

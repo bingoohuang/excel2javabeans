@@ -27,9 +27,6 @@ import java.util.Map;
 import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.*;
 import static org.apache.commons.lang3.StringUtils.capitalize;
 
-/**
- * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
- */
 @UtilityClass
 public class ExcelToBeansUtils {
     @SneakyThrows
@@ -115,6 +112,7 @@ public class ExcelToBeansUtils {
     private void setTitle(Field field, ExcelBeanField beanField) {
         val colTitle = field.getAnnotation(ExcelColTitle.class);
         if (colTitle != null) {
+            beanField.setTitleRequired(colTitle.required());
             beanField.setTitle(colTitle.value());
         }
     }

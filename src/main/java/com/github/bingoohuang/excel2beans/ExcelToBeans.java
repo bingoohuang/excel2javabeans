@@ -13,8 +13,6 @@ import java.util.List;
 
 /**
  * Mapping excel cell values to java beans.
- *
- * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
  */
 public class ExcelToBeans implements Closeable {
     private final Workbook workbook;

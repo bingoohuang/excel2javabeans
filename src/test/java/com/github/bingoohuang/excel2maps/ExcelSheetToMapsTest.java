@@ -7,9 +7,6 @@ import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathW
 import static com.google.common.collect.ImmutableMap.of;
 import static com.google.common.truth.Truth.assertThat;
 
-/**
- * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/15.
- */
 public class ExcelSheetToMapsTest {
     @Test public void test1() {
         val excel2MapsConfig = new ExcelToMapsConfig();

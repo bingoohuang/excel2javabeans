@@ -10,15 +10,13 @@ import java.lang.reflect.Field;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
-/**
- * @author bingoohuang [bingoohuang@gmail.com] Created on 2016/11/10.
- */
 @Data @Slf4j
 public class ExcelBeanField {
     private String name;
     private String setter;
     private String getter;
     private boolean titleColumnFound;
+    private boolean titleRequired;
     private String title;
     private int columnIndex;
     private CellStyle cellStyle;
