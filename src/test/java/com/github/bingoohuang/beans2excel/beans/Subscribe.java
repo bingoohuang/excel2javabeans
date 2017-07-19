@@ -1,7 +1,7 @@
 package com.github.bingoohuang.beans2excel.beans;
 
-import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
+import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

@@ -2,7 +2,6 @@ package com.github.bingoohuang.excel2beans;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.junit.Test;
 
 import java.util.List;

@@ -6,9 +6,7 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.CENTER;
-import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.LEFT;
-import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.RIGHT;
+import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.*;
 
 /**
  * Created by bingoohuang on 2017/3/20.

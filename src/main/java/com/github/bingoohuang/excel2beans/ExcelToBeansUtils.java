@@ -5,7 +5,6 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.io.ByteStreams;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
