@@ -5,6 +5,8 @@ import com.esotericsoftware.reflectasm.MethodAccess;
 import lombok.Data;
 import org.apache.poi.ss.usermodel.Sheet;
 
+import java.util.List;
+
 /**
  * Created by bingoohuang on 2017/3/20.
  */
@@ -12,7 +14,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 public class BeanClassBag {
     private Class<?> beanClass;
     private Sheet sheet;
-    ExcelBeanField[] beanFields;
+    private List<ExcelBeanField> beanFields;
     private FieldAccess fieldAccess;
     private MethodAccess methodAccess;
     private boolean firstRowCreated;
@@ -21,5 +23,9 @@ public class BeanClassBag {
         this.beanClass = beanClass;
         this.fieldAccess = FieldAccess.get(beanClass);
         this.methodAccess = MethodAccess.get(beanClass);
+    }
+
+    public ExcelBeanField getBeanField(int index) {
+        return beanFields.get(index);
     }
 }

@@ -19,7 +19,7 @@ public class ExcelSheetToBeans<T> {
     private final FieldAccess fieldAccess;
     private final MethodAccess methodAccess;
     private final ObjectInstantiator<T> instantiator;
-    private final ExcelBeanField[] beanFields;
+    private final List<ExcelBeanField> beanFields;
     private final boolean hasTitle;
     private final DataFormatter cellFormatter = new DataFormatter();
     private final Sheet sheet;
@@ -55,7 +55,7 @@ public class ExcelSheetToBeans<T> {
         if (row != null) {
             object = instantiator.newInstance();
             int emptyNum = processRow(object, row);
-            if (emptyNum == beanFields.length) {
+            if (emptyNum == beanFields.size()) {
                 object = null;
             }
         }
@@ -81,8 +81,7 @@ public class ExcelSheetToBeans<T> {
 
     private int processRow(T object, Row row) {
         int emptyNum = 0;
-        for (int j = 0; j < beanFields.length; ++j) {
-            val beanField = beanFields[j];
+        for (val beanField : beanFields) {
             val cell = row.getCell(beanField.getColumnIndex());
             val cellStringValue = getCellValue(cell);
             if (isEmpty(cellStringValue)) {
@@ -142,8 +141,8 @@ public class ExcelSheetToBeans<T> {
             val row = sheet.getRow(i);
 
             boolean containsTitle = false;
-            for (int j = 0; j < beanFields.length; ++j) {
-                val beanField = beanFields[j];
+            for (int j = 0, jj = beanFields.size(); j < jj; ++j) {
+                val beanField = beanFields.get(j);
                 if (!beanField.hasTitle()) {
                     beanField.setColumnIndex(j + row.getFirstCellNum());
                 } else {
@@ -163,8 +162,7 @@ public class ExcelSheetToBeans<T> {
     }
 
     private void checkTitleColumnsAllFound() {
-        for (int j = 0; j < beanFields.length; ++j) {
-            val beanField = beanFields[j];
+        for (val beanField : beanFields) {
             if (beanField.hasTitle() && !beanField.isTitleColumnFound()) {
                 throw new IllegalArgumentException("找不到[" + beanField.getTitle() + "]的列");
             }

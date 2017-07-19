@@ -4,7 +4,6 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
-import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
@@ -20,6 +19,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,14 +45,15 @@ public class ExcelToBeansUtils {
         return classLoader.getResourceAsStream(classPathExcelName);
     }
 
-    public ExcelBeanField[] parseBeanFields(Class<?> beanClass, Sheet sheet) {
-        List<ExcelBeanField> fields = Lists.newArrayList();
+    public List<ExcelBeanField> parseBeanFields(Class<?> beanClass, Sheet sheet) {
+        val declaredFields = beanClass.getDeclaredFields();
+        val fields = new ArrayList<ExcelBeanField>(declaredFields.length);
 
-        for (val field : beanClass.getDeclaredFields()) {
+        for (val field : declaredFields) {
             processField(sheet, fields, field);
         }
 
-        return fields.toArray(new ExcelBeanField[0]);
+        return fields;
     }
 
     public static void removeRow(Sheet sheet, int rowIndex) {

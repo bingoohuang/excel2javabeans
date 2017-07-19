@@ -84,9 +84,9 @@ public class BeansToExcel {
     }
 
     private void writeRowCells(Object bean, BeanClassBag bag, Row row) {
-        for (int i = 0, ii = bag.getBeanFields().length; i < ii; ++i) {
+        for (int i = 0, ii = bag.getBeanFields().size(); i < ii; ++i) {
             val cell = row.createCell(i);
-            val field = bag.getBeanFields()[i];
+            val field = bag.getBeanField(i);
 
             val fieldValue = field.getFieldValue(bag.getFieldAccess(), bag.getMethodAccess(), bean);
             cell.setCellValue(String.valueOf(fieldValue));
@@ -129,7 +129,7 @@ public class BeansToExcel {
         }
 
         val cra = new CellRangeAddress(0, 0,
-                0, bag.getBeanFields().length - 1);
+                0, bag.getBeanFields().size() - 1);
         bag.getSheet().addMergedRegion(cra);
 
         val row = createRow(bag);
@@ -139,23 +139,23 @@ public class BeansToExcel {
     private void addTitleToSheet(BeanClassBag bag) {
         val row = createRow(bag);
         val beanFields = bag.getBeanFields();
-        for (int i = 0, ii = beanFields.length; i < ii; ++i) {
-            row.createCell(i).setCellValue(beanFields[i].getTitle());
+        for (int i = 0, ii = beanFields.size(); i < ii; ++i) {
+            row.createCell(i).setCellValue(beanFields.get(i).getTitle());
         }
 
         cloneCellStyle(bag, row, beanFields);
     }
 
-    private void cloneCellStyle(BeanClassBag bag, Row row, ExcelBeanField[] beanFields) {
+    private void cloneCellStyle(BeanClassBag bag, Row row, List<ExcelBeanField> beanFields) {
         if (styleTemplate == null) return;
 
         val templateSheet = parseTemplateSheet(bag);
-        for (int colIndex = 0, ii = beanFields.length; colIndex < ii; ++colIndex) {
+        for (int colIndex = 0, ii = beanFields.size(); colIndex < ii; ++colIndex) {
             val headStyle = cloneCellStyle(templateSheet, 0, colIndex);
             row.getCell(colIndex).setCellStyle(headStyle);
 
             val dataStyle = cloneCellStyle(templateSheet, 1, colIndex);
-            beanFields[colIndex].setCellStyle(dataStyle);
+            beanFields.get(colIndex).setCellStyle(dataStyle);
         }
     }
 
