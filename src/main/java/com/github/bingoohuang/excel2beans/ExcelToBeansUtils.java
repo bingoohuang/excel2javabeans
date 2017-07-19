@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -119,7 +120,7 @@ public class ExcelToBeansUtils {
     }
 
     private CellStyle setAlign(Sheet sheet, ExcelColStyle colStyle) {
-        CellStyle style = sheet.getWorkbook().createCellStyle();
+        var style = sheet.getWorkbook().createCellStyle();
         val align = colStyle.align();
         if (align == LEFT) {
             style.setAlignment(HorizontalAlignment.LEFT);
@@ -169,7 +170,7 @@ public class ExcelToBeansUtils {
         val globalNewCellStyle = reddenBorder(workbook.createCellStyle());
 
         // 重用cell style，提升性能
-        Map<CellStyle, CellStyle> cellStyleMap = Maps.newHashMap();
+        val cellStyleMap = new HashMap<CellStyle, CellStyle>();
 
         for (val cellData : cellDatas) {
             val sheet = workbook.getSheetAt(cellData.getSheetIndex());
