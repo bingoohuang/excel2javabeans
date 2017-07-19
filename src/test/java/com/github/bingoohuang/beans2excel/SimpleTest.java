@@ -13,6 +13,7 @@ import lombok.val;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
+import java.io.File;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ public class SimpleTest {
         val workbook = beansToExcel.create(props, members, schedules);
 
         ExcelToBeansUtils.writeExcel(workbook, name);
+        new File(name).delete();
     }
 
     @Test
@@ -47,6 +49,7 @@ public class SimpleTest {
         String name = "test-workbook.xlsx";
 
         createExcel(beansToExcel, name);
+        new File(name).delete();
     }
 
     @Test
@@ -56,6 +59,7 @@ public class SimpleTest {
         String name = "test-workbook-templ.xlsx";
 
         createExcel(beansToExcel, name);
+        new File(name).delete();
     }
 
     private void createExcel(BeansToExcel beansToExcel, String name) {
@@ -74,6 +78,7 @@ public class SimpleTest {
         val workbook = beansToExcel.create(members, schedules, subscribes);
 
         ExcelToBeansUtils.writeExcel(workbook, name);
+        new File(name).delete();
     }
 
     @Data @AllArgsConstructor @ExcelSheet(name = "会员", headKey = "memberHead")

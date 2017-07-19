@@ -5,6 +5,8 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import lombok.*;
 import org.junit.Test;
 
+import java.io.File;
+
 import static com.google.common.truth.Truth.assertThat;
 
 public class EtTest {
@@ -41,6 +43,7 @@ public class EtTest {
 
         ExcelToBeansUtils.writeRedComments(workbook, mobile);
         ExcelToBeansUtils.writeExcel(workbook, "test-et-out.xlsx");
+        new File("test-et-out.xlsx").delete();
 
         val etCards = excelToBeans.convert(EtCard.class);
         val card1 = EtCard.builder().cardName("零基础素描课程").times(25).expiredValue(12).expiredUnit("月").salePrice(2580).courses("25节素描课程").build();
