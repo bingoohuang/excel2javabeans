@@ -59,12 +59,7 @@ public class ExcelToBeans implements Closeable {
     }
 
     public int getLastCellNum(List<? extends ExcelRowRef> rowRefs, Sheet sheet) {
-        for (val rowRef : rowRefs) {
-            val row = sheet.getRow(rowRef.getRowNum());
-            return row.getLastCellNum();
-        }
-
-        return 0;
+        return rowRefs.isEmpty() ? 0 : sheet.getRow(rowRefs.get(0).getRowNum()).getLastCellNum();
     }
 
     private CellStyle createRedCellStyle() {
