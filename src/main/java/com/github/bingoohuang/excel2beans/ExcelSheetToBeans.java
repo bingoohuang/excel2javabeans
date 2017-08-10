@@ -3,6 +3,7 @@ package com.github.bingoohuang.excel2beans;
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import com.google.common.collect.Lists;
+import lombok.Getter;
 import lombok.val;
 import org.apache.poi.ss.usermodel.*;
 import org.objenesis.ObjenesisStd;
@@ -20,7 +21,7 @@ public class ExcelSheetToBeans<T> {
     private final MethodAccess methodAccess;
     private final ObjectInstantiator<T> instantiator;
     private final List<ExcelBeanField> beanFields;
-    private final boolean hasTitle;
+    private @Getter final boolean hasTitle;
     private final DataFormatter cellFormatter = new DataFormatter();
     private final Sheet sheet;
 
@@ -34,10 +35,29 @@ public class ExcelSheetToBeans<T> {
         this.hasTitle = hasTitle();
     }
 
+    public int findTitleRowNum() {
+        int i = sheet.getFirstRowNum();
+        if (!hasTitle) return i;
+
+        // try to find the title row
+        for (int ii = sheet.getLastRowNum(); i <= ii; ++i) {
+            val row = sheet.getRow(i);
+
+            for (int j = 0, jj = beanFields.size(); j < jj; ++j) {
+                val beanField = beanFields.get(j);
+                if (beanField.hasTitle() && findColumn(row, beanField)) {
+                    return i;
+                }
+            }
+        }
+
+        throw new IllegalArgumentException("找不到标题行");
+    }
+
     public List<T> convert() {
         List<T> beans = Lists.newArrayList();
 
-        val startRowNum = jumpToStartDataRow(sheet);
+        val startRowNum = jumpToStartDataRow();
         for (int i = startRowNum, ii = sheet.getLastRowNum(); i <= ii; ++i) {
             T object = createObject(sheet, i);
             if (object != null) {
@@ -138,7 +158,7 @@ public class ExcelSheetToBeans<T> {
     }
 
 
-    private int jumpToStartDataRow(Sheet sheet) {
+    private int jumpToStartDataRow() {
         int i = sheet.getFirstRowNum();
         if (!hasTitle) return i;
 
