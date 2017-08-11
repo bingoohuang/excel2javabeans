@@ -2,12 +2,12 @@ package com.github.bingoohuang.excel2beans;
 
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
+import com.github.bingoohuang.util.instantiator.BeanInstantiator;
+import com.github.bingoohuang.util.instantiator.BeanInstantiatorFactory;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.val;
 import org.apache.poi.ss.usermodel.*;
-import org.objenesis.ObjenesisStd;
-import org.objenesis.instantiator.ObjectInstantiator;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ public class ExcelSheetToBeans<T> {
 
     private final FieldAccess fieldAccess;
     private final MethodAccess methodAccess;
-    private final ObjectInstantiator<T> instantiator;
+    private final BeanInstantiator<T> instantiator;
     private final List<ExcelBeanField> beanFields;
     private @Getter final boolean hasTitle;
     private final DataFormatter cellFormatter = new DataFormatter();
@@ -29,7 +29,7 @@ public class ExcelSheetToBeans<T> {
         this.workbook = workbook;
         this.fieldAccess = FieldAccess.get(beanClass);
         this.methodAccess = MethodAccess.get(beanClass);
-        this.instantiator = new ObjenesisStd().getInstantiatorOf(beanClass);
+        this.instantiator = BeanInstantiatorFactory.newBeanInstantiator(beanClass);
         this.sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
         this.beanFields = ExcelToBeansUtils.parseBeanFields(beanClass, null);
         this.hasTitle = hasTitle();
@@ -51,7 +51,7 @@ public class ExcelSheetToBeans<T> {
             }
         }
 
-        throw new IllegalArgumentException("找不到标题行");
+        throw new IllegalArgumentException("Unable to find title row.");
     }
 
     public List<T> convert() {

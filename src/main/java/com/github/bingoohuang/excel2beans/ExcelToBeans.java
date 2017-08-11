@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.util.List;
 
 /**
- * Mapping excel cell values to java beans.
+ * Mapping excel rows to java beans.
  */
 public class ExcelToBeans implements Closeable {
     private final Workbook workbook;
@@ -29,7 +29,6 @@ public class ExcelToBeans implements Closeable {
         this.workbook = workbook;
         this.shouldBeClosedByMe = false;
     }
-
 
     @SneakyThrows
     public <T> List<T> convert(Class<T> beanClass) {
