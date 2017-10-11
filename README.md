@@ -100,6 +100,13 @@ travis encrypt a7fe683637d6e1f54e194817cc36e78936d4fe61
 mvn clean install sonar:sonar -Dsonar.organization=bingoohuang-github -Dsonar.host.url=https://sonarqube.com -Dsonar.login=a7fe683637d6e1f54e194817cc36e78936d4fe61
 ```
 
+# Problems
+## Autosize column does not work on CentOS.
+Maybe there is not relative fonts installed. Methods: 
+1. Create fonts folder:`mkdir ~/.fonts` 
+2. Copy fonts to the fold:`scp /System/Library/Fonts/STHeiti\ Light.ttc yogaapp@test.ino01:./.fonts/`
+3. Install the fonts:`fc-cache -f -v`
+
 # gpg
 ```bash
 GPG_TTY=$(tty)
