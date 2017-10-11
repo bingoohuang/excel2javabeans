@@ -151,6 +151,9 @@ public class BeansToExcel {
             val headStyle = cloneCellStyle(templateSheet, 0, colIndex);
             row.getCell(colIndex).setCellStyle(headStyle);
 
+            val styleRow = templateSheet.getRow(0);
+            row.setHeight(styleRow.getHeight());
+
             val dataStyle = cloneCellStyle(templateSheet, 1, colIndex);
             beanFields.get(colIndex).setCellStyle(dataStyle);
         }
@@ -167,8 +170,8 @@ public class BeansToExcel {
     }
 
     private CellStyle cloneCellStyle(Sheet styleSheet, int rowIndex, int colIndex) {
-        val templateRow = styleSheet.getRow(rowIndex);
-        val cellStyle = templateRow.getCell(colIndex).getCellStyle();
+        val styleRow = styleSheet.getRow(rowIndex);
+        val cellStyle = styleRow.getCell(colIndex).getCellStyle();
         val cloneStyle = workbook.createCellStyle();
         cloneStyle.cloneStyleFrom(cellStyle);
         return cloneStyle;

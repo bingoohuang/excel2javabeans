@@ -49,7 +49,6 @@ public class SimpleTest {
         String name = "test-workbook.xlsx";
 
         createExcel(beansToExcel, name);
-        new File(name).delete();
     }
 
     @Test
@@ -59,10 +58,10 @@ public class SimpleTest {
         String name = "test-workbook-templ.xlsx";
 
         createExcel(beansToExcel, name);
-        new File(name).delete();
     }
 
     private void createExcel(BeansToExcel beansToExcel, String name) {
+
         List<Member> members = Lists.newArrayList();
         members.add(new Member(1000, 100, 80));
 
@@ -77,8 +76,8 @@ public class SimpleTest {
 
         val workbook = beansToExcel.create(members, schedules, subscribes);
 
-        ExcelToBeansUtils.writeExcel(workbook, name);
         new File(name).delete();
+        ExcelToBeansUtils.writeExcel(workbook, name);
     }
 
     @Data @AllArgsConstructor @ExcelSheet(name = "会员", headKey = "memberHead")
