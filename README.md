@@ -107,6 +107,8 @@ Maybe there is not relative fonts installed. Methods:
 2. Copy fonts to the fold:`scp /System/Library/Fonts/STHeiti\ Light.ttc yogaapp@test.ino01:./.fonts/`
 3. Install the fonts:`fc-cache -f -v`
 
+For all users available, just copy the fonts file to the `/usr/share/fonts` directory and then `fc-cache -f -v`.
+
 # gpg
 ```bash
 GPG_TTY=$(tty)
