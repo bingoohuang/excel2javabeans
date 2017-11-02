@@ -24,10 +24,10 @@ public class BeanWithTitleTest {
         assertThat(beans.get(2).getRowNum()).isEqualTo(8);
         assertThat(beans.get(3).getRowNum()).isEqualTo(9);
 
-        assertThat(beans.get(0)).isEqualTo(BeanWithTitle.builder().memberName("张小凡").sex("女").cardPrice("2880").cardName("示例次卡（100次次卡）").build());
-        assertThat(beans.get(1)).isEqualTo(BeanWithTitle.builder().memberName("李红").sex("男").cardPrice("3000").cardName("示例年卡（一周3次年卡）").build());
-        assertThat(beans.get(2)).isEqualTo(BeanWithTitle.builder().memberName("李红").sex("男").cardPrice("0").cardName("示例私教卡（60次私教卡）").build());
-        assertThat(beans.get(3)).isEqualTo(BeanWithTitle.builder().memberName("张晓").sex("女").cardPrice(null).cardName(null).build());
+        assertThat(beans.get(0)).isEqualTo(BeanWithTitle.builder().memberName("张小凡").sex("女").cardPrice("2880").cardName("示例次卡（100次次卡）").effective("2016-08-01").build());
+        assertThat(beans.get(1)).isEqualTo(BeanWithTitle.builder().memberName("李红").sex("男").cardPrice("3000").cardName("示例年卡（一周3次年卡）").effective("2016-01-01").build());
+        assertThat(beans.get(2)).isEqualTo(BeanWithTitle.builder().memberName("李红").sex("男").cardPrice("0").cardName("示例私教卡（60次私教卡）").effective("2015-05-01").build());
+        assertThat(beans.get(3)).isEqualTo(BeanWithTitle.builder().memberName("张晓").sex("女").cardPrice(null).cardName(null).effective(null).build());
     }
     
     @Data @Builder
@@ -37,6 +37,7 @@ public class BeanWithTitleTest {
         @ExcelColTitle("办卡价格") String cardPrice;
         @ExcelColTitle("性别") String sex;
         @ExcelColTitle(value = "地址", required = false) String addr;
+        @ExcelColTitle("有效期开始日") String effective;
 
         @Override public boolean ignoreRow() {
             return StringUtils.startsWith(memberName, "示例-");
