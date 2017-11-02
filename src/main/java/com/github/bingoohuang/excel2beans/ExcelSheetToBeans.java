@@ -2,6 +2,7 @@ package com.github.bingoohuang.excel2beans;
 
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
+import com.github.bingoohuang.excel2beans.CellData.CellDataBuilder;
 import com.github.bingoohuang.util.instantiator.BeanInstantiator;
 import com.github.bingoohuang.util.instantiator.BeanInstantiatorFactory;
 import com.google.common.collect.Lists;
@@ -9,10 +10,12 @@ import lombok.Getter;
 import lombok.val;
 import org.apache.poi.ss.usermodel.*;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.trim;
+import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
 
 public class ExcelSheetToBeans<T> {
     private final Workbook workbook;
@@ -140,7 +143,7 @@ public class ExcelSheetToBeans<T> {
         return cellValue;
     }
 
-    private void applyComment(Cell cell, CellData.CellDataBuilder cellData) {
+    private void applyComment(Cell cell, CellDataBuilder cellData) {
         val comment = cell.getCellComment();
         if (comment == null) {
             return;
@@ -152,6 +155,15 @@ public class ExcelSheetToBeans<T> {
 
     private String getCellValue(Cell cell) {
         if (cell == null) return null;
+
+        val cellType = cell.getCellTypeEnum();
+        if (cellType == NUMERIC) {
+            if (DateUtil.isCellDateFormatted(cell)) {
+                val dateCellValue = cell.getDateCellValue();
+                val sdf = new SimpleDateFormat("yyyy-MM-dd");
+                return sdf.format(dateCellValue);
+            }
+        }
 
         val cellValue = cellFormatter.formatCellValue(cell);
         return trim(cellValue);

@@ -1,4 +1,5 @@
 language: java
+install: mvn install -DskipTests -Dgpg.skip
 jdk:
 - oraclejdk8
 sudo: false
@@ -12,4 +13,4 @@ addons:
     token:
       secure: "dbD8nARVcIc8vZuYO+9ADw54PwSvSL6+mFBGfarHZjCm3dkviavSULUQ7SuAebxhqGysmqwJOIqY9Oj/liTUkTW8FZqFaq39cbdVS3ar2s+OApNRSZY+2UTUygXZB7H81S8KEnCLuCQmhcclgyNswivizVYdCv+AXaVY+SOPQ61syUhRPuQvAd4rwkmWtZGxNBHnINU6hTZ3N5aQkOZIa/YVPYmIPv6CZ0x6qpJwG1L0885eLylEH4FBZgjF4F+P7CFBgs28uC9TuH0vAKw/hQ2ZlypRM+FQpVdUA+XescxE7pKQ2I8mdzo9V5tR5wRzlTzed4dDBP548XnGQAu6IiQA9yJqjoogkEHhU9fT5cCav3Igr5l/jEC1y/FAO1W/pbZtuXAVjnKEb5nsmDUkhz0G+EZokrECignZ8RBoqL8zmw5pKYsvhsIgTCPTxwCHOqyO81E4Bo/mlq7XfXx3b7dxtgwA1OG1D+vzw4ISJ2/nkphc1WLwCseHBLfotiRM5DWEeH9VxyqGLtvkOzLSFd5rGHIlUvJMefz0iauY3i3HT69MmRSWMOZIoRSHYsdtFh0RVh96ku7j7b18bOF5NuKJSltJ3Hvr7fJ8zrNl08+hJfHNZvkhe0TBtgQWzFg2gI4Wf9pGUE+0umO75li/zkfLFfXfaWRqJDJceRNX34c="
 script:
-- mvn clean test jacoco:report coveralls:report install sonar:sonar
+- mvn clean test jacoco:report coveralls:report install sonar:sonar -Dgpg.skip
