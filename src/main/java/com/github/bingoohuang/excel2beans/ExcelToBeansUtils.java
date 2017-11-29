@@ -40,43 +40,48 @@ import static org.apache.commons.lang3.StringUtils.capitalize;
 @UtilityClass
 public class ExcelToBeansUtils {
     public static int computeAxisRowIndex(Sheet sheet, Picture picture) {
-        val halfHeightPoints = ImageUtils.getDimensionFromAnchor(picture).getHeight() / Units.EMU_PER_POINT / 2;
+        val dimension = ImageUtils.getDimensionFromAnchor(picture);
+        val halfHeight = dimension.getHeight() / Units.EMU_PER_POINT / 2;
 
         val clientAnchor = picture.getClientAnchor();
-        val fromRow = clientAnchor.getRow1();
-
-        val fromRowHeightInPoints = sheet.getRow(fromRow).getHeightInPoints();
+        val anchorRow1 = clientAnchor.getRow1();
+        val fromRowHeight = sheet.getRow(anchorRow1).getHeightInPoints();
+        val anchorDy1 = clientAnchor.getDy1();
+        val anchorRow2 = clientAnchor.getRow2();
         val y1 = sheet instanceof HSSFSheet
-                ? clientAnchor.getDy1() / 256.0f * fromRowHeightInPoints // refer to HSSFClientAnchor.getAnchorHeightInPoints
-                : clientAnchor.getDy1() / Units.EMU_PER_POINT;
+                ? anchorDy1 / 256.0f * fromRowHeight // refer to HSSFClientAnchor.getAnchorHeightInPoints
+                : anchorDy1 / Units.EMU_PER_POINT;
 
-        var sumHeightPoints = fromRowHeightInPoints - y1;
-        if (sumHeightPoints >= halfHeightPoints) return fromRow;
+        var sumHeight = fromRowHeight - y1;
+        if (sumHeight >= halfHeight) return anchorRow1;
 
-        for (var i = fromRow + 1; i < clientAnchor.getRow2(); ++i) {
-            sumHeightPoints += sheet.getRow(i).getHeightInPoints();
-            if (sumHeightPoints >= halfHeightPoints) return i;
+        for (var i = anchorRow1 + 1; i < anchorRow2; ++i) {
+            sumHeight += sheet.getRow(i).getHeightInPoints();
+            if (sumHeight >= halfHeight) return i;
         }
 
-        return clientAnchor.getRow2();
+        return anchorRow2;
     }
 
-
     public static int computeAxisColIndex(Sheet sheet, Picture picture) {
-        val halfWidthPixels = ImageUtils.getDimensionFromAnchor(picture).getHeight() / Units.EMU_PER_PIXEL / 2;
+        val dimension = ImageUtils.getDimensionFromAnchor(picture);
+        val halfWidth = dimension.getHeight() / Units.EMU_PER_PIXEL / 2;
 
         val clientAnchor = picture.getClientAnchor();
-        val fromCol = clientAnchor.getCol1();
+        val anchorCol1 = clientAnchor.getCol1();
+        val anchorCol2 = clientAnchor.getCol2();
+        val anchorDx1 = clientAnchor.getDx1();
 
-        var sumWidthPixels = (int) sheet.getColumnWidthInPixels(fromCol) - clientAnchor.getDx1() / Units.EMU_PER_PIXEL;
-        if (sumWidthPixels >= halfWidthPixels) return fromCol;
+        val fromColumnWidth = sheet.getColumnWidthInPixels(anchorCol1);
+        var sumWidth = fromColumnWidth - anchorDx1 / Units.EMU_PER_PIXEL;
+        if (sumWidth >= halfWidth) return anchorCol1;
 
-        for (var i = fromCol + 1; i < clientAnchor.getCol2(); ++i) {
-            sumWidthPixels += sheet.getColumnWidthInPixels(i);
-            if (sumWidthPixels >= halfWidthPixels) return i;
+        for (var i = anchorCol1 + 1; i < anchorCol2; ++i) {
+            sumWidth += sheet.getColumnWidthInPixels(i);
+            if (sumWidth >= halfWidth) return i;
         }
 
-        return clientAnchor.getCol2();
+        return anchorCol2;
     }
 
 
@@ -97,7 +102,6 @@ public class ExcelToBeansUtils {
         val allPictures = sheet.getWorkbook().getAllPictures();
         for (val shape : patriarch.getChildren()) {
             if (shape instanceof HSSFPicture && shape.getAnchor() instanceof HSSFClientAnchor) {
-                val clientAnchor = (HSSFClientAnchor) shape.getAnchor();
                 val picture = (HSSFPicture) shape;
                 val imageData = createImageData(allPictures.get(picture.getPictureIndex() - 1));
 
@@ -113,7 +117,6 @@ public class ExcelToBeansUtils {
         for (val shape : drawing.getShapes()) {
             if (shape instanceof XSSFPicture) {
                 val picture = (XSSFPicture) shape;
-                val from = picture.getPreferredSize().getFrom();
                 val imageData = createImageData(picture.getPictureData());
 
                 val axisRow = computeAxisRowIndex(sheet, picture);
