@@ -4,7 +4,7 @@
 
     <groupId>com.github.bingoohuang</groupId>
     <artifactId>excel2javabeans</artifactId>
-    <version>0.0.12-SNAPSHOT</version>
+    <version>0.0.13-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>excel to java beans</name>
@@ -45,6 +45,7 @@
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>westid</artifactId>
             <version>0.0.2</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
