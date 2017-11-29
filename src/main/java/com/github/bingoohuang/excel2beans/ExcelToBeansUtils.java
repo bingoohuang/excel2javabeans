@@ -37,51 +37,44 @@ import static org.apache.commons.lang3.StringUtils.capitalize;
 @UtilityClass
 public class ExcelToBeansUtils {
     public static Table<Integer, Integer, ImageData> readAllCellImages(Sheet sheet) {
-        Table<Integer, Integer, ImageData> images = HashBasedTable.create();
+        val images = HashBasedTable.<Integer, Integer, ImageData>create();
 
-        val drawingPatriarch = sheet.getDrawingPatriarch();
-        if (drawingPatriarch instanceof XSSFDrawing) {
-            for (val shape : ((XSSFDrawing) drawingPatriarch).getShapes()) {
-                if (shape instanceof XSSFPicture) {
-                    val picture = (XSSFPicture) shape;
-                    val clientAnchor = picture.getPreferredSize();
-                    val pictureData = picture.getPictureData();
-                    val from = clientAnchor.getFrom();
-
-                    val imageData = createImageData(pictureData);
-                    images.put(from.getRow(), from.getCol(), imageData);
-                }
-            }
-        } else if (drawingPatriarch instanceof HSSFPatriarch) {
-            val allPictures = sheet.getWorkbook().getAllPictures();
-            for (val shape : ((HSSFPatriarch) drawingPatriarch).getChildren()) {
-                if (shape instanceof HSSFPicture) {
-                    val hssfPicture = (HSSFPicture) shape;
-                    val pictureData = allPictures.get(hssfPicture.getPictureIndex() - 1);
-                    val anchor = shape.getAnchor();
-                    if (anchor instanceof HSSFClientAnchor) {
-                        val clientAnchor = (HSSFClientAnchor) anchor;
-
-                        val imageData = createImageData(pictureData);
-                        images.put(clientAnchor.getRow1(), (int) clientAnchor.getCol1(), imageData);
-                    }
-                }
-            }
+        val patriarch = sheet.getDrawingPatriarch();
+        if (patriarch instanceof XSSFDrawing) {
+            readAllCellImages(images, (XSSFDrawing) patriarch);
+        } else if (patriarch instanceof HSSFPatriarch) {
+            readAllCellImages(images, (HSSFPatriarch) patriarch, sheet);
         }
 
         return images;
     }
 
-    public static ImageData createImageData(PictureData pictureData) {
-        val imageData = new ImageData();
-        imageData.setData(pictureData.getData());
-        imageData.setMimeType(pictureData.getMimeType());
-        imageData.setPictureType(pictureData.getPictureType());
-        imageData.setSuggestFileExtension(pictureData.suggestFileExtension());
-
-        return imageData;
+    private static void readAllCellImages(Table<Integer, Integer, ImageData> images, HSSFPatriarch patriarch, Sheet sheet) {
+        val allPictures = sheet.getWorkbook().getAllPictures();
+        for (val shape : patriarch.getChildren()) {
+            if (shape instanceof HSSFPicture && shape.getAnchor() instanceof HSSFClientAnchor) {
+                val clientAnchor = (HSSFClientAnchor) shape.getAnchor();
+                val imageData = createImageData(allPictures.get(((HSSFPicture) shape).getPictureIndex() - 1));
+                images.put(clientAnchor.getRow1(), (int) clientAnchor.getCol1(), imageData);
+            }
+        }
     }
 
+    private static void readAllCellImages(Table<Integer, Integer, ImageData> images, XSSFDrawing drawing) {
+        for (val shape : drawing.getShapes()) {
+            if (shape instanceof XSSFPicture) {
+                val picture = (XSSFPicture) shape;
+                val clientAnchor = picture.getPreferredSize();
+                val imageData = createImageData(picture.getPictureData());
+                val from = clientAnchor.getFrom();
+                images.put(from.getRow(), from.getCol(), imageData);
+            }
+        }
+    }
+
+    public static ImageData createImageData(PictureData pic) {
+        return new ImageData(pic.getData(), pic.suggestFileExtension(), pic.getMimeType(), pic.getPictureType());
+    }
 
     @SneakyThrows
     public Workbook getClassPathWorkbook(String classPathExcelName) {
