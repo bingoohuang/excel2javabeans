@@ -15,7 +15,10 @@ import lombok.val;
 import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
 import org.apache.poi.hssf.usermodel.HSSFPatriarch;
 import org.apache.poi.hssf.usermodel.HSSFPicture;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.ImageUtils;
+import org.apache.poi.util.Units;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFPicture;
 
@@ -36,12 +39,53 @@ import static org.apache.commons.lang3.StringUtils.capitalize;
 
 @UtilityClass
 public class ExcelToBeansUtils {
+    public static int computeAxisRowIndex(Sheet sheet, Picture picture) {
+        val halfHeightPoints = ImageUtils.getDimensionFromAnchor(picture).getHeight() / Units.EMU_PER_POINT / 2;
+
+        val clientAnchor = picture.getClientAnchor();
+        val fromRow = clientAnchor.getRow1();
+
+        val fromRowHeightInPoints = sheet.getRow(fromRow).getHeightInPoints();
+        val y1 = sheet instanceof HSSFSheet
+                ? clientAnchor.getDy1() / 256.0f * fromRowHeightInPoints // refer to HSSFClientAnchor.getAnchorHeightInPoints
+                : clientAnchor.getDy1() / Units.EMU_PER_POINT;
+
+        var sumHeightPoints = fromRowHeightInPoints - y1;
+        if (sumHeightPoints >= halfHeightPoints) return fromRow;
+
+        for (var i = fromRow + 1; i < clientAnchor.getRow2(); ++i) {
+            sumHeightPoints += sheet.getRow(i).getHeightInPoints();
+            if (sumHeightPoints >= halfHeightPoints) return i;
+        }
+
+        return clientAnchor.getRow2();
+    }
+
+
+    public static int computeAxisColIndex(Sheet sheet, Picture picture) {
+        val halfWidthPixels = ImageUtils.getDimensionFromAnchor(picture).getHeight() / Units.EMU_PER_PIXEL / 2;
+
+        val clientAnchor = picture.getClientAnchor();
+        val fromCol = clientAnchor.getCol1();
+
+        var sumWidthPixels = (int) sheet.getColumnWidthInPixels(fromCol) - clientAnchor.getDx1() / Units.EMU_PER_PIXEL;
+        if (sumWidthPixels >= halfWidthPixels) return fromCol;
+
+        for (var i = fromCol + 1; i < clientAnchor.getCol2(); ++i) {
+            sumWidthPixels += sheet.getColumnWidthInPixels(i);
+            if (sumWidthPixels >= halfWidthPixels) return i;
+        }
+
+        return clientAnchor.getCol2();
+    }
+
+
     public static Table<Integer, Integer, ImageData> readAllCellImages(Sheet sheet) {
         val images = HashBasedTable.<Integer, Integer, ImageData>create();
 
         val patriarch = sheet.getDrawingPatriarch();
         if (patriarch instanceof XSSFDrawing) {
-            readAllCellImages(images, (XSSFDrawing) patriarch);
+            readAllCellImages(images, (XSSFDrawing) patriarch, sheet);
         } else if (patriarch instanceof HSSFPatriarch) {
             readAllCellImages(images, (HSSFPatriarch) patriarch, sheet);
         }
@@ -54,19 +98,28 @@ public class ExcelToBeansUtils {
         for (val shape : patriarch.getChildren()) {
             if (shape instanceof HSSFPicture && shape.getAnchor() instanceof HSSFClientAnchor) {
                 val clientAnchor = (HSSFClientAnchor) shape.getAnchor();
-                val imageData = createImageData(allPictures.get(((HSSFPicture) shape).getPictureIndex() - 1));
-                images.put(clientAnchor.getRow1(), (int) clientAnchor.getCol1(), imageData);
+                val picture = (HSSFPicture) shape;
+                val imageData = createImageData(allPictures.get(picture.getPictureIndex() - 1));
+
+                val axisRow = computeAxisRowIndex(sheet, picture);
+                val axisCol = computeAxisColIndex(sheet, picture);
+
+                images.put(axisRow, axisCol, imageData);
             }
         }
     }
 
-    private static void readAllCellImages(Table<Integer, Integer, ImageData> images, XSSFDrawing drawing) {
+    private static void readAllCellImages(Table<Integer, Integer, ImageData> images, XSSFDrawing drawing, Sheet sheet) {
         for (val shape : drawing.getShapes()) {
             if (shape instanceof XSSFPicture) {
                 val picture = (XSSFPicture) shape;
                 val from = picture.getPreferredSize().getFrom();
                 val imageData = createImageData(picture.getPictureData());
-                images.put(from.getRow(), from.getCol(), imageData);
+
+                val axisRow = computeAxisRowIndex(sheet, picture);
+                val axisCol = computeAxisColIndex(sheet, picture);
+
+                images.put(axisRow, axisCol, imageData);
             }
         }
     }

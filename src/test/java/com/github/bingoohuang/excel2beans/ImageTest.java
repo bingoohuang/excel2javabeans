@@ -43,6 +43,18 @@ public class ImageTest {
         testImage(workbook);
     }
 
+    @Test @SneakyThrows
+    public void testCenterXls() {
+        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("center-images.xls");
+        testImage(workbook);
+    }
+
+    @Test @SneakyThrows
+    public void testCenterXlsx() {
+        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("center-images.xlsx");
+        testImage(workbook);
+    }
+
     public void testImage(Workbook workbook) {
         val excelToBeans = new ExcelToBeans(workbook);
         val beans = excelToBeans.convert(ImageBean.class);
@@ -82,8 +94,15 @@ public class ImageTest {
 
     @Test @SneakyThrows @Ignore
     public void test2() {
-        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("images.xlsx");
+        @Cleanup val workbook1 = ExcelToBeansUtils.getClassPathWorkbook("center-images.xls");
+        computeImagePosition(workbook1);
+        System.out.println();
+        System.out.println();
+        @Cleanup val workbook2 = ExcelToBeansUtils.getClassPathWorkbook("center-images.xlsx");
+        computeImagePosition(workbook2);
+    }
 
+    private void computeImagePosition(Workbook workbook) {
         val allPictures = workbook.getAllPictures();
         val sheet = workbook.getSheetAt(1);
         val drawingPatriarch = sheet.getDrawingPatriarch();
@@ -92,10 +111,17 @@ public class ImageTest {
             for (val shape : xssfDrawing.getShapes()) {
                 if (shape instanceof XSSFPicture) {
                     val picture = (XSSFPicture) shape;
-                    val clientAnchor = picture.getPreferredSize();
+                    val clientAnchor = picture.getClientAnchor();
+
                     val from = clientAnchor.getFrom();
+                    val to = clientAnchor.getTo();
                     val pictureName = createPicture(picture.getPictureData());
-                    System.out.println("row:" + from.getRow() + ", col:" + from.getCol() + ",pictureName:" + pictureName);
+                    System.out.println("from row:" + from.getRow() + ", from col:" + from.getCol() + ",pictureName:" + pictureName);
+
+                    int axisRowIndex = ExcelToBeansUtils.computeAxisRowIndex(sheet, picture);
+                    int axisColIndex = ExcelToBeansUtils.computeAxisColIndex(sheet, picture);
+
+                    System.out.println("axisRowIndex: " + axisRowIndex + ",axisColIndex:" + axisColIndex);
                 }
             }
         } else if (drawingPatriarch instanceof HSSFPatriarch) {
@@ -109,10 +135,16 @@ public class ImageTest {
                     if (anchor instanceof HSSFClientAnchor) {
                         val hssfClientAnchor = (HSSFClientAnchor) anchor;
                         val pictureName = createPicture(picture);
-                        System.out.println("row:" + hssfClientAnchor.getRow1() + ", col:" + hssfClientAnchor.getCol1() + ",pictureName:" + pictureName);
+                        System.out.println("row1:" + hssfClientAnchor.getRow1() + ", col1:" + hssfClientAnchor.getCol1() + ",pictureName:" + pictureName);
+
+                        int axisRowIndex = ExcelToBeansUtils.computeAxisRowIndex(sheet, hssfPicture);
+                        int axisColIndex = ExcelToBeansUtils.computeAxisColIndex(sheet, hssfPicture);
+
+                        System.out.println("axisRowIndex: " + axisRowIndex + ",axisColIndex:" + axisColIndex);
                     }
                 }
             }
         }
     }
+
 }
