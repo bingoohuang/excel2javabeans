@@ -48,17 +48,20 @@ public class ImageTest {
         val beans = excelToBeans.convert(ImageBean.class);
         assertThat(beans.size()).isEqualTo(3);
         assertThat(beans.get(0).name).isEqualTo("健身男");
+        assertThat(beans.get(0).imageData.getData().length).isEqualTo(255429);
         assertThat(beans.get(1).name).isEqualTo("健身女");
+        assertThat(beans.get(1).imageData.getData().length).isEqualTo(373333);
         assertThat(beans.get(2).name).isEqualTo("越野赛");
+        assertThat(beans.get(2).imageData.getData().length).isEqualTo(3700955);
 
-        val image0Name = createPicture(beans.get(0).imageData);
-        System.out.println("健身男：" + image0Name);
-
-        val image1Name = createPicture(beans.get(1).imageData);
-        System.out.println("健身女：" + image1Name);
-
-        val image2Name = createPicture(beans.get(2).imageData);
-        System.out.println("越野赛：" + image2Name);
+//        val image0Name = createPicture(beans.get(0).imageData);
+//        System.out.println("健身男：" + image0Name);
+//
+//        val image1Name = createPicture(beans.get(1).imageData);
+//        System.out.println("健身女：" + image1Name);
+//
+//        val image2Name = createPicture(beans.get(2).imageData);
+//        System.out.println("越野赛：" + image2Name);
     }
 
     @SneakyThrows

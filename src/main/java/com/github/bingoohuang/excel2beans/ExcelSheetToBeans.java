@@ -20,7 +20,6 @@ import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
 
 public class ExcelSheetToBeans<T> {
     private final Workbook workbook;
-
     private final FieldAccess fieldAccess;
     private final MethodAccess methodAccess;
     private final BeanInstantiator<T> instantiator;
@@ -28,6 +27,7 @@ public class ExcelSheetToBeans<T> {
     private @Getter final boolean hasTitle;
     private final DataFormatter cellFormatter = new DataFormatter();
     private final Sheet sheet;
+    private final Table<Integer, Integer, ImageData> imageDataTable;
 
     public ExcelSheetToBeans(Workbook workbook, Class<T> beanClass) {
         this.workbook = workbook;
@@ -36,6 +36,7 @@ public class ExcelSheetToBeans<T> {
         this.instantiator = BeanInstantiatorFactory.newBeanInstantiator(beanClass);
         this.sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
         this.beanFields = ExcelToBeansUtils.parseBeanFields(beanClass, null);
+        this.imageDataTable = hasImageDatas() ? ExcelToBeansUtils.readAllCellImages(sheet) : null;
         this.hasTitle = hasTitle();
     }
 
@@ -73,35 +74,20 @@ public class ExcelSheetToBeans<T> {
     }
 
     private T createObject(Sheet sheet, int i) {
-        T object = null;
-
-        Table<Integer, Integer, ImageData> imageDataTable = null;
-        if (hasImageDatas()) {
-            imageDataTable = ExcelToBeansUtils.readAllCellImages(sheet);
-        }
-
         val row = sheet.getRow(i);
-        if (row != null) {
-            object = instantiator.newInstance();
-            int emptyNum = processRow(object, row, imageDataTable);
-            if (emptyNum == beanFields.size()) {
-                object = null;
-            }
-        }
+        if (row == null) return null;
 
-        return object;
+        val object = (T) instantiator.newInstance();
+        val emptyNum = processRow(object, row);
+        return emptyNum == beanFields.size() ? null : object;
     }
 
     private boolean hasImageDatas() {
         for (val beanField : beanFields) {
             int columnIndex = beanField.getColumnIndex();
-            if (columnIndex < 0) {
-                continue;
-            }
+            if (columnIndex < 0) continue;
 
-            if (beanField.getField().getType() == ImageData.class) {
-                return true;
-            }
+            if (beanField.getField().getType() == ImageData.class) return true;
         }
         return false;
     }
@@ -109,9 +95,7 @@ public class ExcelSheetToBeans<T> {
     private void addToBeans(List<T> beans, int i, T object) {
         if (object instanceof ExcelRowIgnorable) {
             val ignore = (ExcelRowIgnorable) object;
-            if (ignore.ignoreRow()) {
-                return;
-            }
+            if (ignore.ignoreRow()) return;
         }
 
         if (object instanceof ExcelRowRef) {
@@ -122,7 +106,7 @@ public class ExcelSheetToBeans<T> {
         beans.add(object);
     }
 
-    private int processRow(T object, Row row, Table<Integer, Integer, ImageData> imageDataTable) {
+    private int processRow(T object, Row row) {
         int emptyNum = 0;
         for (val beanField : beanFields) {
             int columnIndex = beanField.getColumnIndex();
@@ -175,9 +159,7 @@ public class ExcelSheetToBeans<T> {
 
     private void applyComment(Cell cell, CellDataBuilder cellData) {
         val comment = cell.getCellComment();
-        if (comment == null) {
-            return;
-        }
+        if (comment == null) return;
 
         cellData.comment(comment.getString().getString())
                 .commentAuthor(comment.getAuthor());
