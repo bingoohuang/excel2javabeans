@@ -6,6 +6,7 @@ import com.github.bingoohuang.excel2beans.CellData.CellDataBuilder;
 import com.github.bingoohuang.util.instantiator.BeanInstantiator;
 import com.github.bingoohuang.util.instantiator.BeanInstantiatorFactory;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Table;
 import lombok.Getter;
 import lombok.val;
 import org.apache.poi.ss.usermodel.*;
@@ -74,16 +75,35 @@ public class ExcelSheetToBeans<T> {
     private T createObject(Sheet sheet, int i) {
         T object = null;
 
+        Table<Integer, Integer, ImageData> imageDataTable = null;
+        if (hasImageDatas()) {
+            imageDataTable = ExcelToBeansUtils.readAllCellImages(sheet);
+        }
+
         val row = sheet.getRow(i);
         if (row != null) {
             object = instantiator.newInstance();
-            int emptyNum = processRow(object, row);
+            int emptyNum = processRow(object, row, imageDataTable);
             if (emptyNum == beanFields.size()) {
                 object = null;
             }
         }
 
         return object;
+    }
+
+    private boolean hasImageDatas() {
+        for (val beanField : beanFields) {
+            int columnIndex = beanField.getColumnIndex();
+            if (columnIndex < 0) {
+                continue;
+            }
+
+            if (beanField.getField().getType() == ImageData.class) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void addToBeans(List<T> beans, int i, T object) {
@@ -102,12 +122,22 @@ public class ExcelSheetToBeans<T> {
         beans.add(object);
     }
 
-    private int processRow(T object, Row row) {
+    private int processRow(T object, Row row, Table<Integer, Integer, ImageData> imageDataTable) {
         int emptyNum = 0;
         for (val beanField : beanFields) {
             int columnIndex = beanField.getColumnIndex();
             if (columnIndex < 0) {
                 ++emptyNum;
+                continue;
+            }
+
+            if (beanField.getField().getType() == ImageData.class) {
+                val imageData = imageDataTable.get(row.getRowNum(), columnIndex);
+                if (imageData == null) {
+                    ++emptyNum;
+                } else {
+                    beanField.setFieldValue(fieldAccess, methodAccess, object, imageData);
+                }
                 continue;
             }
 

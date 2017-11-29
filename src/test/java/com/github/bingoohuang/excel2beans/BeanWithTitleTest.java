@@ -29,7 +29,7 @@ public class BeanWithTitleTest {
         assertThat(beans.get(2)).isEqualTo(BeanWithTitle.builder().memberName("李红").sex("男").cardPrice("0").cardName("示例私教卡（60次私教卡）").effective("2015-05-01").build());
         assertThat(beans.get(3)).isEqualTo(BeanWithTitle.builder().memberName("张晓").sex("女").cardPrice(null).cardName(null).effective(null).build());
     }
-    
+
     @Data @Builder
     public static class BeanWithTitle extends ExcelRowRef implements ExcelRowIgnorable {
         @ExcelColTitle("会员姓名") String memberName;

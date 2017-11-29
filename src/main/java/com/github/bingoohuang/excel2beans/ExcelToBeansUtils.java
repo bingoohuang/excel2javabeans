@@ -4,13 +4,20 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import com.google.common.io.ByteStreams;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.experimental.var;
 import lombok.val;
+import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
+import org.apache.poi.hssf.usermodel.HSSFPatriarch;
+import org.apache.poi.hssf.usermodel.HSSFPicture;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFDrawing;
+import org.apache.poi.xssf.usermodel.XSSFPicture;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +36,53 @@ import static org.apache.commons.lang3.StringUtils.capitalize;
 
 @UtilityClass
 public class ExcelToBeansUtils {
+    public static Table<Integer, Integer, ImageData> readAllCellImages(Sheet sheet) {
+        Table<Integer, Integer, ImageData> images = HashBasedTable.create();
+
+        val drawingPatriarch = sheet.getDrawingPatriarch();
+        if (drawingPatriarch instanceof XSSFDrawing) {
+            for (val shape : ((XSSFDrawing) drawingPatriarch).getShapes()) {
+                if (shape instanceof XSSFPicture) {
+                    val picture = (XSSFPicture) shape;
+                    val clientAnchor = picture.getPreferredSize();
+                    val pictureData = picture.getPictureData();
+                    val from = clientAnchor.getFrom();
+
+                    val imageData = createImageData(pictureData);
+                    images.put(from.getRow(), from.getCol(), imageData);
+                }
+            }
+        } else if (drawingPatriarch instanceof HSSFPatriarch) {
+            val allPictures = sheet.getWorkbook().getAllPictures();
+            for (val shape : ((HSSFPatriarch) drawingPatriarch).getChildren()) {
+                if (shape instanceof HSSFPicture) {
+                    val hssfPicture = (HSSFPicture) shape;
+                    val pictureData = allPictures.get(hssfPicture.getPictureIndex() - 1);
+                    val anchor = shape.getAnchor();
+                    if (anchor instanceof HSSFClientAnchor) {
+                        val clientAnchor = (HSSFClientAnchor) anchor;
+
+                        val imageData = createImageData(pictureData);
+                        images.put(clientAnchor.getRow1(), (int) clientAnchor.getCol1(), imageData);
+                    }
+                }
+            }
+        }
+
+        return images;
+    }
+
+    public static ImageData createImageData(PictureData pictureData) {
+        val imageData = new ImageData();
+        imageData.setData(pictureData.getData());
+        imageData.setMimeType(pictureData.getMimeType());
+        imageData.setPictureType(pictureData.getPictureType());
+        imageData.setSuggestFileExtension(pictureData.suggestFileExtension());
+
+        return imageData;
+    }
+
+
     @SneakyThrows
     public Workbook getClassPathWorkbook(String classPathExcelName) {
         val classLoader = ExcelToBeansUtils.class.getClassLoader();
