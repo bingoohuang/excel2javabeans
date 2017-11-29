@@ -64,9 +64,8 @@ public class ExcelToBeansUtils {
         for (val shape : drawing.getShapes()) {
             if (shape instanceof XSSFPicture) {
                 val picture = (XSSFPicture) shape;
-                val clientAnchor = picture.getPreferredSize();
+                val from = picture.getPreferredSize().getFrom();
                 val imageData = createImageData(picture.getPictureData());
-                val from = clientAnchor.getFrom();
                 images.put(from.getRow(), from.getCol(), imageData);
             }
         }
