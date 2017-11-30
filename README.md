@@ -101,13 +101,13 @@ public class ImportMembersController {
      * @return RestResp
      */
     @RequestMapping("/downloadError") @SneakyThrows
-    public RestResp downloadError() {
+    public RestResp downloadError(HttpServletResponse response) {
         val workbook = ImportMembersHelper.redisExcel4ImportMemberError();
         if (workbook == null) {
             return RestResp.ok("当前没有失败条目");
         }
 
-        ExcelToBeansUtils.download(EtContext.instance().getResponse(), workbook, "导入错误" + WestId.next() + ".xlsx");
+        ExcelToBeansUtils.download(response, workbook, "导入错误" + WestId.next() + ".xlsx");
         return RestResp.ok("失败条目下载成功");
     }
 
@@ -127,12 +127,6 @@ public class ImportMembersController {
 }
 ```
 
-# Excel Download Utility
-```java
-// HttpServletResponse response = ...
-// Workbook workbook = ...
-ExcelToBeansUtils.download(response,  workbook, "fileName.xlsx");
-```
 
 # Sonarqube
 ```bash
