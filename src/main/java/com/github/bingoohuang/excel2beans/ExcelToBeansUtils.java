@@ -40,6 +40,7 @@ import static org.apache.commons.lang3.StringUtils.capitalize;
 @UtilityClass
 public class ExcelToBeansUtils {
     public static int computeAxisRowIndex(Sheet sheet, Picture picture) {
+        // Calculates the dimensions in EMUs for the anchor of the given picture
         val dimension = ImageUtils.getDimensionFromAnchor(picture);
         val halfHeight = dimension.getHeight() / Units.EMU_PER_POINT / 2;
 
@@ -64,7 +65,8 @@ public class ExcelToBeansUtils {
     }
 
     public static int computeAxisColIndex(Sheet sheet, Picture picture) {
-        val dimension = ImageUtils.getDimensionFromAnchor(picture);
+        // Calculates the dimensions in EMUs for the anchor of the given picture
+        val dimension = ImageUtils.getDimensionFromAnchor(picture); //
         val halfWidth = dimension.getHeight() / Units.EMU_PER_PIXEL / 2;
 
         val clientAnchor = picture.getClientAnchor();
@@ -86,45 +88,49 @@ public class ExcelToBeansUtils {
 
 
     public static Table<Integer, Integer, ImageData> readAllCellImages(Sheet sheet) {
-        val images = HashBasedTable.<Integer, Integer, ImageData>create();
-
         val patriarch = sheet.getDrawingPatriarch();
         if (patriarch instanceof XSSFDrawing) {
-            readAllCellImages(images, (XSSFDrawing) patriarch, sheet);
+            return readAllCellImages((XSSFDrawing) patriarch, sheet);
         } else if (patriarch instanceof HSSFPatriarch) {
-            readAllCellImages(images, (HSSFPatriarch) patriarch, sheet);
+            return readAllCellImages((HSSFPatriarch) patriarch, sheet);
+        }
+
+        return HashBasedTable.create();
+    }
+
+    private static Table<Integer, Integer, ImageData> readAllCellImages(HSSFPatriarch patriarch, Sheet sheet) {
+        val images = HashBasedTable.<Integer, Integer, ImageData>create();
+        val allPictures = sheet.getWorkbook().getAllPictures();
+        for (val shape : patriarch.getChildren()) {
+            if (!(shape instanceof HSSFPicture && shape.getAnchor() instanceof HSSFClientAnchor)) continue;
+
+            val picture = (HSSFPicture) shape;
+            val imageData = createImageData(allPictures.get(picture.getPictureIndex() - 1));
+
+            val axisRow = computeAxisRowIndex(sheet, picture);
+            val axisCol = computeAxisColIndex(sheet, picture);
+
+            images.put(axisRow, axisCol, imageData);
         }
 
         return images;
     }
 
-    private static void readAllCellImages(Table<Integer, Integer, ImageData> images, HSSFPatriarch patriarch, Sheet sheet) {
-        val allPictures = sheet.getWorkbook().getAllPictures();
-        for (val shape : patriarch.getChildren()) {
-            if (shape instanceof HSSFPicture && shape.getAnchor() instanceof HSSFClientAnchor) {
-                val picture = (HSSFPicture) shape;
-                val imageData = createImageData(allPictures.get(picture.getPictureIndex() - 1));
-
-                val axisRow = computeAxisRowIndex(sheet, picture);
-                val axisCol = computeAxisColIndex(sheet, picture);
-
-                images.put(axisRow, axisCol, imageData);
-            }
-        }
-    }
-
-    private static void readAllCellImages(Table<Integer, Integer, ImageData> images, XSSFDrawing drawing, Sheet sheet) {
+    private static Table<Integer, Integer, ImageData> readAllCellImages(XSSFDrawing drawing, Sheet sheet) {
+        val images = HashBasedTable.<Integer, Integer, ImageData>create();
         for (val shape : drawing.getShapes()) {
-            if (shape instanceof XSSFPicture) {
-                val picture = (XSSFPicture) shape;
-                val imageData = createImageData(picture.getPictureData());
+            if (!(shape instanceof XSSFPicture)) continue;
 
-                val axisRow = computeAxisRowIndex(sheet, picture);
-                val axisCol = computeAxisColIndex(sheet, picture);
+            val picture = (XSSFPicture) shape;
+            val imageData = createImageData(picture.getPictureData());
 
-                images.put(axisRow, axisCol, imageData);
-            }
+            val axisRow = computeAxisRowIndex(sheet, picture);
+            val axisCol = computeAxisColIndex(sheet, picture);
+
+            images.put(axisRow, axisCol, imageData);
         }
+
+        return images;
     }
 
     public static ImageData createImageData(PictureData pic) {
@@ -168,19 +174,14 @@ public class ExcelToBeansUtils {
     }
 
     private void processField(Sheet sheet, List<ExcelBeanField> fields, Field field) {
-        if (Modifier.isStatic(field.getModifiers()) || Modifier.isTransient(field.getModifiers())) {
-            return;
-        }
+        if (Modifier.isStatic(field.getModifiers())) return;
+        if (Modifier.isTransient(field.getModifiers())) return;
 
         val rowIgnore = field.getAnnotation(ExcelColIgnore.class);
-        if (rowIgnore != null) {
-            return;
-        }
+        if (rowIgnore != null) return;
 
         String fieldName = field.getName();
-        if (fieldName.startsWith("$")) { // ignore un-normal fields like $jacocoData
-            return;
-        }
+        if (fieldName.startsWith("$")) return; // ignore un-normal fields like $jacocoData
 
         val beanField = new ExcelBeanField();
 
@@ -204,7 +205,7 @@ public class ExcelToBeansUtils {
     private void setStyle(Sheet sheet, Field field, ExcelBeanField beanField) {
         val colStyle = field.getAnnotation(ExcelColStyle.class);
         if (colStyle != null) {
-            CellStyle style = setAlign(sheet, colStyle);
+            val style = setAlign(sheet, colStyle);
             if (style != null) {
                 beanField.setCellStyle(style);
             }
@@ -350,9 +351,7 @@ public class ExcelToBeansUtils {
 
     public static Sheet findSheet(Workbook workbook, Class<?> beanClass) {
         val excelSheet = beanClass.getAnnotation(ExcelSheet.class);
-        if (excelSheet == null) {
-            return workbook.getSheetAt(0);
-        }
+        if (excelSheet == null) return workbook.getSheetAt(0);
 
         for (int i = 0, ii = workbook.getNumberOfSheets(); i < ii; ++i) {
             val sheetName = workbook.getSheetName(i);

@@ -86,6 +86,22 @@ public class Subscribe {
 
 ```
 
+# Cell Image Support
+Now the image in excel can be bound to bean field of type ImageData.
+The image's axis will be computed to match the related cell. 
+![image](https://user-images.githubusercontent.com/1940588/33408052-46376734-d5af-11e7-8bbb-6519de638a2d.png)
+
+```java
+@Data
+public static class ImageBean {
+    @ExcelColTitle("图片")
+    private ImageData imageData;
+    @ExcelColTitle("名字")
+    private String name;
+}
+```
+
+
 # Excel Download Utility
 ```java
 // HttpServletResponse response = ...
