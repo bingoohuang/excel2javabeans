@@ -144,5 +144,6 @@ set -gx GPG_TTY (tty)
 ```
 
 ```bash
-mvn clean install -DskipTests  -Dgpg.passphrase=slgsdmxl
+mvn clean install -DskipTests -Dgpg.passphrase=slgsdmxl
+mvn clean install -Dgpg.skip -DskipTests
 ```
