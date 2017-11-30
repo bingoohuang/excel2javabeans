@@ -89,7 +89,8 @@ public class Subscribe {
 # Cell Image Support
 Now the image in excel can be bound to bean field of type ImageData.
 The image's axis will be computed to match the related cell. 
-![image](https://user-images.githubusercontent.com/1940588/33408052-46376734-d5af-11e7-8bbb-6519de638a2d.png)
+![image](https://user-images.githubusercontent.com/1940588/33408499-c5489ba4-d5b1-11e7-86ee-10913dd1eaef.png)
+
 
 ```java
 @Data
@@ -98,6 +99,12 @@ public static class ImageBean {
     private ImageData imageData;
     @ExcelColTitle("名字")
     private String name;
+}
+
+public void testImage() {
+    @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("images.xls");
+    val excelToBeans = new ExcelToBeans(workbook);
+    val beans = excelToBeans.convert(ImageBean.class);
 }
 ```
 
