@@ -35,57 +35,35 @@ public class BeanWithTitle extends ExcelRowRef implements ExcelRowIgnorable {
 
 ## Convert Javabeans to Excel
 ```java
-BeansToExcel beansToExcel = new BeansToExcel();
-List<Member> members = // create members
-List<Schedule> schedules = // create schdules
-List<Subscribe> subscribes = // create subcribes
-Map<String, Object> props = Maps.newHashMap();
-// 增加头行信息(如果有的话)
-props.put("memberHead", "会员信息" + DateTime.now().toString("yyyy-MM-dd"));
-Workbook workbook = beansToExcel.create(props, members, schedules, subscribes);
+@Data @Builder
+public class ExportFollowUserExcelRow {
+    @ExcelColTitle("序号") private int seq;
+    @ExcelColTitle("客户姓名") private String name;
+    @ExcelColTitle("客户类型") private String grade;
+    @ExcelColTitle("性别") private String gender;
+    @ExcelColTitle("手机号码") private String mobile;
+    @ExcelColTitle("建档时间") private String createTime;
+    @ExcelColTitle("来源渠道") private String sources;
+    @ExcelColTitle("跟进总数") private String followTotalNum;
+    @ExcelColTitle("当前所属会籍") private String advisorName;
+    @ExcelColTitle("最近跟进人") private String currentFollowName;
+    @ExcelColTitle("最近跟进时间") private String currentFollowTime;
+}
+
+val workbook = ExcelToBeansUtils.getClassPathWorkbook("assignment.xlsx");
+val beansToExcel = new BeansToExcel(workbook);
+List<ExportFollowUserExcelRow> members = Lists.newArrayList();
+members.add(...);
+members.add(...);
+members.add(...);
+members.add(...);
+
+val workbook = beansToExcel.create(members);
+
+ExcelToBeansUtils.writeExcel(workbook, name);
 ```
 
-```java
-@ExcelSheet(name = "会员", headKey = "memberHead")
-public class Member {
-    @ExcelColTitle("会员总数")
-    private int total;
-    @ExcelColTitle("其中：新增")
-    @ExcelColStyle(align = CENTER)
-    private int fresh;
-    @ExcelColTitle("其中：有效")
-    @ExcelColStyle(align = CENTER)
-    private int effective;
-    // getters and setters ignored
-}
-
-@ExcelSheet(name = "排期")
-public class Schedule {
-    @ExcelColTitle("日期")
-    private Timestamp time;
-    @ExcelColTitle("排期数")
-    private int schedules;
-    @ExcelColTitle("定课数")
-    private int subscribes;
-    @ExcelColTitle("其中：小班课")
-    private int publics;
-    @ExcelColTitle("其中：私教课")
-    private int privates;
-    // getters and setters ignored
-}
-
-@ExcelSheet(name = "订课情况")
-public class Subscribe {
-    @ExcelColTitle("订单日期")
-    private Timestamp day;
-    @ExcelColTitle("人次")
-    private int times;
-    @ExcelColTitle("人数")
-    private int heads;
-    // getters and setters ignored
-}
-
-```
+![image](https://user-images.githubusercontent.com/1940588/33408898-d26086ce-d5b3-11e7-9431-c48ccf6799aa.png)
 
 # Cell Image Support
 Now the image in excel can be bound to bean field of type ImageData.
@@ -95,7 +73,7 @@ The image's axis will be computed to match the related cell.
 
 ```java
 @Data
-public static class ImageBean {
+public class ImageBean {
     @ExcelColTitle("图片")
     private ImageData imageData;
     @ExcelColTitle("名字")
