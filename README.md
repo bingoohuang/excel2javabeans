@@ -50,15 +50,15 @@ public class ExportFollowUserExcelRow {
     @ExcelColTitle("最近跟进时间") private String currentFollowTime;
 }
 
-val workbook = ExcelToBeansUtils.getClassPathWorkbook("assignment.xlsx");
-val beansToExcel = new BeansToExcel(workbook);
+val styleTemplate = ExcelToBeansUtils.getClassPathWorkbook("assignment.xlsx");
+val beansToExcel = new BeansToExcel(styleTemplate);
 List<ExportFollowUserExcelRow> members = Lists.newArrayList();
 members.add(...);
 members.add(...);
 members.add(...);
 members.add(...);
 
-val workbook = beansToExcel.create(members);
+val workbook = beansToExcel.create(template);
 
 ExcelToBeansUtils.writeExcel(workbook, name);
 ```
