@@ -87,6 +87,45 @@ public void testImage() {
 }
 ```
 
+# Excel SpringMVC upload Utiliy
+```java
+
+/**
+ * 从EXCEL中批量导入会员。
+ */
+@RequestMapping("/ImportMembers") @RestController
+public class ImportMembersController {
+    /**
+     * 下载失败条目的EXCEL。
+     *
+     * @return RestResp
+     */
+    @RequestMapping("/downloadError") @SneakyThrows
+    public RestResp downloadError() {
+        val workbook = ImportMembersHelper.redisExcel4ImportMemberError();
+        if (workbook == null) {
+            return RestResp.ok("当前没有失败条目");
+        }
+
+        ExcelToBeansUtils.download(EtContext.instance().getResponse(), workbook, "导入错误" + WestId.next() + ".xlsx");
+        return RestResp.ok("失败条目下载成功");
+    }
+
+    /**
+     * 使用EXCEL 批量导入学员。
+     *
+     * @param file EXCEL文件
+     * @return RestResp
+     */
+    @RequestMapping("/importMembers") @SneakyThrows
+    public RestResp importMembers(@RequestParam("file") MultipartFile file) {
+        @Cleanup val excelToBeans = new ExcelToBeans(file.getInputStream());
+        val importedMembers = excelToBeans.convert(ImportedMember.class);
+        // ...
+    }
+
+}
+```
 
 # Excel Download Utility
 ```java
