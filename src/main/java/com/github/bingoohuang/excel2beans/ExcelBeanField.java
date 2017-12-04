@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.CellStyle;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -22,6 +23,9 @@ public class ExcelBeanField {
     private CellStyle cellStyle;
     private Field field;
     private boolean cellDataType;
+    private boolean multipleColumns;
+    private Class elementType;
+    private List<Integer> multipleColumnIndexes;
 
     public <T> void setFieldValue(
             FieldAccess fieldAccess,
@@ -75,5 +79,9 @@ public class ExcelBeanField {
 
     public void setTitle(String title) {
         this.title = title.toUpperCase();
+    }
+
+    public boolean isImageDataField() {
+        return field.getType() == ImageData.class;
     }
 }

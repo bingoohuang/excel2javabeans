@@ -28,6 +28,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -180,7 +181,7 @@ public class ExcelToBeansUtils {
         val rowIgnore = field.getAnnotation(ExcelColIgnore.class);
         if (rowIgnore != null) return;
 
-        String fieldName = field.getName();
+        val fieldName = field.getName();
         if (fieldName.startsWith("$")) return; // ignore un-normal fields like $jacocoData
 
         val beanField = new ExcelBeanField();
@@ -194,8 +195,23 @@ public class ExcelToBeansUtils {
         setTitle(field, beanField);
         setStyle(sheet, field, beanField);
         setIsCellData(field, beanField);
+        setMultipleColumns(field, beanField);
 
         fields.add(beanField);
+    }
+
+    private static void setMultipleColumns(Field field, ExcelBeanField beanField) {
+        val genericType = field.getGenericType();
+        val isCollectionGeneric = genericType instanceof ParameterizedType
+                && List.class.isAssignableFrom(field.getType());
+        if (!isCollectionGeneric) return;
+
+        val parameterizedType = (ParameterizedType) genericType;
+        val actualTypeArgs = parameterizedType.getActualTypeArguments();
+        if (actualTypeArgs.length == 1) {
+            beanField.setMultipleColumns(true);
+            beanField.setElementType((Class) actualTypeArgs[0]);
+        }
     }
 
     private static void setIsCellData(Field field, ExcelBeanField beanField) {

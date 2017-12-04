@@ -115,13 +115,8 @@ public class ExcelSheetToBeans<T> {
                 continue;
             }
 
-            if (beanField.getField().getType() == ImageData.class) {
-                val imageData = imageDataTable.get(row.getRowNum(), columnIndex);
-                if (imageData == null) {
-                    ++emptyNum;
-                } else {
-                    beanField.setFieldValue(fieldAccess, methodAccess, object, imageData);
-                }
+            if (beanField.isImageDataField()) {
+                emptyNum += processImageDataField(beanField, object, row, columnIndex);
                 continue;
             }
 
@@ -136,6 +131,14 @@ public class ExcelSheetToBeans<T> {
         }
 
         return emptyNum;
+    }
+
+    private int processImageDataField(ExcelBeanField beanField, T object, Row row, int columnIndex) {
+        val imageData = imageDataTable.get(row.getRowNum(), columnIndex);
+        if (imageData == null) return 1;
+
+        beanField.setFieldValue(fieldAccess, methodAccess, object, imageData);
+        return 0;
     }
 
     private Object convertCellValue(ExcelBeanField beanField, Cell cell, String cellValue, int rowNum) {
