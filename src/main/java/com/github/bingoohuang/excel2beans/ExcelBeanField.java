@@ -83,7 +83,8 @@ public class ExcelBeanField {
     }
 
     public boolean isImageDataField() {
-        return field.getType() == ImageData.class;
+        return multipleColumns && elementType == ImageData.class
+                || field.getType() == ImageData.class;
     }
 
     public void addMultipleColumnIndex(int columnIndex) {

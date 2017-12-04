@@ -25,15 +25,19 @@ public class MultipleColumnsTest {
 
         assertThat(beans.get(0)).isEqualTo(MultipleColumnsBeanWithTitle.builder().memberName("张小凡")
                 .mobiles(Lists.newArrayList(null, "18795952311", "18795952311", "18795952311"))
+                .homeareas(Lists.newArrayList("南京", "北京", "上海", "广东"))
                 .build());
         assertThat(beans.get(1)).isEqualTo(MultipleColumnsBeanWithTitle.builder().memberName("李红")
                 .mobiles(Lists.newArrayList("18676952432", null, "18676952432", "18676952432"))
+                .homeareas(Lists.newArrayList("北京", "天津", "西安", "广西"))
                 .build());
         assertThat(beans.get(2)).isEqualTo(MultipleColumnsBeanWithTitle.builder().memberName("李红")
                 .mobiles(Lists.newArrayList("18676952432", "18676952432", null, "18676952432"))
+                .homeareas(Lists.newArrayList("西安", "郑州", "福建", "湖南"))
                 .build());
         assertThat(beans.get(3)).isEqualTo(MultipleColumnsBeanWithTitle.builder().memberName("张晓")
                 .mobiles(Lists.newArrayList("13745367698", "13745367698", "13745367698", "13745367698"))
+                .homeareas(Lists.newArrayList("杭州", "福州", "西宁", "湖北"))
                 .build());
     }
 
@@ -41,6 +45,7 @@ public class MultipleColumnsTest {
     public static class MultipleColumnsBeanWithTitle extends ExcelRowRef implements ExcelRowIgnorable {
         @ExcelColTitle("会员姓名") String memberName;
         @ExcelColTitle("手机号") List<String> mobiles;
+        @ExcelColTitle("归属地") List<String> homeareas;
 
         @Override public boolean ignoreRow() {
             return StringUtils.startsWith(memberName, "示例-");

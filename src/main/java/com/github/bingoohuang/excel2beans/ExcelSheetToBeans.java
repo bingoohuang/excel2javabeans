@@ -84,7 +84,7 @@ public class ExcelSheetToBeans<T> {
             int columnIndex = beanField.getColumnIndex();
             if (columnIndex < 0) continue;
 
-            if (beanField.getField().getType() == ImageData.class) return true;
+            if (beanField.isImageDataField()) return true;
         }
         return false;
     }

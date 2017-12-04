@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.List;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -30,6 +31,41 @@ public class ImageTest {
         @ExcelColTitle("名字")
         private String name;
     }
+
+    @Data
+    public static class ImageListBean {
+        @ExcelColTitle("图片")
+        private List<ImageData> imageDatas;
+        @ExcelColTitle("名字")
+        private String name;
+    }
+
+    @Test @SneakyThrows
+    public void testImageList() {
+        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("multi-images.xlsx");
+        val excelToBeans = new ExcelToBeans(workbook);
+        val beans = excelToBeans.convert(ImageListBean.class);
+        assertThat(beans.size()).isEqualTo(3);
+        assertThat(beans.get(0).name).isEqualTo("健身男");
+        assertThat(beans.get(0).imageDatas.get(0).getData().length).isEqualTo(255429);
+        assertThat(beans.get(0).imageDatas.get(1).getData().length).isEqualTo(1682552);
+        assertThat(beans.get(1).name).isEqualTo("健身女");
+        assertThat(beans.get(1).imageDatas.get(0).getData().length).isEqualTo(373333);
+        assertThat(beans.get(1).imageDatas.get(1).getData().length).isEqualTo(1560588);
+        assertThat(beans.get(2).name).isEqualTo("越野赛");
+        assertThat(beans.get(2).imageDatas.get(0).getData().length).isEqualTo(3700955);
+        assertThat(beans.get(2).imageDatas.get(1).getData().length).isEqualTo(1663205);
+
+//        val image0Name = createPicture(beans.get(0).imageDatas.get(1));
+//        System.out.println("健身男：" + image0Name);
+//
+//        val image1Name = createPicture(beans.get(1).imageDatas.get(1));
+//        System.out.println("健身女：" + image1Name);
+//
+//        val image2Name = createPicture(beans.get(2).imageDatas.get(1));
+//        System.out.println("越野赛：" + image2Name);
+    }
+
 
     @Test @SneakyThrows
     public void testXls() {
@@ -65,22 +101,11 @@ public class ImageTest {
         assertThat(beans.get(1).imageData.getData().length).isEqualTo(373333);
         assertThat(beans.get(2).name).isEqualTo("越野赛");
         assertThat(beans.get(2).imageData.getData().length).isEqualTo(3700955);
-
-//        val image0Name = createPicture(beans.get(0).imageData);
-//        System.out.println("健身男：" + image0Name);
-//
-//        val image1Name = createPicture(beans.get(1).imageData);
-//        System.out.println("健身女：" + image1Name);
-//
-//        val image2Name = createPicture(beans.get(2).imageData);
-//        System.out.println("越野赛：" + image2Name);
     }
 
     @SneakyThrows
     public static String createPicture(PictureData picture) {
-        if (picture == null) {
-            return "null";
-        }
+        if (picture == null) return "null";
 
         val extension = picture.suggestFileExtension();
         val imageFileName = String.valueOf(WestId.next()) + "." + extension;
