@@ -2,6 +2,7 @@ package com.github.bingoohuang.excel2beans;
 
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
+import com.google.common.collect.Lists;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -25,7 +26,7 @@ public class ExcelBeanField {
     private boolean cellDataType;
     private boolean multipleColumns;
     private Class elementType;
-    private List<Integer> multipleColumnIndexes;
+    private List<Integer> multipleColumnIndexes = Lists.newArrayList();
 
     public <T> void setFieldValue(
             FieldAccess fieldAccess,
@@ -83,5 +84,9 @@ public class ExcelBeanField {
 
     public boolean isImageDataField() {
         return field.getType() == ImageData.class;
+    }
+
+    public void addMultipleColumnIndex(int columnIndex) {
+        multipleColumnIndexes.add(columnIndex);
     }
 }

@@ -9,14 +9,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import lombok.Getter;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
-
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.trim;
-import static org.apache.poi.ss.usermodel.CellType.NUMERIC;
 
 public class ExcelSheetToBeans<T> {
     private final Workbook workbook;
@@ -60,7 +57,7 @@ public class ExcelSheetToBeans<T> {
     }
 
     public List<T> convert() {
-        List<T> beans = Lists.newArrayList();
+        val beans = Lists.<T>newArrayList();
 
         val startRowNum = jumpToStartDataRow();
         for (int i = startRowNum, ii = sheet.getLastRowNum(); i <= ii; ++i) {
@@ -109,44 +106,53 @@ public class ExcelSheetToBeans<T> {
     private int processRow(T object, Row row) {
         int emptyNum = 0;
         for (val beanField : beanFields) {
-            int columnIndex = beanField.getColumnIndex();
-            if (columnIndex < 0) {
-                ++emptyNum;
-                continue;
-            }
+            if (beanField.isMultipleColumns()) {
+                int emptyFieldValues = 0;
+                val fieldValues = Lists.<Object>newArrayList();
+                for (int columnIndex : beanField.getMultipleColumnIndexes()) {
+                    val fieldValue = processSingleColumn(columnIndex, beanField, row);
+                    fieldValues.add(fieldValue);
+                    if (fieldValue == null) ++emptyFieldValues;
+                }
 
-            if (beanField.isImageDataField()) {
-                emptyNum += processImageDataField(beanField, object, row, columnIndex);
-                continue;
-            }
+                if (emptyFieldValues == beanField.getMultipleColumnIndexes().size()) {
+                    ++emptyNum;
+                } else {
+                    beanField.setFieldValue(fieldAccess, methodAccess, object, fieldValues);
+                }
 
-            val cell = row.getCell(columnIndex);
-            val cellStringValue = getCellValue(cell);
-            if (isEmpty(cellStringValue)) {
-                ++emptyNum;
             } else {
-                val cellValue = convertCellValue(beanField, cell, cellStringValue, row.getRowNum());
-                beanField.setFieldValue(fieldAccess, methodAccess, object, cellValue);
+                int columnIndex = beanField.getColumnIndex();
+                val fieldValue = processSingleColumn(columnIndex, beanField, row);
+                if (fieldValue == null) {
+                    ++emptyNum;
+                } else {
+                    beanField.setFieldValue(fieldAccess, methodAccess, object, fieldValue);
+                }
             }
         }
 
         return emptyNum;
     }
 
-    private int processImageDataField(ExcelBeanField beanField, T object, Row row, int columnIndex) {
-        val imageData = imageDataTable.get(row.getRowNum(), columnIndex);
-        if (imageData == null) return 1;
+    private Object processSingleColumn(int columnIndex, ExcelBeanField beanField, Row row) {
+        if (columnIndex < 0) return null;
 
-        beanField.setFieldValue(fieldAccess, methodAccess, object, imageData);
-        return 0;
+        if (beanField.isImageDataField()) {
+            return imageDataTable.get(row.getRowNum(), columnIndex);
+        } else {
+            val cell = row.getCell(columnIndex);
+            val cellStringValue = getCellValue(cell);
+            if (StringUtils.isEmpty(cellStringValue)) return null;
+
+            return convertCellValue(beanField, cell, cellStringValue, row.getRowNum());
+        }
     }
 
     private Object convertCellValue(ExcelBeanField beanField, Cell cell, String cellValue, int rowNum) {
         if (beanField.isCellDataType()) {
             val cellData = CellData.builder()
-                    .value(cellValue)
-                    .row(rowNum)
-                    .col(cell.getColumnIndex())
+                    .value(cellValue).row(rowNum).col(cell.getColumnIndex())
                     .sheetIndex(workbook.getSheetIndex(sheet));
             applyComment(cell, cellData);
             return cellData.build();
@@ -172,16 +178,14 @@ public class ExcelSheetToBeans<T> {
         if (cell == null) return null;
 
         val cellType = cell.getCellTypeEnum();
-        if (cellType == NUMERIC) {
-            if (DateUtil.isCellDateFormatted(cell)) {
-                val dateCellValue = cell.getDateCellValue();
-                val sdf = new SimpleDateFormat("yyyy-MM-dd");
-                return sdf.format(dateCellValue);
-            }
+        if (cellType == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+            val dateCellValue = cell.getDateCellValue();
+            val sdf = new SimpleDateFormat("yyyy-MM-dd");
+            return sdf.format(dateCellValue);
         }
 
         val cellValue = cellFormatter.formatCellValue(cell);
-        return trim(cellValue);
+        return StringUtils.trim(cellValue);
     }
 
 
@@ -240,11 +244,14 @@ public class ExcelSheetToBeans<T> {
             if (beanField.containTitle(cellValue)) {
                 beanField.setColumnIndex(cell.getColumnIndex());
                 beanField.setTitleColumnFound(true);
-                return true;
+
+                if (!beanField.isMultipleColumns()) return true;
+
+                beanField.addMultipleColumnIndex(cell.getColumnIndex());
             }
         }
 
-        return false;
+        return !beanField.getMultipleColumnIndexes().isEmpty();
     }
 
     private boolean hasTitle() {

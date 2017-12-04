@@ -40,9 +40,7 @@ public class ExcelToBeans implements Closeable {
         val sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
         val converter = new ExcelSheetToBeans(workbook, beanClass);
         int lastCellNum = getLastCellNum(converter, rowRefs, sheet);
-        if (lastCellNum <= 0) {
-            return;
-        }
+        if (lastCellNum <= 0) return;
 
         val redCellStyle = createRedCellStyle();
 
