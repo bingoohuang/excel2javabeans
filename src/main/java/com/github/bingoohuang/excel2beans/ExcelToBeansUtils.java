@@ -4,9 +4,12 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
+import com.google.common.base.Optional;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import com.google.common.io.ByteStreams;
+import com.google.common.primitives.Primitives;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
@@ -27,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.net.URLEncoder;
@@ -196,8 +200,53 @@ public class ExcelToBeansUtils {
         setStyle(sheet, field, beanField);
         setIsCellData(field, beanField);
         setMultipleColumns(field, beanField);
+        setValueOfMethod(beanField);
 
         fields.add(beanField);
+    }
+
+    private static void setValueOfMethod(ExcelBeanField beanField) {
+        val fieldType = beanField.getFieldType();
+        if (fieldType == String.class) return;
+
+        val valueOfMethod = getValueOfMethodFrom(fieldType);
+        beanField.setValueOfMethod(valueOfMethod);
+    }
+
+    public static Method getValueOfMethodFrom(Class targetClazz) {
+        val existsMethod = valueOfMethodCache.get(targetClazz);
+        if (existsMethod != null) return existsMethod.orNull();
+
+        val clazz = Primitives.wrap(targetClazz);
+        try {
+            val valueOfMethod = clazz.getMethod("valueOf", new Class<?>[]{String.class});
+            if (Modifier.isStatic(valueOfMethod.getModifiers())
+                    && valueOfMethod.getReturnType().isAssignableFrom(clazz)) {
+                valueOfMethodCache.put(targetClazz, Optional.of(valueOfMethod));
+
+                return valueOfMethod;
+            }
+
+        } catch (Exception e) {
+            valueOfMethodCache.put(clazz, Optional.<Method>absent());
+        }
+
+        return null;
+    }
+
+    public static final Map<Class, Optional<Method>> valueOfMethodCache = Maps.newConcurrentMap();
+
+    public static Object invokeValueOf(Class clazz, String value) {
+        val valueOfMethod = valueOfMethodCache.get(clazz);
+        if (valueOfMethod == null || !valueOfMethod.isPresent()) return null;
+
+        try {
+            return valueOfMethod.get().invoke(null, value);
+        } catch (Exception e) {
+            // ignore
+        }
+
+        return null;
     }
 
     private static void setMultipleColumns(Field field, ExcelBeanField beanField) {

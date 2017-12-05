@@ -16,25 +16,25 @@ public class EtTest {
         val excelToBeans = new ExcelToBeans(workbook);
         val etMembers = excelToBeans.convert(EtMember.class);
         val member1 = EtMember.builder().memberName("黄同学").teachers("林老师")
-                .memberCard("零基础素描课程").totalTimes(25)
+                .memberCard("零基础素描课程").totalTimes((short) 25)
                 .mobile(CellData.builder().comment("手机号码不能重复哦").commentAuthor("Microsoft Office 用户")
                         .row(2).col(3).value("12345678910").build()).build();
         val member2 = EtMember.builder().memberName("陈学").teachers("刘老师")
                 .mobile(CellData.builder().comment(null).commentAuthor(null)
                         .row(3).col(3).value("12345678918").build())
-                .memberCard("零基础素描课程").totalTimes(25).build();
+                .memberCard("零基础素描课程").totalTimes((short) 25).build();
         val member3 = EtMember.builder().memberName("齐学").teachers("刘老师/华老师")
                 .mobile(CellData.builder().comment(null).commentAuthor(null)
                         .row(4).col(3).value("12345678919").build())
-                .memberCard("零基础油画系统课程").totalTimes(40).build();
+                .memberCard("零基础油画系统课程").totalTimes((short) 40).build();
         val member4 = EtMember.builder().memberName("徐同学").teachers("刘老师")
                 .mobile(CellData.builder().comment(null).commentAuthor(null)
                         .row(5).col(3).value("12345678920").build())
-                .memberCard("零基础素描课程").totalTimes(25).build();
+                .memberCard("零基础素描课程").totalTimes((short) 25).build();
         val member5 = EtMember.builder().memberName("宋同学").teachers("刘老师")
                 .mobile(CellData.builder().comment(null).commentAuthor(null)
                         .row(6).col(3).value("12345678921").build())
-                .memberCard("零基础素描课程").totalTimes(25).build();
+                .memberCard("零基础素描课程").totalTimes((short) 25).build();
         assertThat(etMembers).containsExactly(member1, member2, member3, member4, member5);
 
         val mobile = member1.getMobile();
@@ -60,13 +60,13 @@ public class EtTest {
         @ExcelColTitle("责任教师") private String teachers;
         @ExcelColTitle("手机号") private CellData mobile;
         @ExcelColTitle("课程卡") private String memberCard;
-        @ExcelColTitle("总次数") private int totalTimes;
+        @ExcelColTitle("总次数") private short totalTimes;
     }
 
     @Data @Builder @ExcelSheet(name = "卡模板")
     public static class EtCard {
         @ExcelColTitle("卡模板名称") private String cardName;
-        @ExcelColTitle("次数") private int times;
+        @ExcelColTitle("次数") private long times;
         @ExcelColTitle("有效期值") private int expiredValue;
         @ExcelColTitle("有效期单位") private String expiredUnit;
         @ExcelColTitle("标准售价") private int salePrice;

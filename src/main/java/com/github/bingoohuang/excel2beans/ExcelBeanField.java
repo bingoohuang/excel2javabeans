@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.CellStyle;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -27,6 +28,8 @@ public class ExcelBeanField {
     private boolean multipleColumns;
     private Class elementType;
     private List<Integer> multipleColumnIndexes = Lists.newArrayList();
+    private Method valueOfMethod;
+
 
     public <T> void setFieldValue(
             FieldAccess fieldAccess,
@@ -83,11 +86,20 @@ public class ExcelBeanField {
     }
 
     public boolean isImageDataField() {
-        return multipleColumns && elementType == ImageData.class
-                || field.getType() == ImageData.class;
+        return getFieldType() == ImageData.class;
     }
 
     public void addMultipleColumnIndex(int columnIndex) {
         multipleColumnIndexes.add(columnIndex);
+    }
+
+    public Class getFieldType() {
+        return multipleColumns ? elementType : field.getType();
+    }
+
+    public Object convert(String cellValue) {
+        if (valueOfMethod == null) return cellValue;
+
+        return ExcelToBeansUtils.invokeValueOf(getFieldType(), cellValue);
     }
 }

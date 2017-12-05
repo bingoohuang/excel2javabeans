@@ -106,33 +106,37 @@ public class ExcelSheetToBeans<T> {
     private int processRow(T object, Row row) {
         int emptyNum = 0;
         for (val beanField : beanFields) {
-            if (beanField.isMultipleColumns()) {
-                int emptyFieldValues = 0;
-                val fieldValues = Lists.<Object>newArrayList();
-                for (int columnIndex : beanField.getMultipleColumnIndexes()) {
-                    val fieldValue = processSingleColumn(columnIndex, beanField, row);
-                    fieldValues.add(fieldValue);
-                    if (fieldValue == null) ++emptyFieldValues;
-                }
+            val fieldValue = parseFieldValue(row, beanField);
 
-                if (emptyFieldValues == beanField.getMultipleColumnIndexes().size()) {
-                    ++emptyNum;
-                } else {
-                    beanField.setFieldValue(fieldAccess, methodAccess, object, fieldValues);
-                }
-
+            if (fieldValue == null) {
+                ++emptyNum;
             } else {
-                int columnIndex = beanField.getColumnIndex();
-                val fieldValue = processSingleColumn(columnIndex, beanField, row);
-                if (fieldValue == null) {
-                    ++emptyNum;
-                } else {
-                    beanField.setFieldValue(fieldAccess, methodAccess, object, fieldValue);
-                }
+                beanField.setFieldValue(fieldAccess, methodAccess, object, fieldValue);
             }
         }
 
         return emptyNum;
+    }
+
+    private Object parseFieldValue(Row row, ExcelBeanField beanField) {
+        if (beanField.isMultipleColumns()) {
+            return parseMultipleFieldValue(row, beanField);
+        } else {
+            return processSingleColumn(beanField.getColumnIndex(), beanField, row);
+        }
+    }
+
+    private Object parseMultipleFieldValue(Row row, ExcelBeanField beanField) {
+        int nonEmptyFieldValues = 0;
+        val fieldValues = Lists.<Object>newArrayList();
+        for (int columnIndex : beanField.getMultipleColumnIndexes()) {
+            val value = processSingleColumn(columnIndex, beanField, row);
+            fieldValues.add(value);
+
+            if (value != null) ++nonEmptyFieldValues;
+        }
+
+        return nonEmptyFieldValues > 0 ? fieldValues : null;
     }
 
     private Object processSingleColumn(int columnIndex, ExcelBeanField beanField, Row row) {
@@ -157,13 +161,8 @@ public class ExcelSheetToBeans<T> {
             applyComment(cell, cellData);
             return cellData.build();
         } else {
-            val type = beanField.getField().getType();
-            if (type == int.class || type == Integer.class) {
-                return Integer.parseInt(cellValue);
-            }
+            return beanField.convert(cellValue);
         }
-
-        return cellValue;
     }
 
     private void applyComment(Cell cell, CellDataBuilder cellData) {
@@ -197,18 +196,7 @@ public class ExcelSheetToBeans<T> {
         for (int ii = sheet.getLastRowNum(); i <= ii; ++i) {
             val row = sheet.getRow(i);
 
-            boolean containsTitle = false;
-            for (int j = 0, jj = beanFields.size(); j < jj; ++j) {
-                val beanField = beanFields.get(j);
-                if (!beanField.hasTitle()) {
-                    beanField.setColumnIndex(j + row.getFirstCellNum());
-                } else {
-                    if (findColumn(row, beanField)) {
-                        containsTitle = true;
-                    }
-                }
-            }
-
+            val containsTitle = parseContainsTitle(row);
             if (containsTitle) {
                 resetNotFoundColumnIndex();
                 checkTitleColumnsAllFound();
@@ -217,6 +205,22 @@ public class ExcelSheetToBeans<T> {
         }
 
         throw new IllegalArgumentException("找不到标题行");
+    }
+
+    private boolean parseContainsTitle(Row row) {
+        boolean containsTitle = false;
+        for (int j = 0, jj = beanFields.size(); j < jj; ++j) {
+            val beanField = beanFields.get(j);
+            if (!beanField.hasTitle()) {
+                beanField.setColumnIndex(j + row.getFirstCellNum());
+            } else {
+                if (findColumn(row, beanField) && !containsTitle) {
+                    containsTitle = true;
+                }
+            }
+        }
+
+        return containsTitle;
     }
 
     private void resetNotFoundColumnIndex() {
