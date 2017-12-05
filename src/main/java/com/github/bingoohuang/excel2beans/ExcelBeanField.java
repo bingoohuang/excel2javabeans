@@ -31,12 +31,7 @@ public class ExcelBeanField {
     private Method valueOfMethod;
 
 
-    public <T> void setFieldValue(
-            FieldAccess fieldAccess,
-            MethodAccess methodAccess,
-            T o,
-            Object cellValue) {
-
+    public <T> void setFieldValue(FieldAccess fieldAccess, MethodAccess methodAccess, T o, Object cellValue) {
         try {
             methodAccess.invoke(o, setter, cellValue);
             return;
@@ -53,11 +48,7 @@ public class ExcelBeanField {
     }
 
 
-    public Object getFieldValue(
-            FieldAccess fieldAccess,
-            MethodAccess methodAccess,
-            Object o) {
-
+    public Object getFieldValue(FieldAccess fieldAccess, MethodAccess methodAccess, Object o) {
         try {
             return methodAccess.invoke(o, getter);
         } catch (Exception e) {
@@ -101,5 +92,9 @@ public class ExcelBeanField {
         if (valueOfMethod == null) return cellValue;
 
         return ExcelToBeansUtils.invokeValueOf(getFieldType(), cellValue);
+    }
+
+    public boolean isTitleNotMatched() {
+        return hasTitle() && titleRequired && !titleColumnFound;
     }
 }

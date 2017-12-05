@@ -34,8 +34,7 @@ public class BeansToExcel {
     }
 
     public Workbook create(List<?>... lists) {
-        Map<String, Object> props = Maps.newHashMap();
-        return create(props, lists);
+        return create(Maps.<String, Object>newHashMap(), lists);
     }
 
     public Workbook create(Map<String, Object> props, List<?>... lists) {
@@ -61,7 +60,7 @@ public class BeansToExcel {
     }
 
     private Row createRow(BeanClassBag bag) {
-        Sheet sheet = bag.getSheet();
+        val sheet = bag.getSheet();
         if (bag.isFirstRowCreated()) {
             return sheet.createRow(sheet.getLastRowNum() + 1);
         } else {
@@ -72,7 +71,7 @@ public class BeansToExcel {
 
     private void autoSizeColumn(Map<Class, BeanClassBag> sheets) {
         for (val bag : sheets.values()) {
-            Sheet sheet = bag.getSheet();
+            val sheet = bag.getSheet();
             val lastCellNum = sheet.getRow(sheet.getLastRowNum()).getLastCellNum();
             for (int i = 0; i <= lastCellNum; ++i) {
                 sheet.autoSizeColumn(i); // adjust width of the column
@@ -115,19 +114,19 @@ public class BeansToExcel {
             return;
         }
 
-        String headKey = excelSheet.headKey();
+        val headKey = excelSheet.headKey();
         if (!props.containsKey(headKey)) {
             return;
         }
 
-        String head = String.valueOf(props.get(headKey));
+        val head = String.valueOf(props.get(headKey));
         if (StringUtils.isEmpty(head)) {
             return;
         }
 
-        val cra = new CellRangeAddress(0, 0,
+        val cellRangeAddress = new CellRangeAddress(0, 0,
                 0, bag.getBeanFields().size() - 1);
-        bag.getSheet().addMergedRegion(cra);
+        bag.getSheet().addMergedRegion(cellRangeAddress);
 
         val row = createRow(bag);
         row.createCell(0).setCellValue(head);

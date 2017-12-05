@@ -233,7 +233,7 @@ public class ExcelSheetToBeans<T> {
 
     private void checkTitleColumnsAllFound() {
         for (val beanField : beanFields) {
-            if (beanField.hasTitle() && beanField.isTitleRequired() && !beanField.isTitleColumnFound()) {
+            if (beanField.isTitleNotMatched()) {
                 throw new IllegalArgumentException("找不到[" + beanField.getTitle() + "]的列");
             }
         }
