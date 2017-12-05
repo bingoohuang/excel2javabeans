@@ -1,9 +1,6 @@
 package com.github.bingoohuang.excel2beans;
 
-import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
-import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
-import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
-import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
+import com.github.bingoohuang.excel2beans.annotations.*;
 import com.google.common.base.Optional;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Maps;
@@ -39,7 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.*;
 import static org.apache.commons.lang3.StringUtils.capitalize;
 
 @UtilityClass
@@ -144,8 +140,7 @@ public class ExcelToBeansUtils {
 
     @SneakyThrows
     public Workbook getClassPathWorkbook(String classPathExcelName) {
-        val classLoader = ExcelToBeansUtils.class.getClassLoader();
-        @Cleanup val is = classLoader.getResourceAsStream(classPathExcelName);
+        @Cleanup val is = getClassPathInputStream(classPathExcelName);
         return WorkbookFactory.create(is);
     }
 
@@ -167,7 +162,7 @@ public class ExcelToBeansUtils {
     }
 
     public static void removeRow(Sheet sheet, int rowIndex) {
-        int lastRowNum = sheet.getLastRowNum();
+        val lastRowNum = sheet.getLastRowNum();
         if (rowIndex >= 0 && rowIndex < lastRowNum) {
             sheet.shiftRows(rowIndex + 1, lastRowNum, -1);
         } else if (rowIndex == lastRowNum) {
@@ -192,7 +187,7 @@ public class ExcelToBeansUtils {
 
         beanField.setColumnIndex(fields.size());
         beanField.setField(field);
-        beanField.setName(fieldName);
+        beanField.setFieldName(fieldName);
         beanField.setSetter("set" + capitalize(fieldName));
         beanField.setGetter("get" + capitalize(fieldName));
 
@@ -221,6 +216,7 @@ public class ExcelToBeansUtils {
         try {
             val valueOfMethod = clazz.getMethod("valueOf", new Class<?>[]{String.class});
             if (Modifier.isStatic(valueOfMethod.getModifiers())
+                    && Modifier.isPublic(valueOfMethod.getModifiers())
                     && valueOfMethod.getReturnType().isAssignableFrom(clazz)) {
                 valueOfMethodCache.put(targetClazz, Optional.of(valueOfMethod));
 
@@ -269,30 +265,30 @@ public class ExcelToBeansUtils {
 
     private void setStyle(Sheet sheet, Field field, ExcelBeanField beanField) {
         val colStyle = field.getAnnotation(ExcelColStyle.class);
-        if (colStyle != null) {
-            val style = setAlign(sheet, colStyle);
-            if (style != null) {
-                beanField.setCellStyle(style);
-            }
-        }
+        if (colStyle == null) return;
+
+        val style = setAlign(sheet, colStyle);
+        if (style == null) return;
+
+        beanField.setCellStyle(style);
     }
 
     private void setTitle(Field field, ExcelBeanField beanField) {
         val colTitle = field.getAnnotation(ExcelColTitle.class);
-        if (colTitle != null) {
-            beanField.setTitleRequired(colTitle.required());
-            beanField.setTitle(colTitle.value());
-        }
+        if (colTitle == null) return;
+
+        beanField.setTitleRequired(colTitle.required());
+        beanField.setTitle(colTitle.value());
     }
 
     private CellStyle setAlign(Sheet sheet, ExcelColStyle colStyle) {
         var style = sheet.getWorkbook().createCellStyle();
         val align = colStyle.align();
-        if (align == LEFT) {
+        if (align == ExcelColAlign.LEFT) {
             style.setAlignment(HorizontalAlignment.LEFT);
-        } else if (align == CENTER) {
+        } else if (align == ExcelColAlign.CENTER) {
             style.setAlignment(HorizontalAlignment.CENTER);
-        } else if (align == RIGHT) {
+        } else if (align == ExcelColAlign.RIGHT) {
             style.setAlignment(HorizontalAlignment.RIGHT);
         } else {
             style = null;

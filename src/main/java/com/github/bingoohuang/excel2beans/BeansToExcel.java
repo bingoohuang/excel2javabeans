@@ -74,7 +74,7 @@ public class BeansToExcel {
             val sheet = bag.getSheet();
             val lastCellNum = sheet.getRow(sheet.getLastRowNum()).getLastCellNum();
             for (int i = 0; i <= lastCellNum; ++i) {
-                sheet.autoSizeColumn(i); // adjust width of the column
+                sheet.autoSizeColumn(i);
             }
         }
     }
@@ -110,22 +110,16 @@ public class BeansToExcel {
 
     private void addHeadToSheet(Map<String, Object> props, BeanClassBag bag) {
         val excelSheet = bag.getBeanClass().getAnnotation(ExcelSheet.class);
-        if (excelSheet == null) {
-            return;
-        }
+        if (excelSheet == null) return;
 
         val headKey = excelSheet.headKey();
-        if (!props.containsKey(headKey)) {
-            return;
-        }
+        if (!props.containsKey(headKey)) return;
 
         val head = String.valueOf(props.get(headKey));
-        if (StringUtils.isEmpty(head)) {
-            return;
-        }
+        if (StringUtils.isEmpty(head)) return;
 
-        val cellRangeAddress = new CellRangeAddress(0, 0,
-                0, bag.getBeanFields().size() - 1);
+        val lastCol = bag.getBeanFields().size() - 1;
+        val cellRangeAddress = new CellRangeAddress(0, 0, 0, lastCol);
         bag.getSheet().addMergedRegion(cellRangeAddress);
 
         val row = createRow(bag);
@@ -178,20 +172,10 @@ public class BeansToExcel {
 
     private Sheet createSheet(Class<?> beanClass) {
         val excelSheet = beanClass.getAnnotation(ExcelSheet.class);
-        val sheetName = parseSheetName(beanClass, excelSheet);
+        val sheetName = excelSheet != null && StringUtils.isNotBlank(excelSheet.name())
+                ? excelSheet.name() : beanClass.getSimpleName();
 
         return workbook.createSheet(sheetName);
     }
 
-    private String parseSheetName(Class<?> beanClass, ExcelSheet excelSheet) {
-        if (excelSheet == null) {
-            return beanClass.getSimpleName();
-        }
-
-        if (StringUtils.isNotBlank(excelSheet.name())) {
-            return excelSheet.name();
-        }
-
-        return beanClass.getSimpleName();
-    }
 }

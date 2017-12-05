@@ -6,8 +6,6 @@ import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import java.util.List;
-
 import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathWorkbook;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -15,14 +13,22 @@ public class MemberImportBeanTest {
     @SneakyThrows
     @Test public void testWithoutBlankHeadRowsAndCols() {
         @Cleanup val workbook = getClassPathWorkbook("member.xlsx");
-        val excelToBeans = new ExcelSheetToBeans(workbook, MemberImportBean.class);
-        List<MemberImportBean> beans = excelToBeans.convert();
+        val excelToBeans = new ExcelToBeans(workbook);
+        val beans = excelToBeans.convert(MemberImportBean.class);
         assertThat(beans).hasSize(4);
 
         assertThat(beans.get(0).getRowNum()).isEqualTo(6);
         assertThat(beans.get(1).getRowNum()).isEqualTo(7);
         assertThat(beans.get(2).getRowNum()).isEqualTo(8);
         assertThat(beans.get(3).getRowNum()).isEqualTo(9);
+
+        beans.get(0).setError("error 000");
+        beans.get(1).setError("error 000");
+
+        excelToBeans.writeError(MemberImportBean.class, beans);
+        excelToBeans.removeOkRows(MemberImportBean.class, beans);
+
+        excelToBeans.getWorkbookBytes();
     }
 
     @Data @Builder
@@ -41,6 +47,13 @@ public class MemberImportBeanTest {
 
         @Override public boolean ignoreRow() {
             return StringUtils.startsWith(memberName, "示例-");
+        }
+
+
+        private String error;
+
+        @Override public String error() {
+            return error;
         }
     }
 }

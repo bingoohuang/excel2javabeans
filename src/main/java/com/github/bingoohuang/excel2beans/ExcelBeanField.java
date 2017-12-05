@@ -15,7 +15,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Data @Slf4j
 public class ExcelBeanField {
-    private String name;
+    private String fieldName;
     private String setter;
     private String getter;
     private boolean titleColumnFound;
@@ -31,7 +31,7 @@ public class ExcelBeanField {
     private Method valueOfMethod;
 
 
-    public <T> void setFieldValue(FieldAccess fieldAccess, MethodAccess methodAccess, T o, Object cellValue) {
+    public void setFieldValue(FieldAccess fieldAccess, MethodAccess methodAccess, Object o, Object cellValue) {
         try {
             methodAccess.invoke(o, setter, cellValue);
             return;
@@ -40,10 +40,10 @@ public class ExcelBeanField {
         }
 
         try {
-            fieldAccess.set(o, name, cellValue);
+            fieldAccess.set(o, fieldName, cellValue);
             return;
         } catch (Exception e) {
-            log.warn("field set {} failed", name, e);
+            log.warn("field set {} failed", fieldName, e);
         }
     }
 
@@ -56,7 +56,7 @@ public class ExcelBeanField {
         }
 
         try {
-            return fieldAccess.get(o, name);
+            return fieldAccess.get(o, fieldName);
         } catch (Exception e) {
             log.warn("field get {} failed", getter, e);
         }

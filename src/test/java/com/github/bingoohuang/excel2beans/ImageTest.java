@@ -7,14 +7,8 @@ import lombok.Cleanup;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.val;
-import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
-import org.apache.poi.hssf.usermodel.HSSFPatriarch;
-import org.apache.poi.hssf.usermodel.HSSFPicture;
 import org.apache.poi.ss.usermodel.PictureData;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFDrawing;
-import org.apache.poi.xssf.usermodel.XSSFPicture;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -56,14 +50,14 @@ public class ImageTest {
         assertThat(beans.get(2).imageDatas.get(0).getData().length).isEqualTo(3700955);
         assertThat(beans.get(2).imageDatas.get(1).getData().length).isEqualTo(1663205);
 
-//        val image0Name = createPicture(beans.get(0).imageDatas.get(1));
-//        System.out.println("健身男：" + image0Name);
-//
-//        val image1Name = createPicture(beans.get(1).imageDatas.get(1));
-//        System.out.println("健身女：" + image1Name);
-//
-//        val image2Name = createPicture(beans.get(2).imageDatas.get(1));
-//        System.out.println("越野赛：" + image2Name);
+        val image0Name = createPicture(beans.get(0).imageDatas.get(1));
+        System.out.println("健身男：" + image0Name);
+
+        val image1Name = createPicture(beans.get(1).imageDatas.get(1));
+        System.out.println("健身女：" + image1Name);
+
+        val image2Name = createPicture(beans.get(2).imageDatas.get(1));
+        System.out.println("越野赛：" + image2Name);
     }
 
 
@@ -116,60 +110,4 @@ public class ImageTest {
 
         return imageFileName;
     }
-
-    @Test @SneakyThrows @Ignore
-    public void test2() {
-        @Cleanup val workbook1 = ExcelToBeansUtils.getClassPathWorkbook("center-images.xls");
-        computeImagePosition(workbook1);
-        System.out.println();
-        System.out.println();
-        @Cleanup val workbook2 = ExcelToBeansUtils.getClassPathWorkbook("center-images.xlsx");
-        computeImagePosition(workbook2);
-    }
-
-    private void computeImagePosition(Workbook workbook) {
-        val allPictures = workbook.getAllPictures();
-        val sheet = workbook.getSheetAt(1);
-        val drawingPatriarch = sheet.getDrawingPatriarch();
-        if (drawingPatriarch instanceof XSSFDrawing) {
-            val xssfDrawing = (XSSFDrawing) drawingPatriarch;
-            for (val shape : xssfDrawing.getShapes()) {
-                if (shape instanceof XSSFPicture) {
-                    val picture = (XSSFPicture) shape;
-                    val clientAnchor = picture.getClientAnchor();
-
-                    val from = clientAnchor.getFrom();
-                    val to = clientAnchor.getTo();
-                    val pictureName = createPicture(picture.getPictureData());
-                    System.out.println("from row:" + from.getRow() + ", from col:" + from.getCol() + ",pictureName:" + pictureName);
-
-                    int axisRowIndex = ExcelToBeansUtils.computeAxisRowIndex(sheet, picture);
-                    int axisColIndex = ExcelToBeansUtils.computeAxisColIndex(sheet, picture);
-
-                    System.out.println("axisRowIndex: " + axisRowIndex + ",axisColIndex:" + axisColIndex);
-                }
-            }
-        } else if (drawingPatriarch instanceof HSSFPatriarch) {
-            val hssfPatriarch = (HSSFPatriarch) drawingPatriarch;
-            for (val shape : hssfPatriarch.getChildren()) {
-                if (shape instanceof HSSFPicture) {
-                    val hssfPicture = (HSSFPicture) shape;
-                    val pictureIndex = hssfPicture.getPictureIndex();
-                    val picture = allPictures.get(pictureIndex - 1);
-                    val anchor = hssfPicture.getAnchor();
-                    if (anchor instanceof HSSFClientAnchor) {
-                        val hssfClientAnchor = (HSSFClientAnchor) anchor;
-                        val pictureName = createPicture(picture);
-                        System.out.println("row1:" + hssfClientAnchor.getRow1() + ", col1:" + hssfClientAnchor.getCol1() + ",pictureName:" + pictureName);
-
-                        int axisRowIndex = ExcelToBeansUtils.computeAxisRowIndex(sheet, hssfPicture);
-                        int axisColIndex = ExcelToBeansUtils.computeAxisColIndex(sheet, hssfPicture);
-
-                        System.out.println("axisRowIndex: " + axisRowIndex + ",axisColIndex:" + axisColIndex);
-                    }
-                }
-            }
-        }
-    }
-
 }
