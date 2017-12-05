@@ -87,6 +87,19 @@ public void testImage() {
 }
 ```
 
+# List<String/Integer> bean fields support
+
+![image](https://user-images.githubusercontent.com/1940588/33585728-afbdced8-d9a0-11e7-8903-e172fafbf577.png)
+
+```java
+@Data
+public static class MultipleColumnsBeanWithTitle {
+    @ExcelColTitle("会员姓名") String memberName;
+    @ExcelColTitle("手机号") List<String> mobiles;
+    @ExcelColTitle("归属地") List<String> homeareas;
+}
+```
+
 # Excel SpringMVC upload and download demo
 ```java
 

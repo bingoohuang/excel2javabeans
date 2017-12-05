@@ -1,5 +1,7 @@
 package com.github.bingoohuang.excel2beans;
 
+import lombok.Cleanup;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +17,7 @@ import java.util.List;
  * Mapping excel rows to java beans.
  */
 public class ExcelToBeans implements Closeable {
-    private final Workbook workbook;
+    private @Getter final Workbook workbook;
     private final boolean shouldBeClosedByMe;
 
     @SneakyThrows
@@ -45,9 +47,7 @@ public class ExcelToBeans implements Closeable {
         val redCellStyle = createRedCellStyle();
 
         for (val rowRef : rowRefs) {
-            if (StringUtils.isEmpty(rowRef.error())) {
-                continue;
-            }
+            if (StringUtils.isEmpty(rowRef.error())) continue;
 
             val row = sheet.getRow(rowRef.getRowNum());
             val cell = row.createCell(lastCellNum);
@@ -77,10 +77,10 @@ public class ExcelToBeans implements Closeable {
         val sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
         int count = 0;
         for (val rowRef : rowRefs) {
-            if (StringUtils.isEmpty(rowRef.error())) {
-                ExcelToBeansUtils.removeRow(sheet, rowRef.getRowNum() - count);
-                ++count;
-            }
+            if (StringUtils.isNotEmpty(rowRef.error())) continue;
+
+            ExcelToBeansUtils.removeRow(sheet, rowRef.getRowNum() - count);
+            ++count;
         }
     }
 
@@ -90,16 +90,12 @@ public class ExcelToBeans implements Closeable {
 
     @SneakyThrows
     public byte[] getWorkbookBytes() {
-        val bout = new ByteArrayOutputStream();
+        @Cleanup val bout = new ByteArrayOutputStream();
         workbook.write(bout);
-        bout.close();
-
         return bout.toByteArray();
     }
 
     @Override public void close() throws IOException {
-        if (shouldBeClosedByMe) {
-            workbook.close();
-        }
+        if (shouldBeClosedByMe) workbook.close();
     }
 }
