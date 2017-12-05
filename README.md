@@ -68,7 +68,7 @@ ExcelToBeansUtils.writeExcel(workbook, name);
 # Cell Image Support
 Now the image in excel can be bound to bean field of type ImageData.
 The image's axis will be computed to match the related cell. 
-![image](https://user-images.githubusercontent.com/1940588/33408499-c5489ba4-d5b1-11e7-86ee-10913dd1eaef.png)
+![image](https://user-images.githubusercontent.com/1940588/33585908-ab2809aa-d9a1-11e7-962e-ce7c142faf99.png)
 
 
 ```java
