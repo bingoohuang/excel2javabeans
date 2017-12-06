@@ -13,8 +13,9 @@ convert excel rows to javabeans and vice visa.
 
 ```java
 // ... 
-ExcelToBeans excelToBeans = new ExcelToBeans(BeanWithTitle.class);
-List<BeanWithTitle> beans = excelToBeans.convert(workbook);
+Workbook workbook = getClassPathWorkbook("member.xlsx");
+ExcelToBeans excelToBeans = new ExcelToBeans(workbook);
+List<BeanWithTitle> beans = excelToBeans.convert(BeanWithTitle.class);
 // ...
 ```
 
@@ -50,22 +51,22 @@ public class ExportFollowUserExcelRow {
     @ExcelColTitle("最近跟进时间") private String currentFollowTime;
 }
 
-val styleTemplate = ExcelToBeansUtils.getClassPathWorkbook("assignment.xlsx");
-val beansToExcel = new BeansToExcel(styleTemplate);
+Workbook templateWorkbook = ExcelToBeansUtils.getClassPathWorkbook("assignment.xlsx");
+BeansToExcel beansToExcel = new BeansToExcel(templateWorkbook);
 List<ExportFollowUserExcelRow> members = Lists.newArrayList();
 members.add(...);
 members.add(...);
 members.add(...);
 members.add(...);
 
-val workbook = beansToExcel.create(template);
-
+Workbook workbook = beansToExcel.create(members);
 ExcelToBeansUtils.writeExcel(workbook, name);
 ```
 
 ![image](https://user-images.githubusercontent.com/1940588/33408898-d26086ce-d5b3-11e7-9431-c48ccf6799aa.png)
 
 # Cell Image Support
+
 Now the image in excel can be bound to bean field of type ImageData.
 The image's axis will be computed to match the related cell. 
 ![image](https://user-images.githubusercontent.com/1940588/33585908-ab2809aa-d9a1-11e7-962e-ce7c142faf99.png)
@@ -81,9 +82,9 @@ public class ImageBean {
 }
 
 public void testImage() {
-    @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("images.xls");
-    val excelToBeans = new ExcelToBeans(workbook);
-    val beans = excelToBeans.convert(ImageBean.class);
+    Workbook val workbook = ExcelToBeansUtils.getClassPathWorkbook("images.xls");
+    ExcelToBeans excelToBeans = new ExcelToBeans(workbook);
+    List<ImageBean> beans = excelToBeans.convert(ImageBean.class);
 }
 ```
 

@@ -16,8 +16,8 @@ import java.util.List;
 public class AssignmentTest {
     @Test
     public void test() {
-        val workbook = ExcelToBeansUtils.getClassPathWorkbook("assignment.xlsx");
-        val beansToExcel = new BeansToExcel(workbook);
+        val templateWorkbook = ExcelToBeansUtils.getClassPathWorkbook("assignment.xlsx");
+        val beansToExcel = new BeansToExcel(templateWorkbook);
         val name = "test-assignment.xlsx";
 
         createExcel(beansToExcel, name);
