@@ -95,9 +95,9 @@ public void testImage() {
 ```java
 @Data
 public static class MultipleColumnsBeanWithTitle {
-    @ExcelColTitle("会员姓名") String memberName;
-    @ExcelColTitle("手机号") List<String> mobiles;
-    @ExcelColTitle("归属地") List<String> homeareas;
+    @ExcelColTitle("会员姓名") String memberName; // for the first row, the value will be "张小凡"
+    @ExcelColTitle("手机号") List<String> mobiles; // for the first row，the values will be: null, "18795952311", "18795952311", "18795952311"
+    @ExcelColTitle("归属地") List<String> homeareas; // for the first row, the values will be: "南京", "北京", "上海", "广东"
 }
 ```
 
