@@ -1,13 +1,11 @@
 package com.github.bingoohuang.excel2beans;
 
-import lombok.Cleanup;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,13 +24,11 @@ public class ExcelToBeans implements Closeable {
         this.shouldBeClosedByMe = true;
     }
 
-    @SneakyThrows
     public ExcelToBeans(Workbook workbook) {
         this.workbook = workbook;
         this.shouldBeClosedByMe = false;
     }
 
-    @SneakyThrows
     public <T> List<T> convert(Class<T> beanClass) {
         val converter = new ExcelSheetToBeans(workbook, beanClass);
         return converter.convert();
@@ -40,8 +36,8 @@ public class ExcelToBeans implements Closeable {
 
     public void writeError(Class<?> beanClass, List<? extends ExcelRowRef> rowRefs) {
         val sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
-        val converter = new ExcelSheetToBeans(workbook, beanClass);
-        int lastCellNum = getLastCellNum(converter, rowRefs, sheet);
+        val sheetToBeans = new ExcelSheetToBeans(workbook, beanClass);
+        int lastCellNum = getLastCellNum(sheet, sheetToBeans, rowRefs);
         if (lastCellNum <= 0) return;
 
         val redCellStyle = createRedCellStyle();
@@ -56,9 +52,9 @@ public class ExcelToBeans implements Closeable {
         }
     }
 
-    public int getLastCellNum(ExcelSheetToBeans converter, List<? extends ExcelRowRef> rowRefs, Sheet sheet) {
-        if (converter.isHasTitle()) {
-            return sheet.getRow(converter.findTitleRowNum()).getLastCellNum();
+    public int getLastCellNum(Sheet sheet, ExcelSheetToBeans sheetToBeans, List<? extends ExcelRowRef> rowRefs) {
+        if (sheetToBeans.isHasTitle()) {
+            return sheet.getRow(sheetToBeans.findTitleRowNum()).getLastCellNum();
         }
 
         return rowRefs.isEmpty() ? 0 : sheet.getRow(rowRefs.get(0).getRowNum()).getLastCellNum();
@@ -75,24 +71,13 @@ public class ExcelToBeans implements Closeable {
 
     public void removeOkRows(Class<?> beanClass, List<? extends ExcelRowRef> rowRefs) {
         val sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
-        int count = 0;
+        int rowsRemoved = 0;
         for (val rowRef : rowRefs) {
             if (StringUtils.isNotEmpty(rowRef.error())) continue;
 
-            ExcelToBeansUtils.removeRow(sheet, rowRef.getRowNum() - count);
-            ++count;
+            ExcelToBeansUtils.removeRow(sheet, rowRef.getRowNum() - rowsRemoved);
+            ++rowsRemoved;
         }
-    }
-
-    public void writeExcel(String name) {
-        ExcelToBeansUtils.writeExcel(workbook, name);
-    }
-
-    @SneakyThrows
-    public byte[] getWorkbookBytes() {
-        @Cleanup val bout = new ByteArrayOutputStream();
-        workbook.write(bout);
-        return bout.toByteArray();
     }
 
     @Override public void close() throws IOException {

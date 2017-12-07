@@ -27,8 +27,6 @@ public class MemberImportBeanTest {
 
         excelToBeans.writeError(MemberImportBean.class, beans);
         excelToBeans.removeOkRows(MemberImportBean.class, beans);
-
-        excelToBeans.getWorkbookBytes();
     }
 
     @Data @Builder

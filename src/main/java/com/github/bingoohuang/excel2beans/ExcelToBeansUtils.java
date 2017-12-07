@@ -3,26 +3,25 @@ package com.github.bingoohuang.excel2beans;
 import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
-import lombok.experimental.UtilityClass;
 import lombok.experimental.var;
 import lombok.val;
 import org.apache.poi.ss.usermodel.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-@UtilityClass
 public class ExcelToBeansUtils {
     @SneakyThrows
-    public Workbook getClassPathWorkbook(String classPathExcelName) {
+    public static Workbook getClassPathWorkbook(String classPathExcelName) {
         @Cleanup val is = getClassPathInputStream(classPathExcelName);
         return WorkbookFactory.create(is);
     }
 
     @SneakyThrows
-    public InputStream getClassPathInputStream(String classPathExcelName) {
+    public static InputStream getClassPathInputStream(String classPathExcelName) {
         val classLoader = ExcelToBeansUtils.class.getClassLoader();
         return classLoader.getResourceAsStream(classPathExcelName);
     }
@@ -38,6 +37,13 @@ public class ExcelToBeansUtils {
                 sheet.removeRow(removingRow);
             }
         }
+    }
+
+    @SneakyThrows
+    public  static  byte[] getWorkbookBytes(Workbook workbook) {
+        @Cleanup val bout = new ByteArrayOutputStream();
+        workbook.write(bout);
+        return bout.toByteArray();
     }
 
 
