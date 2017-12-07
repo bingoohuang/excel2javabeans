@@ -14,7 +14,7 @@ import java.util.Map;
 
     public Ignored putMapOrIgnored(Map<String, String> map, String cellValue) {
         val upper = StringUtils.upperCase(cellValue);
-        if (match(upper, columnDef.getIgnorePattern())) {
+        if (wildMatch(upper, columnDef.getIgnorePattern())) {
             return Ignored.YES;
         }
 
@@ -30,11 +30,11 @@ import java.util.Map;
      * @param pattern (Wildcard) pattern to test
      * @return True if the text matches the wildcard pattern
      */
-    public static boolean match(String text, String pattern) {
+    public static boolean wildMatch(String text, String pattern) {
         if (pattern == null) return false;
 
         return text.matches(
                 pattern.replace("?", ".?")
-                .replace("*", ".*?"));
+                        .replace("*", ".*?"));
     }
 }

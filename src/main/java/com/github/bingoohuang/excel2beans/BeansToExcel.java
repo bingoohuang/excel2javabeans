@@ -100,7 +100,7 @@ public class BeansToExcel {
         beanClassBag.put(beanClass, bag);
 
         bag.setSheet(createSheet(beanClass));
-        bag.setBeanFields(ExcelToBeansUtils.parseBeanFields(beanClass, bag.getSheet()));
+        bag.setBeanFields(new ExcelBeanFieldParser(beanClass, bag.getSheet()).parseBeanFields());
 
         addHeadToSheet(props, bag);
         addTitleToSheet(bag);

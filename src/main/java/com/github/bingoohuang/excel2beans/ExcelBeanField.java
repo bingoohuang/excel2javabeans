@@ -2,34 +2,72 @@ package com.github.bingoohuang.excel2beans;
 
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
+import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.google.common.collect.Lists;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.poi.ss.usermodel.CellStyle;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.List;
 
+import static org.apache.commons.lang3.StringUtils.capitalize;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
-@Data @Slf4j
+@Slf4j
 public class ExcelBeanField {
-    private String fieldName;
-    private String setter;
-    private String getter;
-    private boolean titleColumnFound;
-    private boolean titleRequired;
-    private String title;
-    private int columnIndex;
-    private CellStyle cellStyle;
-    private Field field;
-    private boolean cellDataType;
-    private boolean multipleColumns;
-    private Class elementType;
-    private List<Integer> multipleColumnIndexes = Lists.newArrayList();
-    private Method valueOfMethod;
+    private final String fieldName;
+    private final String setter;
+    private final String getter;
 
+    private final boolean titleRequired;
+    private final Class elementType;
+    private final Method valueOfMethod;
+
+    @Setter @Getter private boolean titleColumnFound;
+    @Setter @Getter private int columnIndex;
+    @Setter @Getter private CellStyle cellStyle;
+
+    @Getter private final String title;
+    @Getter private final boolean cellDataType;
+    @Getter private final boolean multipleColumns;
+    @Getter private final List<Integer> multipleColumnIndexes = Lists.newArrayList();
+
+    public ExcelBeanField(Field field, int columnIndex) {
+        this.columnIndex = columnIndex;
+        this.fieldName = field.getName();
+        this.setter = "set" + capitalize(fieldName);
+        this.getter = "get" + capitalize(fieldName);
+
+        val colTitle = field.getAnnotation(ExcelColTitle.class);
+        if (colTitle != null) {
+            this.titleRequired = colTitle.required();
+            this.title = colTitle.value().toUpperCase();
+        } else {
+            this.titleRequired = false;
+            this.title = null;
+        }
+
+        val genericType = field.getGenericType();
+        val isCollectionGeneric = genericType instanceof ParameterizedType
+                && List.class.isAssignableFrom(field.getType());
+        if (isCollectionGeneric &&
+                ((ParameterizedType) genericType).getActualTypeArguments().length == 1) {
+            this.multipleColumns = true;
+            this.elementType = (Class) ((ParameterizedType) genericType).getActualTypeArguments()[0];
+        } else {
+            this.multipleColumns = false;
+            this.elementType = field.getType();
+        }
+
+        this.cellDataType = this.elementType == CellData.class;
+
+        this.valueOfMethod = elementType != String.class ? ValueOfs.getValueOfMethodFrom(elementType) : null;
+    }
 
     public void setFieldValue(FieldAccess fieldAccess, MethodAccess methodAccess, Object o, Object cellValue) {
         try {
@@ -72,29 +110,23 @@ public class ExcelBeanField {
         return cellValue != null && cellValue.toUpperCase().contains(title);
     }
 
-    public void setTitle(String title) {
-        this.title = title.toUpperCase();
-    }
-
     public boolean isImageDataField() {
-        return getFieldType() == ImageData.class;
+        return elementType == ImageData.class;
     }
 
     public void addMultipleColumnIndex(int columnIndex) {
         multipleColumnIndexes.add(columnIndex);
     }
 
-    public Class getFieldType() {
-        return multipleColumns ? elementType : field.getType();
-    }
 
     public Object convert(String cellValue) {
         if (valueOfMethod == null) return cellValue;
 
-        return ExcelToBeansUtils.invokeValueOf(getFieldType(), cellValue);
+        return ValueOfs.invokeValueOf(elementType, cellValue);
     }
 
     public boolean isTitleNotMatched() {
         return hasTitle() && titleRequired && !titleColumnFound;
     }
+
 }

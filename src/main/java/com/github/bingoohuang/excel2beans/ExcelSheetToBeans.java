@@ -32,8 +32,8 @@ public class ExcelSheetToBeans<T> {
         this.methodAccess = MethodAccess.get(beanClass);
         this.instantiator = BeanInstantiatorFactory.newBeanInstantiator(beanClass);
         this.sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
-        this.beanFields = ExcelToBeansUtils.parseBeanFields(beanClass, null);
-        this.imageDataTable = hasImageDatas() ? ExcelToBeansUtils.readAllCellImages(sheet) : null;
+        this.beanFields = new ExcelBeanFieldParser(beanClass, null).parseBeanFields();
+        this.imageDataTable = hasImageDatas() ? ExcelImages.readAllCellImages(sheet) : null;
         this.hasTitle = hasTitle();
     }
 

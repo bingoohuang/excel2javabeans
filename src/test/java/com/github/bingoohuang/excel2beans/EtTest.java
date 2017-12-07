@@ -46,11 +46,16 @@ public class EtTest {
         new File("test-et-out.xlsx").delete();
 
         val etCards = excelToBeans.convert(EtCard.class);
-        val card1 = EtCard.builder().cardName("零基础素描课程").times(25).expiredValue(12).expiredUnit("月").salePrice(2580).courses("25节素描课程").build();
-        val card2 = EtCard.builder().cardName("零基础油画课程").times(20).expiredValue(12).expiredUnit("月").salePrice(3380).courses("20节油画课程").build();
-        val card3 = EtCard.builder().cardName("零基础精品油画速成班").times(15).expiredValue(12).expiredUnit("月").salePrice(2980).courses("5节素描课程+10节油画课程").build();
-        val card4 = EtCard.builder().cardName("零基础油画系统课程").times(40).expiredValue(24).expiredUnit("月").salePrice(4980).courses("20节素描课程+20节油画课程").build();
-        val card5 = EtCard.builder().cardName("零基础彩铅课程").times(20).expiredValue(12).expiredUnit("月").salePrice(2680).courses("10节素描课程+10节彩铅课程").build();
+        val card1 = EtCard.builder().cardName("零基础素描课程")
+                .times(25).expiredValue(12).expiredUnit("月").salePrice(2580).courses("25节素描课程").build();
+        val card2 = EtCard.builder().cardName("零基础油画课程")
+                .times(20).expiredValue(12).expiredUnit("月").salePrice(3380).courses("20节油画课程").build();
+        val card3 = EtCard.builder().cardName("零基础精品油画速成班")
+                .times(15).expiredValue(12).expiredUnit("月").salePrice(2980).courses("5节素描课程+10节油画课程").build();
+        val card4 = EtCard.builder().cardName("零基础油画系统课程")
+                .times(40).expiredValue(24).expiredUnit("月").salePrice(4980).courses("20节素描课程+20节油画课程").build();
+        val card5 = EtCard.builder().cardName("零基础彩铅课程")
+                .times(20).expiredValue(12).expiredUnit("月").salePrice(2680).courses("10节素描课程+10节彩铅课程").build();
         assertThat(etCards).containsExactly(card1, card2, card3, card5, card4);
     }
 

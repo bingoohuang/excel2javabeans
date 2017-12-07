@@ -7,7 +7,7 @@ import lombok.Data;
 public class CellData {
     private String value; // 单元格取值
     private String comment; // 单元格批注
-    private String commentAuthor; // 单元格批注
+    private String commentAuthor; // 单元格批注作者
     private int row; // row index
     private int col; // col index
     private int sheetIndex; // sheet index

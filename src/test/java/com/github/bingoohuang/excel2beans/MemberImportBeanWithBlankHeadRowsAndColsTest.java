@@ -24,7 +24,7 @@ public class MemberImportBeanWithBlankHeadRowsAndColsTest {
         assertThat(beans.get(0)).isEqualTo(MemberImportBeanWithBlankHeadRowsAndCols.builder().memberName("张小凡").sex("女").mobile("18795952311").cardName("示例次卡（100次次卡）").totalTimes("100").availableTimes("90").build());
         assertThat(beans.get(1)).isEqualTo(MemberImportBeanWithBlankHeadRowsAndCols.builder().memberName("李红").sex("男").mobile("18676952432").cardName("示例年卡（一周3次年卡）").totalTimes(null).availableTimes(null).build());
     }
-    
+
     @Data @Builder
     public static class MemberImportBeanWithBlankHeadRowsAndCols extends ExcelRowRef implements ExcelRowIgnorable {
         @ExcelColTitle("会员姓名") @AsmMaxSize(12) @AsmMessage("请填写会员姓名") String memberName; // 不超过12字
