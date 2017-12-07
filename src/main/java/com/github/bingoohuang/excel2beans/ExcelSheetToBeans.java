@@ -6,6 +6,7 @@ import com.github.bingoohuang.excel2beans.CellData.CellDataBuilder;
 import com.github.bingoohuang.util.instantiator.BeanInstantiator;
 import com.github.bingoohuang.util.instantiator.BeanInstantiatorFactory;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
 import lombok.Getter;
 import lombok.val;
@@ -14,6 +15,7 @@ import org.apache.poi.ss.usermodel.*;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 
 public class ExcelSheetToBeans<T> {
     private final Workbook workbook;
@@ -25,6 +27,7 @@ public class ExcelSheetToBeans<T> {
     private final DataFormatter cellFormatter = new DataFormatter();
     private final Sheet sheet;
     private final Table<Integer, Integer, ImageData> imageDataTable;
+    private final boolean cellDataMapAttachable;
 
     public ExcelSheetToBeans(Workbook workbook, Class<T> beanClass) {
         this.workbook = workbook;
@@ -35,6 +38,7 @@ public class ExcelSheetToBeans<T> {
         this.beanFields = new ExcelBeanFieldParser(beanClass, null).parseBeanFields();
         this.imageDataTable = hasImageDatas() ? ExcelImages.readAllCellImages(sheet) : null;
         this.hasTitle = hasTitle();
+        this.cellDataMapAttachable = CellDataMapAttachable.class.isAssignableFrom(beanClass);
     }
 
     public int findTitleRowNum() {
@@ -74,9 +78,19 @@ public class ExcelSheetToBeans<T> {
         val row = sheet.getRow(i);
         if (row == null) return null;
 
-        val object = (T) instantiator.newInstance();
-        val emptyNum = processRow(object, row);
-        return emptyNum == beanFields.size() ? null : object;
+        T object = (T) instantiator.newInstance();
+
+        Map<String, CellData> cellDataMap = null;
+        if (cellDataMapAttachable) cellDataMap = Maps.newHashMap();
+
+        val emptyNum = processRow(object, row, cellDataMap);
+        if (emptyNum == beanFields.size()) {
+            object = null;
+        } else if (cellDataMapAttachable) {
+            ((CellDataMapAttachable) object).attachCellDataMap(cellDataMap);
+        }
+
+        return object;
     }
 
     private boolean hasImageDatas() {
@@ -103,10 +117,10 @@ public class ExcelSheetToBeans<T> {
         beans.add(object);
     }
 
-    private int processRow(T object, Row row) {
+    private int processRow(T object, Row row, Map<String, CellData> cellDataMap) {
         int emptyNum = 0;
         for (val beanField : beanFields) {
-            val fieldValue = parseFieldValue(row, beanField);
+            val fieldValue = parseFieldValue(row, beanField, cellDataMap);
 
             if (fieldValue == null) {
                 ++emptyNum;
@@ -118,19 +132,19 @@ public class ExcelSheetToBeans<T> {
         return emptyNum;
     }
 
-    private Object parseFieldValue(Row row, ExcelBeanField beanField) {
+    private Object parseFieldValue(Row row, ExcelBeanField beanField, Map<String, CellData> cellDataMap) {
         if (beanField.isMultipleColumns()) {
-            return parseMultipleFieldValue(row, beanField);
+            return parseMultipleFieldValue(row, beanField, cellDataMap);
         } else {
-            return processSingleColumn(beanField.getColumnIndex(), beanField, row);
+            return processSingleColumn(beanField.getColumnIndex(), beanField, row, -1, cellDataMap);
         }
     }
 
-    private Object parseMultipleFieldValue(Row row, ExcelBeanField beanField) {
+    private Object parseMultipleFieldValue(Row row, ExcelBeanField beanField, Map<String, CellData> cellDataMap) {
         int nonEmptyFieldValues = 0;
         val fieldValues = Lists.<Object>newArrayList();
         for (int columnIndex : beanField.getMultipleColumnIndexes()) {
-            val value = processSingleColumn(columnIndex, beanField, row);
+            val value = processSingleColumn(columnIndex, beanField, row, fieldValues.size(), cellDataMap);
             fieldValues.add(value);
 
             if (value != null) ++nonEmptyFieldValues;
@@ -139,33 +153,66 @@ public class ExcelSheetToBeans<T> {
         return nonEmptyFieldValues > 0 ? fieldValues : null;
     }
 
-    private Object processSingleColumn(int columnIndex, ExcelBeanField beanField, Row row) {
+    private Object processSingleColumn(int columnIndex, ExcelBeanField beanField, Row row,
+                                       int fieldName_index, Map<String, CellData> cellDataMap) {
         if (columnIndex < 0) return null;
 
+        val cell = row.getCell(columnIndex);
+
         if (beanField.isImageDataField()) {
+            attachCellDataMap(beanField, row, columnIndex, fieldName_index, cellDataMap, cell);
             return imageDataTable.get(row.getRowNum(), columnIndex);
         } else {
-            val cell = row.getCell(columnIndex);
-            val cellStringValue = getCellValue(cell);
-            if (StringUtils.isEmpty(cellStringValue)) return null;
+            val cellValue = getCellValue(cell);
 
-            return convertCellValue(beanField, cell, cellStringValue, row.getRowNum());
+            return convertCellValue(beanField, cell, cellValue, row.getRowNum(), columnIndex, fieldName_index, cellDataMap);
         }
     }
 
-    private Object convertCellValue(ExcelBeanField beanField, Cell cell, String cellValue, int rowNum) {
-        if (beanField.isCellDataType()) {
-            val cellData = CellData.builder()
-                    .value(cellValue).row(rowNum).col(cell.getColumnIndex())
-                    .sheetIndex(workbook.getSheetIndex(sheet));
-            applyComment(cell, cellData);
-            return cellData.build();
-        } else {
-            return beanField.convert(cellValue);
+    private void attachCellDataMap(ExcelBeanField beanField, Row row, int columnIndex,
+                                   int fieldName_index, Map<String, CellData> cellDataMap, Cell cell) {
+        if (!cellDataMapAttachable) return;
+
+        val attachFieldName = createAttachFieldName(beanField, fieldName_index);
+        val cellData = createCellData(cell, null, row.getRowNum(), columnIndex);
+        cellDataMap.put(attachFieldName, cellData);
+    }
+
+    private String createAttachFieldName(ExcelBeanField beanField, int fieldName_index) {
+        val fieldName = beanField.getFieldName();
+        return fieldName_index < 0 ? fieldName : fieldName + "_" + fieldName_index;
+    }
+
+    private Object convertCellValue(ExcelBeanField beanField, Cell cell, String cellValue, int rowNum,
+                                    int columnIndex,
+                                    int fieldName_index, Map<String, CellData> cellDataMap) {
+
+        CellData cellData = null;
+        if (beanField.isCellDataType() || cellDataMapAttachable) {
+            cellData = createCellData(cell, cellValue, rowNum, columnIndex);
         }
+
+        if (cellDataMapAttachable) {
+            val attachFieldName = createAttachFieldName(beanField, fieldName_index);
+            cellDataMap.put(attachFieldName, cellData);
+        }
+
+        if (StringUtils.isEmpty(cellValue)) return null;
+
+        return beanField.isCellDataType() ? cellData : beanField.convert(cellValue);
+    }
+
+    private CellData createCellData(Cell cell, String cellValue, int rowNum, int colNum) {
+        val cellData = CellData.builder()
+                .value(cellValue).row(rowNum).col(colNum)
+                .sheetIndex(workbook.getSheetIndex(sheet));
+        applyComment(cell, cellData);
+        return cellData.build();
     }
 
     private void applyComment(Cell cell, CellDataBuilder cellData) {
+        if (cell == null) return;
+
         val comment = cell.getCellComment();
         if (comment == null) return;
 

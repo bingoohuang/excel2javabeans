@@ -20,7 +20,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Slf4j
 public class ExcelBeanField {
-    private final String fieldName;
+    @Getter private final String fieldName;
     private final String setter;
     private final String getter;
 
