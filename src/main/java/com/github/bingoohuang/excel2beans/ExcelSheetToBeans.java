@@ -1,7 +1,5 @@
 package com.github.bingoohuang.excel2beans;
 
-import com.esotericsoftware.reflectasm.FieldAccess;
-import com.esotericsoftware.reflectasm.MethodAccess;
 import com.github.bingoohuang.util.instantiator.BeanInstantiator;
 import com.github.bingoohuang.util.instantiator.BeanInstantiatorFactory;
 import com.google.common.collect.Lists;
@@ -16,8 +14,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import java.util.List;
 
 public class ExcelSheetToBeans<T> {
-    private final FieldAccess fieldAccess;
-    private final MethodAccess methodAccess;
     private final BeanInstantiator<T> instantiator;
     private final List<ExcelBeanField> beanFields;
     private @Getter final boolean hasTitle;
@@ -27,8 +23,6 @@ public class ExcelSheetToBeans<T> {
     private final boolean cellDataMapAttachable;
 
     public ExcelSheetToBeans(Workbook workbook, Class<T> beanClass) {
-        this.fieldAccess = FieldAccess.get(beanClass);
-        this.methodAccess = MethodAccess.get(beanClass);
         this.instantiator = BeanInstantiatorFactory.newBeanInstantiator(beanClass);
         this.sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
         this.beanFields = new ExcelBeanFieldParser(beanClass, null).parseBeanFields();
@@ -60,14 +54,11 @@ public class ExcelSheetToBeans<T> {
         val beans = Lists.<T>newArrayList();
 
         val startRowNum = jumpToStartDataRow();
-        for (int i = startRowNum, ii = sheet.getLastRowNum(); i <= ii; ++i) {
-            T object = new RowObjectCreator<T>(instantiator,
-                    beanFields, methodAccess, fieldAccess,
-                    cellDataMapAttachable, sheet, imageDataTable,
-                    cellFormatter, i)
-                    .createObject();
+        for (int rowNum = startRowNum, ii = sheet.getLastRowNum(); rowNum <= ii; ++rowNum) {
+            T object = new RowObjectCreator<T>(instantiator, beanFields, cellDataMapAttachable,
+                    sheet, imageDataTable, cellFormatter, rowNum).createObject();
             if (object != null) {
-                addToBeans(beans, i, object);
+                addToBeans(beans, rowNum, object);
             }
         }
 

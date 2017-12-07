@@ -15,10 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExcelBeanFieldParser {
+    private final Class<?> beanClass;
     private final Sheet sheet;
     private final Field[] declaredFields;
 
     public ExcelBeanFieldParser(Class<?> beanClass, Sheet sheet) {
+        this.beanClass = beanClass;
         this.sheet = sheet;
         this.declaredFields = beanClass.getDeclaredFields();
     }
@@ -43,7 +45,7 @@ public class ExcelBeanFieldParser {
         val fieldName = field.getName();
         if (fieldName.startsWith("$")) return; // ignore un-normal fields like $jacocoData
 
-        val beanField = new ExcelBeanField(field, fields.size());
+        val beanField = new ExcelBeanField(beanClass, field, fields.size());
         setStyle(field, beanField);
         fields.add(beanField);
     }

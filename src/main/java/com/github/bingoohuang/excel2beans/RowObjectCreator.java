@@ -1,7 +1,5 @@
 package com.github.bingoohuang.excel2beans;
 
-import com.esotericsoftware.reflectasm.FieldAccess;
-import com.esotericsoftware.reflectasm.MethodAccess;
 import com.github.bingoohuang.util.instantiator.BeanInstantiator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -16,29 +14,24 @@ import java.util.Map;
 
 class RowObjectCreator<T> {
     private final List<ExcelBeanField> beanFields;
-    private final MethodAccess methodAccess;
-    private final FieldAccess fieldAccess;
     private final boolean cellDataMapAttachable;
     private final Sheet sheet;
     private final Row row;
     private final Table<Integer, Integer, ImageData> imageDataTable;
     private final DataFormatter cellFormatter;
-    private int emptyNum;
-    private T object;
-
     private final Map<String, CellData> cellDataMap;
+    private final T object;
+
+    private int emptyNum;
 
     public RowObjectCreator(BeanInstantiator<T> instantiator,
                             List<ExcelBeanField> beanFields,
-                            MethodAccess methodAccess,
-                            FieldAccess fieldAccess,
                             boolean cellDataMapAttachable,
-                            Sheet sheet, Table<Integer, Integer, ImageData> imageDataTable,
+                            Sheet sheet,
+                            Table<Integer, Integer, ImageData> imageDataTable,
                             DataFormatter cellFormatter,
                             int rowNum) {
         this.beanFields = beanFields;
-        this.methodAccess = methodAccess;
-        this.fieldAccess = fieldAccess;
         this.cellDataMapAttachable = cellDataMapAttachable;
 
         if (cellDataMapAttachable) cellDataMap = Maps.newHashMap();
@@ -48,12 +41,7 @@ class RowObjectCreator<T> {
         this.imageDataTable = imageDataTable;
         this.cellFormatter = cellFormatter;
         this.row = sheet.getRow(rowNum);
-
-        if (this.row == null) {
-            this.object = null;
-        } else {
-            this.object = instantiator.newInstance();
-        }
+        this.object = this.row == null ? null : (T) instantiator.newInstance();
     }
 
     public T createObject() {
@@ -80,10 +68,9 @@ class RowObjectCreator<T> {
             if (fieldValue == null) {
                 ++emptyNum;
             } else {
-                beanField.setFieldValue(fieldAccess, methodAccess, object, fieldValue);
+                beanField.setFieldValue(object, fieldValue);
             }
         }
-
     }
 
     private class BeanFieldValueCreator {
@@ -116,37 +103,37 @@ class RowObjectCreator<T> {
         }
 
 
-        private Object processSingleColumn(int columnIndex, int fieldName_index) {
+        private Object processSingleColumn(int columnIndex, int fieldNameIndex) {
             if (columnIndex < 0) return null;
 
             val cell = row.getCell(columnIndex);
 
             if (beanField.isImageDataField()) {
-                attachCellDataMap(columnIndex, fieldName_index, cell);
+                attachCellDataMap(columnIndex, fieldNameIndex, cell);
                 return imageDataTable.get(row.getRowNum(), columnIndex);
             } else {
                 val cellValue = getCellValue(cell);
 
-                return convertCellValue(cell, cellValue, row.getRowNum(), columnIndex, fieldName_index);
+                return convertCellValue(cell, cellValue, row.getRowNum(), columnIndex, fieldNameIndex);
             }
         }
 
 
-        private void attachCellDataMap(int columnIndex, int fieldName_index, Cell cell) {
+        private void attachCellDataMap(int columnIndex, int fieldNameIndex, Cell cell) {
             if (!cellDataMapAttachable) return;
 
-            val attachFieldName = createAttachFieldName(fieldName_index);
+            val attachFieldName = createAttachFieldName(fieldNameIndex);
             val cellData = createCellData(cell, null, row.getRowNum(), columnIndex);
             cellDataMap.put(attachFieldName, cellData);
         }
 
-        private String createAttachFieldName(int fieldName_index) {
+        private String createAttachFieldName(int fieldNameIndex) {
             val fieldName = beanField.getFieldName();
-            return fieldName_index < 0 ? fieldName : fieldName + "_" + fieldName_index;
+            return fieldNameIndex < 0 ? fieldName : fieldName + "_" + fieldNameIndex;
         }
 
         private Object convertCellValue(Cell cell, String cellValue, int rowNum,
-                                        int columnIndex, int fieldName_index) {
+                                        int columnIndex, int fieldNameIndex) {
 
             CellData cellData = null;
             if (beanField.isCellDataType() || cellDataMapAttachable) {
@@ -154,7 +141,7 @@ class RowObjectCreator<T> {
             }
 
             if (cellDataMapAttachable) {
-                val attachFieldName = createAttachFieldName(fieldName_index);
+                val attachFieldName = createAttachFieldName(fieldNameIndex);
                 cellDataMap.put(attachFieldName, cellData);
             }
 
