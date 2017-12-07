@@ -18,7 +18,7 @@ public class ExcelRowRef implements ExcelRowReferable {
         return rowNum;
     }
 
-    public String error() {
+    @Override public String error() {
         return error;
     }
 }

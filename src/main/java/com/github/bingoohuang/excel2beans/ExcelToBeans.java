@@ -52,7 +52,8 @@ public class ExcelToBeans implements Closeable {
         }
     }
 
-    public int getLastCellNum(Sheet sheet, ExcelSheetToBeans sheetToBeans, List<? extends ExcelRowReferable> rowRefs) {
+    public int getLastCellNum(Sheet sheet, ExcelSheetToBeans sheetToBeans,
+                              List<? extends ExcelRowReferable> rowRefs) {
         if (sheetToBeans.isHasTitle()) {
             return sheet.getRow(sheetToBeans.findTitleRowNum()).getLastCellNum();
         }
