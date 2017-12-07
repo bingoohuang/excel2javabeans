@@ -76,8 +76,8 @@ public class SimpleTest {
 
         val workbook = beansToExcel.create(members, schedules, subscribes);
 
-        new File(name).delete();
         ExcelToBeansUtils.writeExcel(workbook, name);
+        new File(name).delete();
     }
 
     @Data @AllArgsConstructor @ExcelSheet(name = "会员", headKey = "memberHead")

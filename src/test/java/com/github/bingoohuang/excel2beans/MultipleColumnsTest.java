@@ -8,6 +8,7 @@ import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -93,6 +94,7 @@ public class MultipleColumnsTest {
         bean0.setError("error");
         excelToBeans.removeOkRows(AfTvPlayBeanAttach.class, beans);
         ExcelToBeansUtils.writeExcel(workbook, "af.xlsx");
+        new File("af.xlsx").delete();
     }
 
     @Data @Builder

@@ -32,8 +32,8 @@ public class AssignmentTest {
 
         val workbook = beansToExcel.create(members);
 
-        new File(name).delete();
         ExcelToBeansUtils.writeExcel(workbook, name);
+        new File(name).delete();
     }
 
     @Data @Builder
