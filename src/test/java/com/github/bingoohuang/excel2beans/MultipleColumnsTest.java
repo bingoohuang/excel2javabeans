@@ -11,6 +11,7 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
@@ -19,7 +20,6 @@ import redis.clients.jedis.Jedis;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -99,7 +99,7 @@ public class MultipleColumnsTest {
 
     @SneakyThrows
     public void validateAndSaveErrorToRedis(ExcelToBeans excelToBeans, List<AfTvPlayBeanAttach> beans) {
-        val identityHashMap = new IdentityHashMap<CellData, CellData>();
+        val cellDatas = Sets.<CellData>newIdentityHashSet();
 
         for (val bean : beans) {
             val result = new AsmValidateResult();
@@ -108,7 +108,7 @@ public class MultipleColumnsTest {
                 val fieldName = error.getFieldName();
                 val cellData = appendComment(bean, error.getErrorMessage(), fieldName);
 
-                identityHashMap.put(cellData, cellData);
+                cellDatas.add(cellData);
             }
 
             if (result.hasErrors()) {
@@ -116,7 +116,7 @@ public class MultipleColumnsTest {
             }
         }
 
-        ExcelToBeansUtils.writeRedComments(excelToBeans.getWorkbook(), identityHashMap.keySet());
+        ExcelToBeansUtils.writeRedComments(excelToBeans.getWorkbook(), cellDatas);
 
         excelToBeans.removeOkRows(AfTvPlayBeanAttach.class, beans);
         ExcelToBeansUtils.writeExcel(excelToBeans.getWorkbook(), "af.xlsx");
