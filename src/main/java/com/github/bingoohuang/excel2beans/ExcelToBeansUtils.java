@@ -5,11 +5,13 @@ import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.experimental.var;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +49,7 @@ public class ExcelToBeansUtils {
     }
 
 
-    public static void writeRedComments(Workbook workbook, CellData... cellDatas) {
+    public static void writeRedComments(Workbook workbook, Collection<CellData> cellDatas) {
         val factory = workbook.getCreationHelper();
         val globalNewCellStyle = reddenBorder(workbook.createCellStyle());
 
@@ -120,7 +122,9 @@ public class ExcelToBeansUtils {
 
         val str = factory.createRichTextString(cellData.getComment());
         comment.setString(str);
-        comment.setAuthor(cellData.getCommentAuthor());
+
+        val author = cellData.getCommentAuthor();
+        if (StringUtils.isNotEmpty(author)) comment.setAuthor(author);
     }
 
     @SneakyThrows

@@ -1,14 +1,25 @@
 package com.github.bingoohuang.excel2beans;
 
+import com.github.bingoohuang.asmvalidator.AsmValidateResult;
+import com.github.bingoohuang.asmvalidator.AsmValidatorFactory;
+import com.github.bingoohuang.asmvalidator.annotations.AsmCreateClassFile4Debug;
+import com.github.bingoohuang.asmvalidator.annotations.AsmIgnore;
+import com.github.bingoohuang.asmvalidator.annotations.AsmMaxSize;
+import com.github.bingoohuang.asmvalidator.annotations.AsmMessage;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.Test;
+import redis.clients.jedis.Jedis;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +34,7 @@ public class MultipleColumnsTest {
         assertThat(beans).hasSize(2);
 
         assertThat(beans.get(0)).isEqualTo(AfTvPlayBean.builder()
-                .playName("大风车")
+                .playName("风车")
                 .playDescs(Lists.newArrayList("蹲蹲蹲", "跳跳跳", "转转转"))
                 .playUrls(Lists.newArrayList("aaa", null, "ccc"))
                 .build());
@@ -51,13 +62,12 @@ public class MultipleColumnsTest {
         val beans = excelToBeans.convert(AfTvPlayBeanAttach.class);
         assertThat(beans).hasSize(2);
 
-        val bean0 = beans.get(0);
-        assertThat(bean0).isEqualTo(AfTvPlayBeanAttach.builder()
-                .playName("大风车")
+        assertThat(beans.get(0)).isEqualTo(AfTvPlayBeanAttach.builder()
+                .playName("风车")
                 .playDescs(Lists.newArrayList("蹲蹲蹲", "跳跳跳", "转转转"))
                 .playUrls(Lists.newArrayList("aaa", null, "ccc"))
                 .cellDataMap(ImmutableMap.<String, CellData>builder()
-                        .put("playName", CellData.builder().row(1).col(1).value("大风车").build())
+                        .put("playName", CellData.builder().row(1).col(1).value("风车").build())
 
                         .put("playDescs_0", CellData.builder().row(1).col(6).value("蹲蹲蹲").build())
                         .put("playUrls_0", CellData.builder().row(1).col(7).value("aaa").build())
@@ -68,8 +78,7 @@ public class MultipleColumnsTest {
                         .build())
                 .build());
 
-        val bean1 = beans.get(1);
-        assertThat(bean1).isEqualTo(AfTvPlayBeanAttach.builder()
+        assertThat(beans.get(1)).isEqualTo(AfTvPlayBeanAttach.builder()
                 .playName("小风车")
                 .playDescs(Lists.newArrayList("蹲蹲蹲", "跳跳跳", "转转转"))
                 .playUrls(Lists.newArrayList("aaa", "bbb", "ccc"))
@@ -85,27 +94,70 @@ public class MultipleColumnsTest {
                         .build())
                 .build());
 
-        val cellDataMap = bean0.getCellDataMap();
-        val cellData = cellDataMap.get("playUrls_1");
-        cellData.setComment("URL不能为空");
-        cellData.setCommentAuthor("AF导入程序");
-        ExcelToBeansUtils.writeRedComments(workbook, cellData);
-
-        bean0.setError("error");
-        excelToBeans.removeOkRows(AfTvPlayBeanAttach.class, beans);
-        ExcelToBeansUtils.writeExcel(workbook, "af.xlsx");
-        new File("af.xlsx").delete();
+//        validateAndSaveErrorToRedis(excelToBeans, beans);
     }
 
-    @Data @Builder
+    @SneakyThrows
+    public void validateAndSaveErrorToRedis(ExcelToBeans excelToBeans, List<AfTvPlayBeanAttach> beans) {
+        val identityHashMap = new IdentityHashMap<CellData, CellData>();
+
+        for (val bean : beans) {
+            val result = new AsmValidateResult();
+            AsmValidatorFactory.validate(bean, result);
+            for (val error : result.getErrors()) {
+                val fieldName = error.getFieldName();
+                val cellData = appendComment(bean, error.getErrorMessage(), fieldName);
+
+                identityHashMap.put(cellData, cellData);
+            }
+
+            if (result.hasErrors()) {
+                bean.setError("error");
+            }
+        }
+
+        ExcelToBeansUtils.writeRedComments(excelToBeans.getWorkbook(), identityHashMap.keySet());
+
+        excelToBeans.removeOkRows(AfTvPlayBeanAttach.class, beans);
+        ExcelToBeansUtils.writeExcel(excelToBeans.getWorkbook(), "af.xlsx");
+        new File("af.xlsx").delete();
+
+        byte[] workbookBytes = ExcelToBeansUtils.getWorkbookBytes(excelToBeans.getWorkbook());
+
+        Jedis jedis = new Jedis();
+        String userId = "12345";
+        String key = "ErrorExcel:" + userId;
+
+        byte[] keyBytes = key.getBytes(Charsets.UTF_8);
+        jedis.set(keyBytes, workbookBytes);
+        jedis.expire(keyBytes, 24 * 60 * 60);
+
+        byte[] bytes = jedis.get(keyBytes);
+        val stream = new ByteArrayInputStream(bytes);
+        val redisWorkbook = WorkbookFactory.create(stream);
+        ExcelToBeansUtils.writeExcel(redisWorkbook, "redis-af.xlsx");
+//        new File("redis-af.xlsx").delete();
+    }
+
+    public CellData appendComment(AfTvPlayBeanAttach bean, String error, String fieldName) {
+        CellData cellData = bean.getCellDataMap().get(fieldName);
+        if (cellData.getComment() == null)
+            cellData.setComment(error);
+        else {
+            cellData.setComment(cellData.getComment() + "\n" + error);
+        }
+        return cellData;
+    }
+
+    @Data @Builder @AsmCreateClassFile4Debug
     public static class AfTvPlayBeanAttach extends ExcelRowRef implements CellDataMapAttachable {
-        @ExcelColTitle("节目名称")
+        @ExcelColTitle("节目名称") @AsmMaxSize(2) @AsmMessage("节目名称不能为空，长度不能超过20")
         private String playName;
         @ExcelColTitle("剧集描述")
         private List<String> playDescs;
-        @ExcelColTitle("URL")
+        @ExcelColTitle("URL") @UrlsChecker
         private List<String> playUrls;
-        @ExcelColIgnore
+        @ExcelColIgnore @AsmIgnore
         private Map<String, CellData> cellDataMap;
 
         @Override public void attachCellDataMap(Map<String, CellData> cellDataMap) {

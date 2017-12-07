@@ -2,6 +2,7 @@ package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
+import com.google.common.collect.Lists;
 import lombok.*;
 import org.junit.Test;
 
@@ -41,7 +42,7 @@ public class EtTest {
         mobile.setComment("号码重复");
         mobile.setCommentAuthor("et-server");
 
-        ExcelToBeansUtils.writeRedComments(workbook, mobile);
+        ExcelToBeansUtils.writeRedComments(workbook, Lists.newArrayList(mobile));
         ExcelToBeansUtils.writeExcel(workbook, "test-et-out.xlsx");
         new File("test-et-out.xlsx").delete();
 
