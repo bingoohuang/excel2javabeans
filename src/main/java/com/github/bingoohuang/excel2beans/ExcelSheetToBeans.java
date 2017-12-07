@@ -109,8 +109,8 @@ public class ExcelSheetToBeans<T> {
             if (ignore.ignoreRow()) return;
         }
 
-        if (object instanceof ExcelRowRef) {
-            val ref = (ExcelRowRef) object;
+        if (object instanceof ExcelRowReferable) {
+            val ref = (ExcelRowReferable) object;
             ref.setRowNum(i);
         }
 

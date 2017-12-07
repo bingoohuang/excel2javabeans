@@ -17,13 +17,19 @@ public class MultipleColumnsTest {
     @SneakyThrows
     @Test public void testAf() {
         @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("af-tvplays.xlsx");
-        val beans = new ExcelSheetToBeans(workbook, AfTvPlayBean.class).convert();
-        assertThat(beans).hasSize(1);
+        val excelToBeans = new ExcelToBeans(workbook);
+        val beans = excelToBeans.convert(AfTvPlayBean.class);
+        assertThat(beans).hasSize(2);
 
         assertThat(beans.get(0)).isEqualTo(AfTvPlayBean.builder()
                 .playName("大风车")
                 .playDescs(Lists.newArrayList("蹲蹲蹲", "跳跳跳", "转转转"))
                 .playUrls(Lists.newArrayList("aaa", null, "ccc"))
+                .build());
+        assertThat(beans.get(1)).isEqualTo(AfTvPlayBean.builder()
+                .playName("小风车")
+                .playDescs(Lists.newArrayList("蹲蹲蹲", "跳跳跳", "转转转"))
+                .playUrls(Lists.newArrayList("aaa", "bbb", "ccc"))
                 .build());
     }
 
@@ -40,10 +46,12 @@ public class MultipleColumnsTest {
     @SneakyThrows
     @Test public void testAfAttach() {
         @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("af-tvplays.xlsx");
-        val beans = new ExcelSheetToBeans(workbook, AfTvPlayBeanAttach.class).convert();
-        assertThat(beans).hasSize(1);
+        val excelToBeans = new ExcelToBeans(workbook);
+        val beans = excelToBeans.convert(AfTvPlayBeanAttach.class);
+        assertThat(beans).hasSize(2);
 
-        assertThat(beans.get(0)).isEqualTo(AfTvPlayBeanAttach.builder()
+        val bean0 = beans.get(0);
+        assertThat(bean0).isEqualTo(AfTvPlayBeanAttach.builder()
                 .playName("大风车")
                 .playDescs(Lists.newArrayList("蹲蹲蹲", "跳跳跳", "转转转"))
                 .playUrls(Lists.newArrayList("aaa", null, "ccc"))
@@ -58,10 +66,37 @@ public class MultipleColumnsTest {
                         .put("playUrls_2", CellData.builder().row(1).col(11).value("ccc").build())
                         .build())
                 .build());
+
+        val bean1 = beans.get(1);
+        assertThat(bean1).isEqualTo(AfTvPlayBeanAttach.builder()
+                .playName("小风车")
+                .playDescs(Lists.newArrayList("蹲蹲蹲", "跳跳跳", "转转转"))
+                .playUrls(Lists.newArrayList("aaa", "bbb", "ccc"))
+                .cellDataMap(ImmutableMap.<String, CellData>builder()
+                        .put("playName", CellData.builder().row(2).col(1).value("小风车").build())
+
+                        .put("playDescs_0", CellData.builder().row(2).col(6).value("蹲蹲蹲").build())
+                        .put("playUrls_0", CellData.builder().row(2).col(7).value("aaa").build())
+                        .put("playDescs_1", CellData.builder().row(2).col(8).value("跳跳跳").build())
+                        .put("playUrls_1", CellData.builder().row(2).col(9).value("bbb").build())
+                        .put("playDescs_2", CellData.builder().row(2).col(10).value("转转转").build())
+                        .put("playUrls_2", CellData.builder().row(2).col(11).value("ccc").build())
+                        .build())
+                .build());
+
+        val cellDataMap = bean0.getCellDataMap();
+        val cellData = cellDataMap.get("playUrls_1");
+        cellData.setComment("URL不能为空");
+        cellData.setCommentAuthor("AF导入程序");
+        ExcelToBeansUtils.writeRedComments(workbook, cellData);
+
+        bean0.setError("error");
+        excelToBeans.removeOkRows(AfTvPlayBeanAttach.class, beans);
+        ExcelToBeansUtils.writeExcel(workbook, "af.xlsx");
     }
 
     @Data @Builder
-    public static class AfTvPlayBeanAttach implements CellDataMapAttachable {
+    public static class AfTvPlayBeanAttach extends ExcelRowRef implements CellDataMapAttachable {
         @ExcelColTitle("节目名称")
         private String playName;
         @ExcelColTitle("剧集描述")
@@ -79,8 +114,8 @@ public class MultipleColumnsTest {
     @SneakyThrows
     @Test public void test() {
         @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("listColumns.xlsx");
-        val excelToBeans = new ExcelSheetToBeans(workbook, MultipleColumnsBeanWithTitle.class);
-        List<MultipleColumnsBeanWithTitle> beans = excelToBeans.convert();
+        val excelToBeans = new ExcelToBeans(workbook);
+        val beans = excelToBeans.convert(MultipleColumnsBeanWithTitle.class);
         assertThat(beans).hasSize(4);
 
         assertThat(beans.get(0).getRowNum()).isEqualTo(7);

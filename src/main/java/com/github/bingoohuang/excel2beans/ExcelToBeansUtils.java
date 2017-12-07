@@ -40,7 +40,7 @@ public class ExcelToBeansUtils {
     }
 
     @SneakyThrows
-    public  static  byte[] getWorkbookBytes(Workbook workbook) {
+    public static byte[] getWorkbookBytes(Workbook workbook) {
         @Cleanup val bout = new ByteArrayOutputStream();
         workbook.write(bout);
         return bout.toByteArray();
@@ -57,7 +57,8 @@ public class ExcelToBeansUtils {
         for (val cellData : cellDatas) {
             val sheet = workbook.getSheetAt(cellData.getSheetIndex());
             val row = sheet.getRow(cellData.getRow());
-            val cell = row.getCell(cellData.getCol());
+            var cell = row.getCell(cellData.getCol());
+            if (cell == null) cell = row.createCell(cellData.getCol());
 
             setCellStyle(globalNewCellStyle, cellStyleMap, cell);
 
@@ -66,7 +67,7 @@ public class ExcelToBeansUtils {
     }
 
     public static CellStyle reddenBorder(CellStyle cellStyle) {
-        val borderStyle = BorderStyle.MEDIUM;
+        val borderStyle = BorderStyle.THIN;
 
         cellStyle.setBorderLeft(borderStyle);
         cellStyle.setBorderRight(borderStyle);

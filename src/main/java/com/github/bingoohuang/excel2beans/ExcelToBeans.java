@@ -34,7 +34,7 @@ public class ExcelToBeans implements Closeable {
         return converter.convert();
     }
 
-    public void writeError(Class<?> beanClass, List<? extends ExcelRowRef> rowRefs) {
+    public void writeError(Class<?> beanClass, List<? extends ExcelRowReferable> rowRefs) {
         val sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
         val sheetToBeans = new ExcelSheetToBeans(workbook, beanClass);
         int lastCellNum = getLastCellNum(sheet, sheetToBeans, rowRefs);
@@ -52,7 +52,7 @@ public class ExcelToBeans implements Closeable {
         }
     }
 
-    public int getLastCellNum(Sheet sheet, ExcelSheetToBeans sheetToBeans, List<? extends ExcelRowRef> rowRefs) {
+    public int getLastCellNum(Sheet sheet, ExcelSheetToBeans sheetToBeans, List<? extends ExcelRowReferable> rowRefs) {
         if (sheetToBeans.isHasTitle()) {
             return sheet.getRow(sheetToBeans.findTitleRowNum()).getLastCellNum();
         }
@@ -69,7 +69,7 @@ public class ExcelToBeans implements Closeable {
         return cellStyle;
     }
 
-    public void removeOkRows(Class<?> beanClass, List<? extends ExcelRowRef> rowRefs) {
+    public void removeOkRows(Class<?> beanClass, List<? extends ExcelRowReferable> rowRefs) {
         val sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
         int rowsRemoved = 0;
         for (val rowRef : rowRefs) {
