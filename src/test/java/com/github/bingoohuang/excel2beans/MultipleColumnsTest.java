@@ -6,7 +6,6 @@ import com.github.bingoohuang.asmvalidator.annotations.AsmCreateClassFile4Debug;
 import com.github.bingoohuang.asmvalidator.annotations.AsmIgnore;
 import com.github.bingoohuang.asmvalidator.annotations.AsmMaxSize;
 import com.github.bingoohuang.asmvalidator.annotations.AsmMessage;
-import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
@@ -157,7 +156,7 @@ public class MultipleColumnsTest {
         private List<String> playDescs;
         @ExcelColTitle("URL") @UrlsChecker
         private List<String> playUrls;
-        @ExcelColIgnore @AsmIgnore
+        @AsmIgnore
         private Map<String, CellData> cellDataMap;
 
         @Override public void attachCellDataMap(Map<String, CellData> cellDataMap) {

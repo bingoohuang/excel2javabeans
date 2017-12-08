@@ -4,6 +4,7 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelColAlign;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
 import lombok.experimental.var;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -14,6 +15,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class ExcelBeanFieldParser {
     private final Class<?> beanClass;
     private final Sheet sheet;
@@ -37,7 +39,10 @@ public class ExcelBeanFieldParser {
 
     private void processField(Field field, List<ExcelBeanField> fields) {
         if (Modifier.isStatic(field.getModifiers())) return;
-        if (Modifier.isTransient(field.getModifiers())) return;
+        // A synthetic field is a compiler-created field that links a local inner class
+        // to a block's local variable or reference type parameter.
+        // refer: https://javapapers.com/core-java/java-synthetic-class-method-field/
+        if (field.isSynthetic()) return;
 
         val rowIgnore = field.getAnnotation(ExcelColIgnore.class);
         if (rowIgnore != null) return;
@@ -46,8 +51,12 @@ public class ExcelBeanFieldParser {
         if (fieldName.startsWith("$")) return; // ignore un-normal fields like $jacocoData
 
         val beanField = new ExcelBeanField(beanClass, field, fields.size());
-        setStyle(field, beanField);
-        fields.add(beanField);
+        if (beanField.isElementTypeSupported()) {
+            setStyle(field, beanField);
+            fields.add(beanField);
+        } else {
+            log.debug("bean field {} was ignored by unsupported type {}", beanField.getFieldName(), beanField.getElementType());
+        }
     }
 
 

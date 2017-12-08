@@ -21,7 +21,7 @@ public class ExcelBeanField {
     private final String getter;
 
     private final boolean titleRequired;
-    private final Class elementType;
+    @Getter private final Class elementType;
     private final Method valueOfMethod;
     private final Class<?> beanClass;
 
@@ -118,6 +118,10 @@ public class ExcelBeanField {
         return elementType == ImageData.class;
     }
 
+    private boolean isStringField() {
+        return elementType == String.class;
+    }
+
     public void addMultipleColumnIndex(int columnIndex) {
         multipleColumnIndexes.add(columnIndex);
     }
@@ -131,4 +135,10 @@ public class ExcelBeanField {
     public boolean isTitleNotMatched() {
         return hasTitle() && titleRequired && !titleColumnFound;
     }
+
+    public boolean isElementTypeSupported() {
+        return isImageDataField() || isStringField() || cellDataType || valueOfMethod != null;
+    }
+
+
 }
