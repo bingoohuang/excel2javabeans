@@ -3,6 +3,7 @@ package com.github.bingoohuang.excel2beans;
 import com.google.common.io.ByteStreams;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 import lombok.val;
 import org.apache.poi.ss.usermodel.Workbook;
 
@@ -11,8 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.net.URLEncoder;
 
+@UtilityClass
 public class ExcelDownloads {
-
     @SneakyThrows
     public void download(HttpServletResponse response, Workbook workbook, String fileName) {
         @Cleanup val out = prepareDownload(response, fileName);
@@ -33,7 +34,7 @@ public class ExcelDownloads {
     }
 
     @SneakyThrows
-    public static ServletOutputStream prepareDownload(HttpServletResponse response, String fileName) {
+    public ServletOutputStream prepareDownload(HttpServletResponse response, String fileName) {
         response.setContentType("application/vnd.ms-excel;charset=UTF-8");
         val encodedFileName = URLEncoder.encode(fileName, "UTF-8");
         response.setHeader("Content-disposition", "attachment; " +
@@ -41,5 +42,4 @@ public class ExcelDownloads {
                 "filename*=utf-8'zh_cn'" + encodedFileName);
         return response.getOutputStream();
     }
-
 }

@@ -3,6 +3,7 @@ package com.github.bingoohuang.excel2beans;
 import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 import lombok.experimental.var;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
@@ -15,21 +16,22 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+@UtilityClass
 public class ExcelToBeansUtils {
     @SneakyThrows
-    public static Workbook getClassPathWorkbook(String classPathExcelName) {
+    public Workbook getClassPathWorkbook(String classPathExcelName) {
         @Cleanup val is = getClassPathInputStream(classPathExcelName);
         return WorkbookFactory.create(is);
     }
 
     @SneakyThrows
-    public static InputStream getClassPathInputStream(String classPathExcelName) {
+    public InputStream getClassPathInputStream(String classPathExcelName) {
         val classLoader = ExcelToBeansUtils.class.getClassLoader();
         return classLoader.getResourceAsStream(classPathExcelName);
     }
 
 
-    public static void removeRow(Sheet sheet, int rowIndex) {
+    public void removeRow(Sheet sheet, int rowIndex) {
         val lastRowNum = sheet.getLastRowNum();
         if (rowIndex >= 0 && rowIndex < lastRowNum) {
             sheet.shiftRows(rowIndex + 1, lastRowNum, -1);
@@ -42,14 +44,14 @@ public class ExcelToBeansUtils {
     }
 
     @SneakyThrows
-    public static byte[] getWorkbookBytes(Workbook workbook) {
+    public byte[] getWorkbookBytes(Workbook workbook) {
         @Cleanup val bout = new ByteArrayOutputStream();
         workbook.write(bout);
         return bout.toByteArray();
     }
 
 
-    public static void writeRedComments(Workbook workbook, Collection<CellData> cellDatas) {
+    public void writeRedComments(Workbook workbook, Collection<CellData> cellDatas) {
         val factory = workbook.getCreationHelper();
         val globalNewCellStyle = reddenBorder(workbook.createCellStyle());
 
@@ -68,7 +70,7 @@ public class ExcelToBeansUtils {
         }
     }
 
-    public static CellStyle reddenBorder(CellStyle cellStyle) {
+    public CellStyle reddenBorder(CellStyle cellStyle) {
         val borderStyle = BorderStyle.THIN;
 
         cellStyle.setBorderLeft(borderStyle);
@@ -86,7 +88,7 @@ public class ExcelToBeansUtils {
         return cellStyle;
     }
 
-    private static void setCellStyle(CellStyle defaultCellStyle, Map<CellStyle, CellStyle> cellStyleMap, Cell cell) {
+    private void setCellStyle(CellStyle defaultCellStyle, Map<CellStyle, CellStyle> cellStyleMap, Cell cell) {
         val cellStyle = cell.getCellStyle();
         if (cellStyle == null) {
             cell.setCellStyle(defaultCellStyle);
@@ -103,7 +105,7 @@ public class ExcelToBeansUtils {
         cell.setCellStyle(newCellStyle);
     }
 
-    private static void addComment(CreationHelper factory, CellData cellData, Cell cell) {
+    private void addComment(CreationHelper factory, CellData cellData, Cell cell) {
         var comment = cell.getCellComment();
         if (comment == null) {
             val drawing = cell.getSheet().createDrawingPatriarch();
@@ -128,12 +130,12 @@ public class ExcelToBeansUtils {
     }
 
     @SneakyThrows
-    public static void writeExcel(Workbook workbook, String name) {
+    public void writeExcel(Workbook workbook, String name) {
         @Cleanup val fileOut = new FileOutputStream(name);
         workbook.write(fileOut);
     }
 
-    public static Sheet findSheet(Workbook workbook, Class<?> beanClass) {
+    public Sheet findSheet(Workbook workbook, Class<?> beanClass) {
         val excelSheet = beanClass.getAnnotation(ExcelSheet.class);
         if (excelSheet == null) return workbook.getSheetAt(0);
 
