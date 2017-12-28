@@ -115,7 +115,7 @@ public class MultipleColumnsTest {
             }
         }
 
-        ExcelToBeansUtils.writeRedComments(excelToBeans.getWorkbook(), cellDatas);
+        ExcelToBeansUtils.writeRedComments(excelToBeans.getWorkbook(), cellDatas, 2, 3);
 
         excelToBeans.removeOkRows(AfTvPlayBeanAttach.class, beans);
         ExcelToBeansUtils.writeExcel(excelToBeans.getWorkbook(), "af.xlsx");

@@ -50,8 +50,12 @@ public class ExcelToBeansUtils {
         return bout.toByteArray();
     }
 
-
     public void writeRedComments(Workbook workbook, Collection<CellData> cellDatas) {
+        writeRedComments(workbook, cellDatas, 3, 5);
+    }
+
+    public void writeRedComments(Workbook workbook, Collection<CellData> cellDatas,
+                                 int commentColSpan, int commentRowSpan) {
         val factory = workbook.getCreationHelper();
         val globalNewCellStyle = reddenBorder(workbook.createCellStyle());
 
@@ -66,7 +70,7 @@ public class ExcelToBeansUtils {
 
             setCellStyle(globalNewCellStyle, cellStyleMap, cell);
 
-            addComment(factory, cellData, cell);
+            addComment(factory, cellData, cell, commentColSpan, commentRowSpan);
         }
     }
 
@@ -105,28 +109,24 @@ public class ExcelToBeansUtils {
         cell.setCellStyle(newCellStyle);
     }
 
-    private void addComment(CreationHelper factory, CellData cellData, Cell cell) {
-        var comment = cell.getCellComment();
-        if (comment == null) {
-            val drawing = cell.getSheet().createDrawingPatriarch();
-            // When the comment box is visible, have it show in a 1x3 space
-            val anchor = factory.createClientAnchor();
-            anchor.setCol1(cell.getColumnIndex());
-            anchor.setCol2(cell.getColumnIndex() + 1);
-            anchor.setRow1(cell.getRow().getRowNum());
-            anchor.setRow2(cell.getRow().getRowNum() + 3);
-
-            // Create the comment and set the text+author
-            comment = drawing.createCellComment(anchor);
-
-            cell.setCellComment(comment);
+    private void addComment(CreationHelper factory, CellData cellData, Cell cell, int colSpan, int rowSpan) {
+        val existedComment = cell.getCellComment();
+        if (existedComment != null) {
+            cell.removeCellComment();
         }
 
+        val col = cell.getColumnIndex();
+        val row = cell.getRow().getRowNum();
+        val drawing = cell.getSheet().createDrawingPatriarch();
+        val anchor = drawing.createAnchor(0, 0, 0, 0,
+                col, row, col + colSpan, row + rowSpan);
+        val comment = drawing.createCellComment(anchor);
         val str = factory.createRichTextString(cellData.getComment());
         comment.setString(str);
-
         val author = cellData.getCommentAuthor();
         if (StringUtils.isNotEmpty(author)) comment.setAuthor(author);
+
+        cell.setCellComment(comment);
     }
 
     @SneakyThrows
