@@ -56,8 +56,10 @@ public class ExcelToBeansUtils {
 
     public void writeRedComments(Workbook workbook, Collection<CellData> cellDatas,
                                  int commentColSpan, int commentRowSpan) {
-        val factory = workbook.getCreationHelper();
+        removeAllComments(workbook);
+
         val globalNewCellStyle = reddenBorder(workbook.createCellStyle());
+        val factory = workbook.getCreationHelper();
 
         // 重用cell style，提升性能
         val cellStyleMap = new HashMap<CellStyle, CellStyle>();
@@ -71,6 +73,20 @@ public class ExcelToBeansUtils {
             setCellStyle(globalNewCellStyle, cellStyleMap, cell);
 
             addComment(factory, cellData, cell, commentColSpan, commentRowSpan);
+        }
+    }
+
+    public static void removeAllComments(Workbook workbook) {
+        val cellStyle = workbook.createCellStyle();
+        for (int i = 0, ii = workbook.getNumberOfSheets(); i < ii; ++i) {
+            val sheet = workbook.getSheetAt(i);
+            val comments = sheet.getCellComments();
+            for (val entry : comments.entrySet()) {
+                val comment = entry.getValue();
+                val cell = sheet.getRow(comment.getRow()).getCell(comment.getColumn());
+                cell.removeCellComment();
+                cell.setCellStyle(cellStyle);
+            }
         }
     }
 
@@ -110,11 +126,6 @@ public class ExcelToBeansUtils {
     }
 
     private void addComment(CreationHelper factory, CellData cellData, Cell cell, int colSpan, int rowSpan) {
-        val existedComment = cell.getCellComment();
-        if (existedComment != null) {
-            cell.removeCellComment();
-        }
-
         val col = cell.getColumnIndex();
         val row = cell.getRow().getRowNum();
         val drawing = cell.getSheet().createDrawingPatriarch();
