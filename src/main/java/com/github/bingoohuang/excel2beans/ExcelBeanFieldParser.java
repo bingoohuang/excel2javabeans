@@ -28,13 +28,35 @@ public class ExcelBeanFieldParser {
     }
 
     public List<ExcelBeanField> parseBeanFields() {
-        val fields = new ArrayList<ExcelBeanField>(declaredFields.length);
+        val beanFields = new ArrayList<ExcelBeanField>(declaredFields.length);
 
         for (val field : declaredFields) {
-            processField(field, fields);
+            processField(field, beanFields);
         }
 
-        return fields;
+        return filterTitledFileds(beanFields);
+    }
+
+    private List<ExcelBeanField> filterTitledFileds(List<ExcelBeanField> beanFields) {
+        val titledBeanFields = new ArrayList<ExcelBeanField>(beanFields.size());
+        val untitledFields = new ArrayList<ExcelBeanField>(beanFields.size());
+        for (val beanField : beanFields) {
+            if (beanField.hasTitle()) {
+                titledBeanFields.add(beanField);
+            } else {
+                untitledFields.add(beanField);
+            }
+        }
+
+        if (titledBeanFields.isEmpty()) return beanFields;
+
+        if (log.isDebugEnabled()) {
+            for (val untitled : untitledFields) {
+                log.debug("ignore field {} without @ExcelColTitle", untitled.getFieldName());
+            }
+        }
+
+        return titledBeanFields;
     }
 
     private void processField(Field field, List<ExcelBeanField> fields) {
