@@ -22,14 +22,14 @@ public class BeanInstantiatorFactoryTest {
 
 
     @Test
-    public void test1() throws Exception {
+    public void test1() {
         BeanInstantiator<NullaryConstructorBean> instantiator = BeanInstantiatorFactory.newBeanInstantiator(NullaryConstructorBean.class);
         NullaryConstructorBean bean = instantiator.newInstance();
         assertThat(bean.getName()).isEqualTo("bingoo");
     }
 
     @Test
-    public void test2() throws Exception {
+    public void test2() {
         BeanInstantiator<NonNullaryConstructorBean> instantiator = BeanInstantiatorFactory.newBeanInstantiator(NonNullaryConstructorBean.class);
         NonNullaryConstructorBean bean = instantiator.newInstance();
         assertThat(bean.getName()).isNull();

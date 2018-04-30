@@ -86,7 +86,8 @@ public class BeansToExcel {
 
             val fieldValue = field.getFieldValue(bean);
             cell.setCellValue(String.valueOf(fieldValue));
-            cell.setCellStyle(field.getCellStyle());
+            val cellStyle = field.getCellStyle();
+            if (cellStyle != null) cell.setCellStyle(cellStyle);
         }
     }
 
