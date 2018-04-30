@@ -158,6 +158,16 @@ Maybe there is not relative fonts installed. Methods:
 
 For all users available, just copy the fonts file to the `/usr/share/fonts` directory and then `fc-cache -f -v`.
 
+## Emoji output error
+When writting emoji like 🦄女侠🌈💄💓 , the output excel content will show like ?女侠???, try to fix this with following dependency.
+```xml
+<dependency>
+    <groupId>com.github.pjfanning</groupId>
+    <artifactId>xmlbeans</artifactId>
+    <version>2.6.5</version>
+</dependency>
+```
+
 # gpg
 ```bash
 GPG_TTY=$(tty)
