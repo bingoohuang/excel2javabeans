@@ -6,9 +6,11 @@ import com.github.bingoohuang.excel2beans.ExcelToBeansUtils;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.google.common.collect.Lists;
 import lombok.*;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileInputStream;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -21,6 +23,12 @@ public class EmojiTest {
 
         String fileName = "test-emoji-out.xlsx";
         ExcelToBeansUtils.writeExcel(workbook, fileName);
+
+        @Cleanup val fis = new FileInputStream(fileName);
+        val wb = WorkbookFactory.create(fis);
+        val beans = new ExcelToBeans(workbook).convert(WxNick.class);
+        assertThat(beans).containsExactly(wxNick);
+
         new File(fileName).delete();
     }
 
@@ -43,7 +51,6 @@ public class EmojiTest {
                 ,new WxNick("🐻维尼熊之笨笨🐳", "杨洋老师")
                 );
     }
-
 
     @Data @AllArgsConstructor
     public static class WxNick {
