@@ -49,7 +49,7 @@ public class EmojiTest {
                 ,new WxNick("🍭卢小贯", "杨洋老师")
                 ,new WxNick("金娃娃👧", "何老师")
                 ,new WxNick("🐻维尼熊之笨笨🐳", "杨洋老师")
-                );
+                ).inOrder();
     }
 
     @Data @AllArgsConstructor
