@@ -4,6 +4,7 @@ import com.github.bingoohuang.util.instantiator.BeanInstantiator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
@@ -53,8 +54,7 @@ class RowObjectCreator<T> {
         }
 
         if (cellDataMapAttachable) {
-            val attachable = (CellDataMapAttachable) object;
-            attachable.attachCellDataMap(cellDataMap);
+            ((CellDataMapAttachable) object).attachCellDataMap(cellDataMap);
         }
 
         return object;
@@ -73,12 +73,9 @@ class RowObjectCreator<T> {
         }
     }
 
+    @RequiredArgsConstructor
     private class BeanFieldValueCreator {
         private final ExcelBeanField beanField;
-
-        public BeanFieldValueCreator(ExcelBeanField beanField) {
-            this.beanField = beanField;
-        }
 
         public Object parseFieldValue() {
             if (beanField.isMultipleColumns()) {
@@ -87,7 +84,6 @@ class RowObjectCreator<T> {
                 return processSingleColumn(beanField.getColumnIndex(), -1);
             }
         }
-
 
         private Object parseMultipleFieldValue() {
             int nonEmptyFieldValues = 0;

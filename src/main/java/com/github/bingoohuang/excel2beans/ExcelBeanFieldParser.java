@@ -3,9 +3,9 @@ package com.github.bingoohuang.excel2beans;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColAlign;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
-import lombok.experimental.var;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import lombok.var;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -14,6 +14,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class ExcelBeanFieldParser {
@@ -28,7 +29,7 @@ public class ExcelBeanFieldParser {
     }
 
     public List<ExcelBeanField> parseBeanFields() {
-        val beanFields = new ArrayList<ExcelBeanField>(declaredFields.length);
+        List<ExcelBeanField> beanFields = new ArrayList<>(declaredFields.length);
 
         for (val field : declaredFields) {
             processField(field, beanFields);
@@ -38,22 +39,12 @@ public class ExcelBeanFieldParser {
     }
 
     private List<ExcelBeanField> filterTitledFileds(List<ExcelBeanField> beanFields) {
-        val titledBeanFields = new ArrayList<ExcelBeanField>(beanFields.size());
-        val untitledFields = new ArrayList<ExcelBeanField>(beanFields.size());
-        for (val beanField : beanFields) {
-            if (beanField.hasTitle()) {
-                titledBeanFields.add(beanField);
-            } else {
-                untitledFields.add(beanField);
-            }
-        }
-
+        val titledBeanFields = beanFields.stream().filter(x -> x.hasTitle()).collect(Collectors.toList());
         if (titledBeanFields.isEmpty()) return beanFields;
 
         if (log.isDebugEnabled()) {
-            for (val untitled : untitledFields) {
-                log.debug("ignore field {} without @ExcelColTitle", untitled.getFieldName());
-            }
+            val untitledFields = beanFields.stream().filter(x -> !x.hasTitle()).collect(Collectors.toList());
+            untitledFields.forEach(x -> log.debug("ignore field {} without @ExcelColTitle", x.getFieldName()));
         }
 
         return titledBeanFields;
@@ -66,8 +57,7 @@ public class ExcelBeanFieldParser {
         // refer: https://javapapers.com/core-java/java-synthetic-class-method-field/
         if (field.isSynthetic()) return;
 
-        val rowIgnore = field.getAnnotation(ExcelColIgnore.class);
-        if (rowIgnore != null) return;
+        if (field.isAnnotationPresent(ExcelColIgnore.class)) return;
 
         val fieldName = field.getName();
         if (fieldName.startsWith("$")) return; // ignore un-normal fields like $jacocoData
@@ -94,12 +84,11 @@ public class ExcelBeanFieldParser {
 
     private CellStyle createAlign(ExcelColStyle colStyle) {
         var style = sheet.getWorkbook().createCellStyle();
-        val align = colStyle.align();
-        if (align == ExcelColAlign.LEFT) {
+        if (colStyle.align() == ExcelColAlign.LEFT) {
             style.setAlignment(HorizontalAlignment.LEFT);
-        } else if (align == ExcelColAlign.CENTER) {
+        } else if (colStyle.align() == ExcelColAlign.CENTER) {
             style.setAlignment(HorizontalAlignment.CENTER);
-        } else if (align == ExcelColAlign.RIGHT) {
+        } else if (colStyle.align() == ExcelColAlign.RIGHT) {
             style.setAlignment(HorizontalAlignment.RIGHT);
         } else {
             style = null;

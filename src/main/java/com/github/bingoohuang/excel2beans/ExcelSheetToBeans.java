@@ -127,11 +127,9 @@ public class ExcelSheetToBeans<T> {
     }
 
     private void resetNotFoundColumnIndex() {
-        for (val beanField : beanFields) {
-            if (beanField.hasTitle() && !beanField.isTitleColumnFound()) {
-                beanField.setColumnIndex(-1);
-            }
-        }
+        beanFields.forEach(x -> {
+            if (x.hasTitle() && !x.isTitleColumnFound()) x.setColumnIndex(-1);
+        });
     }
 
     private void checkTitleColumnsAllFound() {
@@ -162,11 +160,7 @@ public class ExcelSheetToBeans<T> {
     }
 
     private boolean hasTitle() {
-        for (val beanField : beanFields) {
-            if (beanField.hasTitle()) return true;
-        }
-
-        return false;
+        return beanFields.stream().anyMatch(ExcelBeanField::hasTitle);
     }
 
 }

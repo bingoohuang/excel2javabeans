@@ -4,8 +4,8 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
-import lombok.experimental.var;
 import lombok.val;
+import lombok.var;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 

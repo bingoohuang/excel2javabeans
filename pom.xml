@@ -25,7 +25,7 @@
     </scm>
 
     <properties>
-        <java.version>1.6</java.version>
+        <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -69,7 +69,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>20.0</version>
+            <version>25.1-jre</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -87,7 +87,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.18</version>
+            <version>1.16.22</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -107,7 +107,7 @@
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
             <artifactId>asmvalidator</artifactId>
-            <version>0.0.15</version>
+            <version>0.0.16</version>
             <scope>test</scope>
         </dependency>
         <dependency>

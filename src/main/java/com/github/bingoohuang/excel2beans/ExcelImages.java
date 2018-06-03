@@ -2,8 +2,8 @@ package com.github.bingoohuang.excel2beans;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import lombok.experimental.var;
 import lombok.val;
+import lombok.var;
 import org.apache.poi.hssf.usermodel.HSSFClientAnchor;
 import org.apache.poi.hssf.usermodel.HSSFPatriarch;
 import org.apache.poi.hssf.usermodel.HSSFPicture;
@@ -77,7 +77,7 @@ public class ExcelImages {
     }
 
     private static Table<Integer, Integer, ImageData> readAllCellImages(HSSFPatriarch patriarch, Sheet sheet) {
-        val images = HashBasedTable.<Integer, Integer, ImageData>create();
+        HashBasedTable<Integer, Integer, ImageData> images = HashBasedTable.create();
         val allPictures = sheet.getWorkbook().getAllPictures();
         for (val shape : patriarch.getChildren()) {
             if (!(shape instanceof HSSFPicture && shape.getAnchor() instanceof HSSFClientAnchor)) continue;
@@ -95,7 +95,7 @@ public class ExcelImages {
     }
 
     private static Table<Integer, Integer, ImageData> readAllCellImages(XSSFDrawing drawing, Sheet sheet) {
-        val images = HashBasedTable.<Integer, Integer, ImageData>create();
+        HashBasedTable<Integer, Integer, ImageData> images = HashBasedTable.create();
         for (val shape : drawing.getShapes()) {
             if (!(shape instanceof XSSFPicture)) continue;
 

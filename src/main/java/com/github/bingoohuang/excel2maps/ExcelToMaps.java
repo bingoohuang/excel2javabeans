@@ -21,14 +21,12 @@ public class ExcelToMaps implements Closeable {
         this.shouldBeClosedByMe = true;
     }
 
-    @SneakyThrows
     public ExcelToMaps(Workbook workbook) {
         this.workbook = workbook;
         this.shouldBeClosedByMe = false;
     }
 
 
-    @SneakyThrows
     public List<Map<String, String>> convert(ExcelToMapsConfig excelToMapsConfig, int sheetIndex) {
         val converter = new ExcelSheetToMaps(workbook, excelToMapsConfig);
         return converter.convert(sheetIndex);

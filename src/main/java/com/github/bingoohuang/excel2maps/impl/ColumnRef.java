@@ -14,9 +14,7 @@ import java.util.Map;
 
     public Ignored putMapOrIgnored(Map<String, String> map, String cellValue) {
         val upper = StringUtils.upperCase(cellValue);
-        if (wildMatch(upper, columnDef.getIgnorePattern())) {
-            return Ignored.YES;
-        }
+        if (wildMatch(upper, columnDef.getIgnorePattern())) return Ignored.YES;
 
         map.put(columnDef.getColumnName(), cellValue);
         return Ignored.NO;
@@ -33,8 +31,7 @@ import java.util.Map;
     public static boolean wildMatch(String text, String pattern) {
         if (pattern == null) return false;
 
-        return text.matches(
-                pattern.replace("?", ".?")
-                        .replace("*", ".*?"));
+        return text.matches(pattern.replace("?", ".?")
+                .replace("*", ".*?"));
     }
 }

@@ -2,8 +2,8 @@ package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import com.google.common.collect.Maps;
-import lombok.experimental.var;
 import lombok.val;
+import lombok.var;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -34,29 +35,20 @@ public class BeansToExcel {
     }
 
     public Workbook create(List<?>... lists) {
-        return create(Maps.<String, Object>newHashMap(), lists);
+        return create(Maps.newHashMap(), lists);
     }
 
     public Workbook create(Map<String, Object> props, List<?>... lists) {
         Map<Class, BeanClassBag> beanClassBag = Maps.newHashMap();
-
-        for (val list : lists) {
-            for (val bean : list) {
-                writeBeanToExcel(props, beanClassBag, bean);
-            }
-        }
-
+        Arrays.stream(lists).forEach(x -> x.forEach(y -> writeBeanToExcel(props, beanClassBag, y)));
         autoSizeColumn(beanClassBag);
 
         return workbook;
     }
 
-    private void writeBeanToExcel(
-            Map<String, Object> props, Map<Class, BeanClassBag> beanClassBagMap, Object bean) {
-        val bag = insureBagCreated(props, beanClassBagMap, bean);
-
-        val row = createRow(bag);
-        writeRowCells(bean, bag, row);
+    private void writeBeanToExcel(Map<String, Object> props, Map<Class, BeanClassBag> bagMap, Object bean) {
+        val bag = insureBagCreated(props, bagMap, bean);
+        writeRowCells(bean, bag, createRow(bag));
     }
 
     private Row createRow(BeanClassBag bag) {

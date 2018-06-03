@@ -4,9 +4,9 @@ import lombok.Value;
 import org.apache.commons.lang3.StringUtils;
 
 @Value public class ColumnDef {
-    String title;
-    String columnName;
-    String ignorePattern;
+    final String title;
+    final String columnName;
+    final String ignorePattern;
 
     public ColumnDef(String title, String columnName) {
         this(title, columnName, null);
