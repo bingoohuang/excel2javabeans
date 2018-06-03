@@ -24,7 +24,7 @@ public class ValueOfs {
                 return valueOfMethod;
             }
         } catch (Exception e) {
-            valueOfMethodCache.put(returnClass, Optional.<Method>absent());
+            valueOfMethodCache.put(returnClass, Optional.absent());
         }
 
         return null;
