@@ -10,6 +10,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Mapping excel rows to java beans.
@@ -42,14 +43,12 @@ public class ExcelToBeans implements Closeable {
 
         val redCellStyle = createRedCellStyle();
 
-        for (val rowRef : rowRefs) {
-            if (StringUtils.isEmpty(rowRef.error())) continue;
-
-            val row = sheet.getRow(rowRef.getRowNum());
-            val cell = row.createCell(lastCellNum);
-            cell.setCellStyle(redCellStyle);
-            cell.setCellValue(rowRef.error());
-        }
+        rowRefs.stream().filter(x -> StringUtils.isNotEmpty(x.error()))
+                .forEach(x -> {
+                    val cell = sheet.getRow(x.getRowNum()).createCell(lastCellNum);
+                    cell.setCellStyle(redCellStyle);
+                    cell.setCellValue(x.error());
+                });
     }
 
     public int getLastCellNum(Sheet sheet, ExcelSheetToBeans sheetToBeans,
@@ -72,13 +71,10 @@ public class ExcelToBeans implements Closeable {
 
     public void removeOkRows(Class<?> beanClass, List<? extends ExcelRowReferable> rowRefs) {
         val sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
-        int rowsRemoved = 0;
-        for (val rowRef : rowRefs) {
-            if (StringUtils.isNotEmpty(rowRef.error())) continue;
+        val rowsRemoved = new AtomicInteger();
 
-            ExcelToBeansUtils.removeRow(sheet, rowRef.getRowNum() - rowsRemoved);
-            ++rowsRemoved;
-        }
+        rowRefs.stream().filter(x -> StringUtils.isEmpty(x.error()))
+                .forEach(x -> ExcelToBeansUtils.removeRow(sheet, x.getRowNum() - rowsRemoved.getAndIncrement()));
     }
 
     @Override public void close() throws IOException {

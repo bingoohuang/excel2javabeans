@@ -15,6 +15,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 public class BeansToExcel {
     private final Workbook workbook;
@@ -55,24 +56,22 @@ public class BeansToExcel {
         val sheet = bag.getSheet();
         if (bag.isFirstRowCreated()) {
             return sheet.createRow(sheet.getLastRowNum() + 1);
-        } else {
-            bag.setFirstRowCreated(true);
-            return sheet.createRow(0);
         }
+
+        bag.setFirstRowCreated(true);
+        return sheet.createRow(0);
     }
 
     private void autoSizeColumn(Map<Class, BeanClassBag> sheets) {
-        for (val bag : sheets.values()) {
+        sheets.values().forEach(bag -> {
             val sheet = bag.getSheet();
             val lastCellNum = sheet.getRow(sheet.getLastRowNum()).getLastCellNum();
-            for (int i = 0; i <= lastCellNum; ++i) {
-                sheet.autoSizeColumn(i);
-            }
-        }
+            IntStream.rangeClosed(0, lastCellNum).forEach(i -> sheet.autoSizeColumn(i));
+        });
     }
 
     private void writeRowCells(Object bean, BeanClassBag bag, Row row) {
-        for (int i = 0, ii = bag.getBeanFields().size(); i < ii; ++i) {
+        IntStream.range(0, bag.getBeanFields().size()).forEach(i -> {
             val cell = row.createCell(i);
             val field = bag.getBeanField(i);
 
@@ -80,7 +79,7 @@ public class BeansToExcel {
             cell.setCellValue(String.valueOf(fieldValue));
             val cellStyle = field.getCellStyle();
             if (cellStyle != null) cell.setCellStyle(cellStyle);
-        }
+        });
     }
 
     private BeanClassBag insureBagCreated(
@@ -112,8 +111,8 @@ public class BeansToExcel {
         if (StringUtils.isEmpty(head)) return;
 
         val lastCol = bag.getBeanFields().size() - 1;
-        val cellRangeAddress = new CellRangeAddress(0, 0, 0, lastCol);
-        bag.getSheet().addMergedRegion(cellRangeAddress);
+        val region = new CellRangeAddress(0, 0, 0, lastCol);
+        bag.getSheet().addMergedRegion(region);
 
         val row = createRow(bag);
         row.createCell(0).setCellValue(head);
@@ -122,9 +121,8 @@ public class BeansToExcel {
     private void addTitleToSheet(BeanClassBag bag) {
         val row = createRow(bag);
         val beanFields = bag.getBeanFields();
-        for (int i = 0, ii = beanFields.size(); i < ii; ++i) {
-            row.createCell(i).setCellValue(beanFields.get(i).getTitle());
-        }
+        IntStream.range(0, beanFields.size()).forEach(i ->
+                row.createCell(i).setCellValue(beanFields.get(i).getTitle()));
 
         cloneCellStyle(bag, row, beanFields);
     }
@@ -133,26 +131,22 @@ public class BeansToExcel {
         if (styleTemplate == null) return;
 
         val templateSheet = parseTemplateSheet(bag);
-        for (int colIndex = 0, ii = beanFields.size(); colIndex < ii; ++colIndex) {
+        IntStream.range(0, beanFields.size()).forEach(colIndex -> {
             val headStyle = cloneCellStyle(templateSheet, 0, colIndex);
             row.getCell(colIndex).setCellStyle(headStyle);
 
-            val styleRow = templateSheet.getRow(0);
-            row.setHeight(styleRow.getHeight());
+            row.setHeight(templateSheet.getRow(0).getHeight());
 
             val dataStyle = cloneCellStyle(templateSheet, 1, colIndex);
             beanFields.get(colIndex).setCellStyle(dataStyle);
-        }
+        });
     }
 
     private Sheet parseTemplateSheet(BeanClassBag bag) {
         val sheetName = bag.getSheet().getSheetName();
-        var styleSheet = styleTemplate.getSheet(sheetName);
-        if (styleSheet == null) {
-            styleSheet = styleTemplate.getSheetAt(0);
-        }
+        var sheet = styleTemplate.getSheet(sheetName);
 
-        return styleSheet;
+        return sheet != null ? sheet : styleTemplate.getSheetAt(0);
     }
 
     private CellStyle cloneCellStyle(Sheet styleSheet, int rowIndex, int colIndex) {

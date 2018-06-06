@@ -8,7 +8,7 @@ public class ExcelRowRef implements ExcelRowReferable {
     @ExcelColIgnore
     @Getter @Setter private int rowNum;
     @ExcelColIgnore
-    @Getter @Setter private String error;
+    @Setter private String error;
 
     @Override public String error() {
         return error;

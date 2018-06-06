@@ -87,7 +87,7 @@ class RowObjectCreator<T> {
 
         private Object parseMultipleFieldValue() {
             int nonEmptyFieldValues = 0;
-            val fieldValues = Lists.<Object>newArrayList();
+            List<Object> fieldValues = Lists.newArrayList();
             for (int columnIndex : beanField.getMultipleColumnIndexes()) {
                 val value = processSingleColumn(columnIndex, fieldValues.size());
                 fieldValues.add(value);
@@ -149,20 +149,19 @@ class RowObjectCreator<T> {
 
 
     private CellData createCellData(Cell cell, String cellValue, int rowNum, int colNum) {
-        val cellDataBuilder = CellData.builder()
-                .value(cellValue).row(rowNum).col(colNum)
+        val cellDataBuilder = CellData.builder().value(cellValue).row(rowNum).col(colNum)
                 .sheetIndex(sheet.getWorkbook().getSheetIndex(sheet));
-        applyComment(cell, cellDataBuilder);
-        return cellDataBuilder.build();
+
+        return applyComment(cell, cellDataBuilder).build();
     }
 
-    private void applyComment(Cell cell, CellData.CellDataBuilder cellData) {
-        if (cell == null) return;
+    private CellData.CellDataBuilder applyComment(Cell cell, CellData.CellDataBuilder cellData) {
+        if (cell == null) return cellData;
 
         val comment = cell.getCellComment();
-        if (comment == null) return;
+        if (comment == null) return cellData;
 
-        cellData.comment(comment.getString().getString())
+        return cellData.comment(comment.getString().getString())
                 .commentAuthor(comment.getAuthor());
     }
 

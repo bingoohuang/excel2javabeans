@@ -18,13 +18,13 @@ public class EmojiTest {
     public void testWriteEmoji() {
         val wxNick = new WxNick("🦄女侠🌈💄💓", "🎈Nancy🍬");
         val wxNicks = Lists.newArrayList(wxNick);
-        @Cleanup val workbook = new BeansToExcel().create(wxNicks);
+        @Cleanup val wb = new BeansToExcel().create(wxNicks);
 
-        String fileName = "test-emoji-out.xlsx";
-        ExcelToBeansUtils.writeExcel(workbook, fileName);
+        val fileName = "test-emoji-out.xlsx";
+        ExcelToBeansUtils.writeExcel(wb, fileName);
 
         @Cleanup val fis = new FileInputStream(fileName);
-        val beans = new ExcelToBeans(workbook).convert(WxNick.class);
+        val beans = new ExcelToBeans(fis).convert(WxNick.class);
         assertThat(beans).containsExactly(wxNick);
 
         new File(fileName).delete();
@@ -32,9 +32,8 @@ public class EmojiTest {
 
     @Test @SneakyThrows
     public void testReadEmoji() {
-        @Cleanup
-        val workbook = ExcelToBeansUtils.getClassPathWorkbook("emoji.xlsx");
-        val excelToBeans = new ExcelToBeans(workbook);
+        @Cleanup val wb = ExcelToBeansUtils.getClassPathWorkbook("emoji.xlsx");
+        val excelToBeans = new ExcelToBeans(wb);
         val beans = excelToBeans.convert(WxNick.class);
 
         assertThat(beans).containsExactly(

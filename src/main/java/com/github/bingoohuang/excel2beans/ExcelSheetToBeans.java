@@ -77,15 +77,10 @@ public class ExcelSheetToBeans<T> {
     }
 
     private void addToBeans(List<T> beans, int i, T object) {
-        if (object instanceof ExcelRowIgnorable) {
-            val ignore = (ExcelRowIgnorable) object;
-            if (ignore.ignoreRow()) return;
-        }
-
-        if (object instanceof ExcelRowReferable) {
-            val ref = (ExcelRowReferable) object;
-            ref.setRowNum(i);
-        }
+        if (object instanceof ExcelRowIgnorable && ((ExcelRowIgnorable) object).ignoreRow())
+            return;
+        if (object instanceof ExcelRowReferable)
+            ((ExcelRowReferable) object).setRowNum(i);
 
         beans.add(object);
     }
@@ -133,11 +128,9 @@ public class ExcelSheetToBeans<T> {
     }
 
     private void checkTitleColumnsAllFound() {
-        for (val beanField : beanFields) {
-            if (beanField.isTitleNotMatched()) {
-                throw new IllegalArgumentException("找不到[" + beanField.getTitle() + "]的列");
-            }
-        }
+        beanFields.stream().filter(x -> x.isTitleNotMatched()).findAny().ifPresent(x -> {
+            throw new IllegalArgumentException("找不到[" + x.getTitle() + "]的列");
+        });
     }
 
     private boolean findColumn(Row row, ExcelBeanField beanField) {

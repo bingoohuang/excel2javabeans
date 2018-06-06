@@ -79,34 +79,34 @@ public class ExcelImages {
     private static Table<Integer, Integer, ImageData> readAllCellImages(HSSFPatriarch patriarch, Sheet sheet) {
         HashBasedTable<Integer, Integer, ImageData> images = HashBasedTable.create();
         val allPictures = sheet.getWorkbook().getAllPictures();
-        for (val shape : patriarch.getChildren()) {
-            if (!(shape instanceof HSSFPicture && shape.getAnchor() instanceof HSSFClientAnchor)) continue;
 
-            val picture = (HSSFPicture) shape;
-            val imageData = createImageData(allPictures.get(picture.getPictureIndex() - 1));
+        patriarch.getChildren().stream()
+                .filter(x -> x instanceof HSSFPicture && x.getAnchor() instanceof HSSFClientAnchor)
+                .forEach(x -> {
+                    val picture = (HSSFPicture) x;
+                    val imageData = createImageData(allPictures.get(picture.getPictureIndex() - 1));
 
-            val axisRow = computeAxisRowIndex(sheet, picture);
-            val axisCol = computeAxisColIndex(sheet, picture);
+                    val axisRow = computeAxisRowIndex(sheet, picture);
+                    val axisCol = computeAxisColIndex(sheet, picture);
 
-            images.put(axisRow, axisCol, imageData);
-        }
+                    images.put(axisRow, axisCol, imageData);
+                });
 
         return images;
     }
 
     private static Table<Integer, Integer, ImageData> readAllCellImages(XSSFDrawing drawing, Sheet sheet) {
         HashBasedTable<Integer, Integer, ImageData> images = HashBasedTable.create();
-        for (val shape : drawing.getShapes()) {
-            if (!(shape instanceof XSSFPicture)) continue;
+        drawing.getShapes().stream().filter(x -> x instanceof XSSFPicture)
+                .forEach(x -> {
+                    val picture = (XSSFPicture) x;
+                    val imageData = createImageData(picture.getPictureData());
 
-            val picture = (XSSFPicture) shape;
-            val imageData = createImageData(picture.getPictureData());
+                    val axisRow = computeAxisRowIndex(sheet, picture);
+                    val axisCol = computeAxisColIndex(sheet, picture);
 
-            val axisRow = computeAxisRowIndex(sheet, picture);
-            val axisCol = computeAxisColIndex(sheet, picture);
-
-            images.put(axisRow, axisCol, imageData);
-        }
+                    images.put(axisRow, axisCol, imageData);
+                });
 
         return images;
     }

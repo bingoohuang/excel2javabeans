@@ -1,7 +1,6 @@
 package com.github.bingoohuang.excel2maps;
 
 import lombok.SneakyThrows;
-import lombok.val;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 
@@ -28,13 +27,10 @@ public class ExcelToMaps implements Closeable {
 
 
     public List<Map<String, String>> convert(ExcelToMapsConfig excelToMapsConfig, int sheetIndex) {
-        val converter = new ExcelSheetToMaps(workbook, excelToMapsConfig);
-        return converter.convert(sheetIndex);
+        return new ExcelSheetToMaps(workbook, excelToMapsConfig).convert(sheetIndex);
     }
 
     @Override public void close() throws IOException {
-        if (shouldBeClosedByMe) {
-            workbook.close();
-        }
+        if (shouldBeClosedByMe) workbook.close();
     }
 }

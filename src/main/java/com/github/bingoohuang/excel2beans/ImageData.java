@@ -12,19 +12,7 @@ public class ImageData implements PictureData {
     private String mimeType;
     private int pictureType;
 
-    @Override public byte[] getData() {
-        return data;
-    }
-
     @Override public String suggestFileExtension() {
         return suggestFileExtension;
-    }
-
-    @Override public String getMimeType() {
-        return mimeType;
-    }
-
-    @Override public int getPictureType() {
-        return pictureType;
     }
 }

@@ -15,31 +15,30 @@ import java.net.URLEncoder;
 @UtilityClass
 public class ExcelDownloads {
     @SneakyThrows
-    public void download(HttpServletResponse response, Workbook workbook, String fileName) {
-        @Cleanup val out = prepareDownload(response, fileName);
-        workbook.write(out);
-        workbook.close();
+    public void download(HttpServletResponse r, Workbook wb, String fileName) {
+        @Cleanup val out = prepareDownload(r, fileName);
+        wb.write(out);
+        wb.close();
     }
 
     @SneakyThrows
-    public void download(HttpServletResponse response, byte[] workbook, String fileName) {
-        @Cleanup val out = prepareDownload(response, fileName);
-        out.write(workbook);
+    public void download(HttpServletResponse r, byte[] wb, String fileName) {
+        @Cleanup val out = prepareDownload(r, fileName);
+        out.write(wb);
     }
 
     @SneakyThrows
-    public void download(HttpServletResponse response, InputStream workbook, String fileName) {
-        @Cleanup val out = prepareDownload(response, fileName);
-        ByteStreams.copy(workbook, out);
+    public void download(HttpServletResponse r, InputStream wb, String fileName) {
+        @Cleanup val out = prepareDownload(r, fileName);
+        ByteStreams.copy(wb, out);
+        wb.close();
     }
 
     @SneakyThrows
-    public ServletOutputStream prepareDownload(HttpServletResponse response, String fileName) {
-        response.setContentType("application/vnd.ms-excel;charset=UTF-8");
-        val encodedFileName = URLEncoder.encode(fileName, "UTF-8");
-        response.setHeader("Content-disposition", "attachment; " +
-                "filename=\"" + encodedFileName + "\"; " +
-                "filename*=utf-8'zh_cn'" + encodedFileName);
-        return response.getOutputStream();
+    public ServletOutputStream prepareDownload(HttpServletResponse r, String fileName) {
+        r.setContentType("application/vnd.ms-excel;charset=UTF-8");
+        val f = URLEncoder.encode(fileName, "UTF-8");
+        r.setHeader("Content-disposition", "attachment; filename=\"" + f + "\"; filename*=utf-8'zh_cn'" + f);
+        return r.getOutputStream();
     }
 }

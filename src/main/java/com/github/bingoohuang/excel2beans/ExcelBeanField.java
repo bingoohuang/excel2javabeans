@@ -32,7 +32,8 @@ public class ExcelBeanField {
     @Getter private final String title;
     @Getter private final boolean cellDataType;
     @Getter private final boolean multipleColumns;
-    @Getter private final List<Integer> multipleColumnIndexes = Lists.newArrayList();
+    @Getter
+    private final List<Integer> multipleColumnIndexes = Lists.newArrayList();
 
     public ExcelBeanField(Class<?> beanClass, Field field, int columnIndex) {
         this.beanClass = beanClass;
@@ -50,22 +51,16 @@ public class ExcelBeanField {
             this.title = null;
         }
 
-        val genericType = field.getGenericType();
-        val isParameterizedType = genericType instanceof ParameterizedType;
-
-        if (isParameterizedType && List.class.isAssignableFrom(field.getType())) {
-            val parameterizedType = (ParameterizedType) genericType;
-            val actualTypeArgs = parameterizedType.getActualTypeArguments();
-
+        val gt = field.getGenericType();
+        if (gt instanceof ParameterizedType && List.class.isAssignableFrom(field.getType())) {
             this.multipleColumns = true;
-            this.elementType = (Class) actualTypeArgs[0];
+            this.elementType = (Class) ((ParameterizedType) gt).getActualTypeArguments()[0];
         } else {
             this.multipleColumns = false;
             this.elementType = field.getType();
         }
 
         this.cellDataType = this.elementType == CellData.class;
-
         this.valueOfMethod = elementType != String.class
                 ? ValueOfs.getValueOfMethodFrom(elementType) : null;
     }
@@ -82,7 +77,6 @@ public class ExcelBeanField {
         try {
             val fieldAccess = ReflectAsms.getFieldAccess(beanClass);
             fieldAccess.set(target, fieldName, cellValue);
-            return;
         } catch (Exception e) {
             log.warn("field set {} failed", fieldName, e);
         }
@@ -127,8 +121,7 @@ public class ExcelBeanField {
     }
 
     public Object convert(String cellValue) {
-        return valueOfMethod == null
-                ? cellValue
+        return valueOfMethod == null ? cellValue
                 : ValueOfs.invokeValueOf(elementType, cellValue);
     }
 
@@ -139,6 +132,5 @@ public class ExcelBeanField {
     public boolean isElementTypeSupported() {
         return isImageDataField() || isStringField() || cellDataType || valueOfMethod != null;
     }
-
 
 }

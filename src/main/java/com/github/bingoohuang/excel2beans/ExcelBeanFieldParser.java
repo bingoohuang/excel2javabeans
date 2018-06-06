@@ -35,10 +35,10 @@ public class ExcelBeanFieldParser {
             processField(field, beanFields);
         }
 
-        return filterTitledFileds(beanFields);
+        return filterTitledFields(beanFields);
     }
 
-    private List<ExcelBeanField> filterTitledFileds(List<ExcelBeanField> beanFields) {
+    private List<ExcelBeanField> filterTitledFields(List<ExcelBeanField> beanFields) {
         val titledBeanFields = beanFields.stream().filter(x -> x.hasTitle()).collect(Collectors.toList());
         if (titledBeanFields.isEmpty()) return beanFields;
 
@@ -60,7 +60,8 @@ public class ExcelBeanFieldParser {
         if (field.isAnnotationPresent(ExcelColIgnore.class)) return;
 
         val fieldName = field.getName();
-        if (fieldName.startsWith("$")) return; // ignore un-normal fields like $jacocoData
+        if (fieldName.startsWith("$"))
+            return; // ignore un-normal fields like $jacocoData
 
         val beanField = new ExcelBeanField(beanClass, field, fields.size());
         if (beanField.isElementTypeSupported()) {
