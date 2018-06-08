@@ -75,21 +75,21 @@ public class BeansToExcel {
             val cell = row.createCell(i);
             val field = bag.getBeanField(i);
 
-            val fieldValue = field.getFieldValue(bean);
-            cell.setCellValue(String.valueOf(fieldValue));
-            val cellStyle = field.getCellStyle();
-            if (cellStyle != null) cell.setCellStyle(cellStyle);
+            val value = field.getFieldValue(bean);
+            cell.setCellValue(value == null ? "" : String.valueOf(value));
+
+            val style = field.getCellStyle();
+            if (style != null) cell.setCellStyle(style);
         });
     }
 
-    private BeanClassBag insureBagCreated(
-            Map<String, Object> props, Map<Class, BeanClassBag> beanClassBag, Object bean) {
+    private BeanClassBag insureBagCreated(Map<String, Object> props, Map<Class, BeanClassBag> bagMap, Object bean) {
         val beanClass = bean.getClass();
-        var bag = beanClassBag.get(beanClass);
+        var bag = bagMap.get(beanClass);
         if (bag != null) return bag;
 
         bag = new BeanClassBag(beanClass);
-        beanClassBag.put(beanClass, bag);
+        bagMap.put(beanClass, bag);
 
         bag.setSheet(createSheet(beanClass));
         bag.setBeanFields(new ExcelBeanFieldParser(beanClass, bag.getSheet()).parseBeanFields());
@@ -127,18 +127,18 @@ public class BeansToExcel {
         cloneCellStyle(bag, row, beanFields);
     }
 
-    private void cloneCellStyle(BeanClassBag bag, Row row, List<ExcelBeanField> beanFields) {
+    private void cloneCellStyle(BeanClassBag bag, Row row, List<ExcelBeanField> fields) {
         if (styleTemplate == null) return;
 
         val templateSheet = parseTemplateSheet(bag);
-        IntStream.range(0, beanFields.size()).forEach(colIndex -> {
+        IntStream.range(0, fields.size()).forEach(colIndex -> {
             val headStyle = cloneCellStyle(templateSheet, 0, colIndex);
             row.getCell(colIndex).setCellStyle(headStyle);
 
             row.setHeight(templateSheet.getRow(0).getHeight());
 
             val dataStyle = cloneCellStyle(templateSheet, 1, colIndex);
-            beanFields.get(colIndex).setCellStyle(dataStyle);
+            fields.get(colIndex).setCellStyle(dataStyle);
         });
     }
 

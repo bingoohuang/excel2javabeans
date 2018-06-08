@@ -43,12 +43,11 @@ public class ExcelToBeans implements Closeable {
 
         val redCellStyle = createRedCellStyle();
 
-        rowRefs.stream().filter(x -> StringUtils.isNotEmpty(x.error()))
-                .forEach(x -> {
-                    val cell = sheet.getRow(x.getRowNum()).createCell(lastCellNum);
-                    cell.setCellStyle(redCellStyle);
-                    cell.setCellValue(x.error());
-                });
+        rowRefs.stream().filter(x -> StringUtils.isNotEmpty(x.error())).forEach(x -> {
+            val cell = sheet.getRow(x.getRowNum()).createCell(lastCellNum);
+            cell.setCellStyle(redCellStyle);
+            cell.setCellValue(x.error());
+        });
     }
 
     public int getLastCellNum(Sheet sheet, ExcelSheetToBeans sheetToBeans,

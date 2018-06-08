@@ -35,14 +35,14 @@ public class ExcelBeanField {
     @Getter
     private final List<Integer> multipleColumnIndexes = Lists.newArrayList();
 
-    public ExcelBeanField(Class<?> beanClass, Field field, int columnIndex) {
+    public ExcelBeanField(Class<?> beanClass, Field f, int columnIndex) {
         this.beanClass = beanClass;
         this.columnIndex = columnIndex;
-        this.fieldName = field.getName();
+        this.fieldName = f.getName();
         this.setter = "set" + StringUtils.capitalize(fieldName);
         this.getter = "get" + StringUtils.capitalize(fieldName);
 
-        val colTitle = field.getAnnotation(ExcelColTitle.class);
+        val colTitle = f.getAnnotation(ExcelColTitle.class);
         if (colTitle != null) {
             this.titleRequired = colTitle.required();
             this.title = colTitle.value().toUpperCase();
@@ -51,32 +51,23 @@ public class ExcelBeanField {
             this.title = null;
         }
 
-        val gt = field.getGenericType();
-        if (gt instanceof ParameterizedType && List.class.isAssignableFrom(field.getType())) {
-            this.multipleColumns = true;
-            this.elementType = (Class) ((ParameterizedType) gt).getActualTypeArguments()[0];
-        } else {
-            this.multipleColumns = false;
-            this.elementType = field.getType();
-        }
-
+        val gt = f.getGenericType();
+        this.multipleColumns = gt instanceof ParameterizedType && List.class.isAssignableFrom(f.getType());
+        this.elementType = this.multipleColumns ? (Class) ((ParameterizedType) gt).getActualTypeArguments()[0] : f.getType();
         this.cellDataType = this.elementType == CellData.class;
-        this.valueOfMethod = elementType != String.class
-                ? ValueOfs.getValueOfMethodFrom(elementType) : null;
+        this.valueOfMethod = elementType == String.class ? null : ValueOfs.getValueOfMethodFrom(elementType);
     }
 
     public void setFieldValue(Object target, Object cellValue) {
         try {
-            val methodAccess = ReflectAsms.getMethodAccess(beanClass);
-            methodAccess.invoke(target, setter, cellValue);
+            ReflectAsms.getMethodAccess(beanClass).invoke(target, setter, cellValue);
             return;
         } catch (Exception e) {
             log.warn("call setter {} failed", setter, e);
         }
 
         try {
-            val fieldAccess = ReflectAsms.getFieldAccess(beanClass);
-            fieldAccess.set(target, fieldName, cellValue);
+            ReflectAsms.getFieldAccess(beanClass).set(target, fieldName, cellValue);
         } catch (Exception e) {
             log.warn("field set {} failed", fieldName, e);
         }
@@ -84,15 +75,13 @@ public class ExcelBeanField {
 
     public Object getFieldValue(Object target) {
         try {
-            val methodAccess = ReflectAsms.getMethodAccess(beanClass);
-            return methodAccess.invoke(target, getter);
+            return ReflectAsms.getMethodAccess(beanClass).invoke(target, getter);
         } catch (Exception e) {
             log.warn("call getter {} failed", getter, e);
         }
 
         try {
-            val fieldAccess = ReflectAsms.getFieldAccess(beanClass);
-            return fieldAccess.get(target, fieldName);
+            return ReflectAsms.getFieldAccess(beanClass).get(target, fieldName);
         } catch (Exception e) {
             log.warn("field get {} failed", getter, e);
         }

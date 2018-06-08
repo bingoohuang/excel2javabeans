@@ -5,7 +5,6 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import lombok.var;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -39,15 +38,14 @@ public class ExcelBeanFieldParser {
     }
 
     private List<ExcelBeanField> filterTitledFields(List<ExcelBeanField> beanFields) {
-        val titledBeanFields = beanFields.stream().filter(x -> x.hasTitle()).collect(Collectors.toList());
-        if (titledBeanFields.isEmpty()) return beanFields;
+        val titledFields = beanFields.stream().filter(x -> x.hasTitle()).collect(Collectors.toList());
+        if (titledFields.isEmpty()) return beanFields;
 
         if (log.isDebugEnabled()) {
-            val untitledFields = beanFields.stream().filter(x -> !x.hasTitle()).collect(Collectors.toList());
-            untitledFields.forEach(x -> log.debug("ignore field {} without @ExcelColTitle", x.getFieldName()));
+            beanFields.stream().filter(x -> !x.hasTitle()).forEach(x -> log.debug("ignore field {} without @ExcelColTitle", x.getFieldName()));
         }
 
-        return titledBeanFields;
+        return titledFields;
     }
 
     private void processField(Field field, List<ExcelBeanField> fields) {
@@ -56,19 +54,16 @@ public class ExcelBeanFieldParser {
         // to a block's local variable or reference type parameter.
         // refer: https://javapapers.com/core-java/java-synthetic-class-method-field/
         if (field.isSynthetic()) return;
-
         if (field.isAnnotationPresent(ExcelColIgnore.class)) return;
+        // ignore un-normal fields like $jacocoData
+        if (field.getName().startsWith("$")) return;
 
-        val fieldName = field.getName();
-        if (fieldName.startsWith("$"))
-            return; // ignore un-normal fields like $jacocoData
-
-        val beanField = new ExcelBeanField(beanClass, field, fields.size());
-        if (beanField.isElementTypeSupported()) {
-            setStyle(field, beanField);
-            fields.add(beanField);
+        val bf = new ExcelBeanField(beanClass, field, fields.size());
+        if (bf.isElementTypeSupported()) {
+            setStyle(field, bf);
+            fields.add(bf);
         } else {
-            log.debug("bean field {} was ignored by unsupported type {}", beanField.getFieldName(), beanField.getElementType());
+            log.debug("bean field {} was ignored by unsupported type {}", bf.getFieldName(), bf.getElementType());
         }
     }
 
@@ -77,25 +72,29 @@ public class ExcelBeanFieldParser {
         val colStyle = field.getAnnotation(ExcelColStyle.class);
         if (colStyle == null) return;
 
-        val style = createAlign(colStyle);
-        if (style == null) return;
-
-        beanField.setCellStyle(style);
+        beanField.setCellStyle(createAlign(colStyle));
     }
 
     private CellStyle createAlign(ExcelColStyle colStyle) {
-        var style = sheet.getWorkbook().createCellStyle();
-        if (colStyle.align() == ExcelColAlign.LEFT) {
-            style.setAlignment(HorizontalAlignment.LEFT);
-        } else if (colStyle.align() == ExcelColAlign.CENTER) {
-            style.setAlignment(HorizontalAlignment.CENTER);
-        } else if (colStyle.align() == ExcelColAlign.RIGHT) {
-            style.setAlignment(HorizontalAlignment.RIGHT);
-        } else {
-            style = null;
-        }
+        val style = sheet.getWorkbook().createCellStyle();
+        val align = convertAlign(colStyle.align());
+        if (align != null) style.setAlignment(align);
 
         return style;
+
+    }
+
+    private HorizontalAlignment convertAlign(ExcelColAlign align) {
+        switch (align) {
+            case LEFT:
+                return HorizontalAlignment.LEFT;
+            case CENTER:
+                return HorizontalAlignment.CENTER;
+            case RIGHT:
+                return HorizontalAlignment.RIGHT;
+        }
+
+        return null;
     }
 
 }

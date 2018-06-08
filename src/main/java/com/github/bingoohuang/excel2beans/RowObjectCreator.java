@@ -1,5 +1,6 @@
 package com.github.bingoohuang.excel2beans;
 
+import com.github.bingoohuang.excel2beans.CellData.CellDataBuilder;
 import com.github.bingoohuang.util.instantiator.BeanInstantiator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -34,10 +35,7 @@ class RowObjectCreator<T> {
                             int rowNum) {
         this.beanFields = beanFields;
         this.cellDataMapAttachable = cellDataMapAttachable;
-
-        if (cellDataMapAttachable) cellDataMap = Maps.newHashMap();
-        else cellDataMap = null;
-
+        this.cellDataMap = cellDataMapAttachable ? Maps.newHashMap() : null;
         this.sheet = sheet;
         this.imageDataTable = imageDataTable;
         this.cellFormatter = cellFormatter;
@@ -49,13 +47,9 @@ class RowObjectCreator<T> {
         if (object == null) return null;
 
         processRow();
-        if (emptyNum == beanFields.size()) {
-            return null;
-        }
-
-        if (cellDataMapAttachable) {
+        if (emptyNum == beanFields.size()) return null;
+        if (cellDataMapAttachable)
             ((CellDataMapAttachable) object).attachCellDataMap(cellDataMap);
-        }
 
         return object;
     }
@@ -78,11 +72,8 @@ class RowObjectCreator<T> {
         private final ExcelBeanField beanField;
 
         public Object parseFieldValue() {
-            if (beanField.isMultipleColumns()) {
-                return parseMultipleFieldValue();
-            } else {
-                return processSingleColumn(beanField.getColumnIndex(), -1);
-            }
+            return beanField.isMultipleColumns() ? parseMultipleFieldValue()
+                    : processSingleColumn(beanField.getColumnIndex(), -1);
         }
 
         private Object parseMultipleFieldValue() {
@@ -103,13 +94,11 @@ class RowObjectCreator<T> {
             if (columnIndex < 0) return null;
 
             val cell = row.getCell(columnIndex);
-
             if (beanField.isImageDataField()) {
                 attachCellDataMap(columnIndex, fieldNameIndex, cell);
                 return imageDataTable.get(row.getRowNum(), columnIndex);
             } else {
                 val cellValue = getCellValue(cell);
-
                 return convertCellValue(cell, cellValue, row.getRowNum(), columnIndex, fieldNameIndex);
             }
         }
@@ -128,55 +117,46 @@ class RowObjectCreator<T> {
             return fieldNameIndex < 0 ? fieldName : fieldName + "_" + fieldNameIndex;
         }
 
-        private Object convertCellValue(Cell cell, String cellValue, int rowNum,
-                                        int columnIndex, int fieldNameIndex) {
-
-            CellData cellData = null;
+        private Object convertCellValue(Cell cell, String cellValue, int rowNum, int colIndex, int fieldNameIndex) {
+            CellData cd = null;
             if (beanField.isCellDataType() || cellDataMapAttachable) {
-                cellData = createCellData(cell, cellValue, rowNum, columnIndex);
+                cd = createCellData(cell, cellValue, rowNum, colIndex);
             }
 
-            if (cellDataMapAttachable) {
-                val attachFieldName = createAttachFieldName(fieldNameIndex);
-                cellDataMap.put(attachFieldName, cellData);
-            }
+            if (cellDataMapAttachable)
+                cellDataMap.put(createAttachFieldName(fieldNameIndex), cd);
 
             if (StringUtils.isEmpty(cellValue)) return null;
 
-            return beanField.isCellDataType() ? cellData : beanField.convert(cellValue);
+            return beanField.isCellDataType() ? cd : beanField.convert(cellValue);
         }
     }
 
 
     private CellData createCellData(Cell cell, String cellValue, int rowNum, int colNum) {
-        val cellDataBuilder = CellData.builder().value(cellValue).row(rowNum).col(colNum)
+        val builder = CellData.builder().value(cellValue).row(rowNum).col(colNum)
                 .sheetIndex(sheet.getWorkbook().getSheetIndex(sheet));
 
-        return applyComment(cell, cellDataBuilder).build();
+        return applyComment(cell, builder).build();
     }
 
-    private CellData.CellDataBuilder applyComment(Cell cell, CellData.CellDataBuilder cellData) {
+    private CellDataBuilder applyComment(Cell cell, CellDataBuilder cellData) {
         if (cell == null) return cellData;
 
         val comment = cell.getCellComment();
         if (comment == null) return cellData;
 
-        return cellData.comment(comment.getString().getString())
-                .commentAuthor(comment.getAuthor());
+        return cellData.comment(comment.getString().getString()).commentAuthor(comment.getAuthor());
     }
 
     private String getCellValue(Cell cell) {
         if (cell == null) return null;
 
-        val cellType = cell.getCellTypeEnum();
-        if (cellType == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
-            val dateCellValue = cell.getDateCellValue();
-            val sdf = new SimpleDateFormat("yyyy-MM-dd");
-            return sdf.format(dateCellValue);
+        if (cell.getCellTypeEnum() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+            return new SimpleDateFormat("yyyy-MM-dd").format(cell.getDateCellValue());
         }
 
-        val cellValue = cellFormatter.formatCellValue(cell);
-        return StringUtils.trim(cellValue);
+        return StringUtils.trim(cellFormatter.formatCellValue(cell));
     }
 }
 
