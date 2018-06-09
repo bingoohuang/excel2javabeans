@@ -20,6 +20,7 @@ import java.util.stream.IntStream;
 public class BeansToExcel {
     private final Workbook workbook;
     private final Workbook styleTemplate;
+    private final ReflectAsmCache reflectAsmCache = new ReflectAsmCache();
 
     public BeansToExcel() {
         this(null);
@@ -92,7 +93,7 @@ public class BeansToExcel {
         bagMap.put(beanClass, bag);
 
         bag.setSheet(createSheet(beanClass));
-        bag.setBeanFields(new ExcelBeanFieldParser(beanClass, bag.getSheet()).parseBeanFields());
+        bag.setBeanFields(new ExcelBeanFieldParser(beanClass, bag.getSheet()).parseBeanFields(reflectAsmCache));
 
         addHeadToSheet(props, bag);
         addTitleToSheet(bag);

@@ -24,6 +24,7 @@ public class ExcelBeanField {
     @Getter private final Class elementType;
     private final Method valueOfMethod;
     private final Class<?> beanClass;
+    private final ReflectAsmCache reflectAsmCache;
 
     @Setter @Getter private boolean titleColumnFound;
     @Setter @Getter private int columnIndex;
@@ -35,7 +36,7 @@ public class ExcelBeanField {
     @Getter
     private final List<Integer> multipleColumnIndexes = Lists.newArrayList();
 
-    public ExcelBeanField(Class<?> beanClass, Field f, int columnIndex) {
+    public ExcelBeanField(Class<?> beanClass, Field f, int columnIndex, ReflectAsmCache reflectAsmCache) {
         this.beanClass = beanClass;
         this.columnIndex = columnIndex;
         this.fieldName = f.getName();
@@ -56,18 +57,20 @@ public class ExcelBeanField {
         this.elementType = this.multipleColumns ? (Class) ((ParameterizedType) gt).getActualTypeArguments()[0] : f.getType();
         this.cellDataType = this.elementType == CellData.class;
         this.valueOfMethod = elementType == String.class ? null : ValueOfs.getValueOfMethodFrom(elementType);
+
+        this.reflectAsmCache = reflectAsmCache;
     }
 
     public void setFieldValue(Object target, Object cellValue) {
         try {
-            ReflectAsms.getMethodAccess(beanClass).invoke(target, setter, cellValue);
+            reflectAsmCache.getMethodAccess(beanClass).invoke(target, setter, cellValue);
             return;
         } catch (Exception e) {
             log.warn("call setter {} failed", setter, e);
         }
 
         try {
-            ReflectAsms.getFieldAccess(beanClass).set(target, fieldName, cellValue);
+            reflectAsmCache.getFieldAccess(beanClass).set(target, fieldName, cellValue);
         } catch (Exception e) {
             log.warn("field set {} failed", fieldName, e);
         }
@@ -75,13 +78,13 @@ public class ExcelBeanField {
 
     public Object getFieldValue(Object target) {
         try {
-            return ReflectAsms.getMethodAccess(beanClass).invoke(target, getter);
+            return reflectAsmCache.getMethodAccess(beanClass).invoke(target, getter);
         } catch (Exception e) {
             log.warn("call getter {} failed", getter, e);
         }
 
         try {
-            return ReflectAsms.getFieldAccess(beanClass).get(target, fieldName);
+            return reflectAsmCache.getFieldAccess(beanClass).get(target, fieldName);
         } catch (Exception e) {
             log.warn("field get {} failed", getter, e);
         }

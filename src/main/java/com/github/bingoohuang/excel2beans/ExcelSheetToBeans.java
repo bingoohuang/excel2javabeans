@@ -21,11 +21,12 @@ public class ExcelSheetToBeans<T> {
     private final Sheet sheet;
     private final Table<Integer, Integer, ImageData> imageDataTable;
     private final boolean cellDataMapAttachable;
+    private final ReflectAsmCache reflectAsmCache = new ReflectAsmCache();
 
     public ExcelSheetToBeans(Workbook workbook, Class<T> beanClass) {
         this.instantiator = BeanInstantiatorFactory.newBeanInstantiator(beanClass);
         this.sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
-        this.beanFields = new ExcelBeanFieldParser(beanClass, null).parseBeanFields();
+        this.beanFields = new ExcelBeanFieldParser(beanClass, sheet).parseBeanFields(reflectAsmCache);
         this.imageDataTable = hasImageDatas() ? ExcelImages.readAllCellImages(sheet) : null;
         this.hasTitle = hasTitle();
         this.cellDataMapAttachable = CellDataMapAttachable.class.isAssignableFrom(beanClass);

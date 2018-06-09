@@ -6,8 +6,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-public class ReflectAsms {
-    private static LoadingCache<Class, MethodAccess> methodAccessCache =
+public class ReflectAsmCache {
+    private LoadingCache<Class, MethodAccess> methodAccessCache =
             CacheBuilder.newBuilder().build(new CacheLoader<Class, MethodAccess>() {
                 @Override public MethodAccess load(Class beanClass) {
                     return MethodAccess.get(beanClass);
@@ -21,11 +21,11 @@ public class ReflectAsms {
                 }
             });
 
-    public static MethodAccess getMethodAccess(Class<?> beanClass) {
+    public MethodAccess getMethodAccess(Class<?> beanClass) {
         return methodAccessCache.getUnchecked(beanClass);
     }
 
-    public static FieldAccess getFieldAccess(Class<?> beanClass) {
+    public FieldAccess getFieldAccess(Class<?> beanClass) {
         return fieldAccessCache.getUnchecked(beanClass);
     }
 }

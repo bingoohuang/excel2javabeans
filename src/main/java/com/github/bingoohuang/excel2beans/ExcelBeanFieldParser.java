@@ -27,11 +27,11 @@ public class ExcelBeanFieldParser {
         this.declaredFields = beanClass.getDeclaredFields();
     }
 
-    public List<ExcelBeanField> parseBeanFields() {
+    public List<ExcelBeanField> parseBeanFields(ReflectAsmCache reflectAsmCache) {
         List<ExcelBeanField> beanFields = new ArrayList<>(declaredFields.length);
 
         for (val field : declaredFields) {
-            processField(field, beanFields);
+            processField(field, beanFields, reflectAsmCache);
         }
 
         return filterTitledFields(beanFields);
@@ -48,7 +48,7 @@ public class ExcelBeanFieldParser {
         return titledFields;
     }
 
-    private void processField(Field field, List<ExcelBeanField> fields) {
+    private void processField(Field field, List<ExcelBeanField> fields, ReflectAsmCache reflectAsmCache) {
         if (Modifier.isStatic(field.getModifiers())) return;
         // A synthetic field is a compiler-created field that links a local inner class
         // to a block's local variable or reference type parameter.
@@ -58,7 +58,7 @@ public class ExcelBeanFieldParser {
         // ignore un-normal fields like $jacocoData
         if (field.getName().startsWith("$")) return;
 
-        val bf = new ExcelBeanField(beanClass, field, fields.size());
+        val bf = new ExcelBeanField(beanClass, field, fields.size(), reflectAsmCache);
         if (bf.isElementTypeSupported()) {
             setStyle(field, bf);
             fields.add(bf);
