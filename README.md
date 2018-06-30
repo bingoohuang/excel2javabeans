@@ -162,9 +162,9 @@ For all users available, just copy the fonts file to the `/usr/share/fonts` dire
 When writting emoji like 🦄女侠🌈💄💓 , the output excel content will show like ?女侠???, try to fix this with following dependency.
 ```xml
 <dependency>
-    <groupId>com.github.pjfanning</groupId>
+    <groupId>org.apache.xmlbeans</groupId>
     <artifactId>xmlbeans</artifactId>
-    <version>2.6.5</version>
+    <version>3.0.0</version>
 </dependency>
 ```
 
