@@ -168,6 +168,34 @@ When writting emoji like 🦄女侠🌈💄💓 , the output excel content will 
 </dependency>
 ```
 
+## How to manually test excel downloads in Chrome console?
+```javascript
+// execute the following javascript code in the console to download excel for testing
+var fileName = "abc.xlsx"
+var url = 'http://localhost:8090/yoga-system/MemberExportController/memberExport'
+var request = new XMLHttpRequest()
+request.open('POST', url, true)
+request.setRequestHeader('Content-Type', 'application/json; charset=utf-8')
+request.responseType = 'blob'
+request.onload = function(e) {
+    if (this.status === 200) {
+        var blob = this.response;
+        if(window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveBlob(blob, fileName)
+        } else {
+            var downloadLink = window.document.createElement('a')
+            var contentTypeHeader = request.getResponseHeader("Content-Type")
+            downloadLink.href = window.URL.createObjectURL(new Blob([blob], {type: contentTypeHeader}))
+            downloadLink.download = fileName
+            document.body.appendChild(downloadLink)
+            downloadLink.click()
+            document.body.removeChild(downloadLink)
+       }
+   }
+}
+request.send(JSON.stringify({firstBlood:false,export:true}));
+```
+
 # gpg
 ```bash
 GPG_TTY=$(tty)
