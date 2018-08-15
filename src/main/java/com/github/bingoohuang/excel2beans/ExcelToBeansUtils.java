@@ -132,8 +132,8 @@ public class ExcelToBeansUtils {
         val anchor = drawing.createAnchor(0, 0, 0, 0,
                 col, row, col + colSpan, row + rowSpan);
         val comment = drawing.createCellComment(anchor);
-        val str = factory.createRichTextString(cellData.getComment());
-        comment.setString(str);
+        comment.setString(factory.createRichTextString(cellData.getComment()));
+
         val author = cellData.getCommentAuthor();
         if (StringUtils.isNotEmpty(author)) comment.setAuthor(author);
 

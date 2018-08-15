@@ -42,7 +42,8 @@ public class ExcelBeanFieldParser {
         if (titledFields.isEmpty()) return beanFields;
 
         if (log.isDebugEnabled()) {
-            beanFields.stream().filter(x -> !x.hasTitle()).forEach(x -> log.debug("ignore field {} without @ExcelColTitle", x.getFieldName()));
+            beanFields.stream().filter(x -> !x.hasTitle())
+                    .forEach(x -> log.debug("ignore field {} without @ExcelColTitle", x.getFieldName()));
         }
 
         return titledFields;
@@ -77,24 +78,18 @@ public class ExcelBeanFieldParser {
 
     private CellStyle createAlign(ExcelColStyle colStyle) {
         val style = sheet.getWorkbook().createCellStyle();
-        val align = convertAlign(colStyle.align());
-        if (align != null) style.setAlignment(align);
-
+        style.setAlignment(convertAlign(colStyle.align(), style.getAlignmentEnum()));
         return style;
-
     }
 
-    private HorizontalAlignment convertAlign(ExcelColAlign align) {
+    private HorizontalAlignment convertAlign(ExcelColAlign align, HorizontalAlignment defaultAlignmentEnum) {
         switch (align) {
-            case LEFT:
-                return HorizontalAlignment.LEFT;
-            case CENTER:
-                return HorizontalAlignment.CENTER;
-            case RIGHT:
-                return HorizontalAlignment.RIGHT;
+            case LEFT: return HorizontalAlignment.LEFT;
+            case CENTER: return HorizontalAlignment.CENTER;
+            case RIGHT: return HorizontalAlignment.RIGHT;
         }
 
-        return null;
+        return defaultAlignmentEnum;
     }
 
 }
