@@ -17,12 +17,10 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class ExcelBeanFieldParser {
-    private final Class<?> beanClass;
     private final Sheet sheet;
     private final Field[] declaredFields;
 
     public ExcelBeanFieldParser(Class<?> beanClass, Sheet sheet) {
-        this.beanClass = beanClass;
         this.sheet = sheet;
         this.declaredFields = beanClass.getDeclaredFields();
     }
@@ -38,12 +36,13 @@ public class ExcelBeanFieldParser {
     }
 
     private List<ExcelBeanField> filterTitledFields(List<ExcelBeanField> beanFields) {
-        val titledFields = beanFields.stream().filter(x -> x.hasTitle()).collect(Collectors.toList());
+        val titledFields = beanFields.stream().filter(x -> x.hasTitle())
+                .collect(Collectors.toList());
         if (titledFields.isEmpty()) return beanFields;
 
         if (log.isDebugEnabled()) {
             beanFields.stream().filter(x -> !x.hasTitle())
-                    .forEach(x -> log.debug("ignore field {} without @ExcelColTitle", x.getFieldName()));
+                    .forEach(x -> log.debug("ignore field {} without @ExcelColTitle", x.getField()));
         }
 
         return titledFields;
@@ -59,12 +58,13 @@ public class ExcelBeanFieldParser {
         // ignore un-normal fields like $jacocoData
         if (field.getName().startsWith("$")) return;
 
-        val bf = new ExcelBeanField(beanClass, field, fields.size(), reflectAsmCache);
+        val bf = new ExcelBeanField(field, fields.size(), reflectAsmCache);
         if (bf.isElementTypeSupported()) {
             setStyle(field, bf);
             fields.add(bf);
         } else {
-            log.debug("bean field {} was ignored by unsupported type {}", bf.getFieldName(), bf.getElementType());
+            log.debug("bean field {} was ignored by unsupported type {}",
+                    field, bf.getElementType());
         }
     }
 
@@ -82,14 +82,14 @@ public class ExcelBeanFieldParser {
         return style;
     }
 
-    private HorizontalAlignment convertAlign(ExcelColAlign align, HorizontalAlignment defaultAlignmentEnum) {
+    private HorizontalAlignment convertAlign(ExcelColAlign align, HorizontalAlignment defaultAlign) {
         switch (align) {
             case LEFT: return HorizontalAlignment.LEFT;
             case CENTER: return HorizontalAlignment.CENTER;
             case RIGHT: return HorizontalAlignment.RIGHT;
         }
 
-        return defaultAlignmentEnum;
+        return defaultAlign;
     }
 
 }

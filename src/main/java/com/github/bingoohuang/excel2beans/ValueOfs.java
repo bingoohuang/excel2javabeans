@@ -48,5 +48,4 @@ public class ValueOfs {
                 && Modifier.isPublic(valueOfMethod.getModifiers())
                 && valueOfMethod.getReturnType().isAssignableFrom(returnType);
     }
-
 }

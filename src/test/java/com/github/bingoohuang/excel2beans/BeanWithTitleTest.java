@@ -37,7 +37,7 @@ public class BeanWithTitleTest {
         @ExcelColTitle("会员姓名") String memberName;
         @ExcelColTitle("卡名称") String cardName;
         @ExcelColTitle("办卡价格") String cardPrice;
-        @ExcelColTitle("性别") String sex;
+        @ExcelColTitle String sex;
         @ExcelColTitle(value = "地址", required = false) String addr;
         @ExcelColTitle("有效期开始日") String effective;
 

@@ -90,48 +90,45 @@ class RowObjectCreator<T> {
         }
 
 
-        private Object processSingleColumn(int columnIndex, int fieldNameIndex) {
+        private Object processSingleColumn(int columnIndex, int fieldIndex) {
             if (columnIndex < 0) return null;
 
             val cell = row.getCell(columnIndex);
             if (beanField.isImageDataField()) {
-                attachCellDataMap(columnIndex, fieldNameIndex, cell);
+                attachCellDataMap(columnIndex, fieldIndex, cell);
                 return imageDataTable.get(row.getRowNum(), columnIndex);
             } else {
                 val cellValue = getCellValue(cell);
-                return convertCellValue(cell, cellValue, row.getRowNum(), columnIndex, fieldNameIndex);
+                return convertCellValue(cell, cellValue, row.getRowNum(), columnIndex, fieldIndex);
             }
         }
 
 
-        private void attachCellDataMap(int columnIndex, int fieldNameIndex, Cell cell) {
+        private void attachCellDataMap(int columnIndex, int fieldIndex, Cell cell) {
             if (!cellDataMapAttachable) return;
 
-            val attachFieldName = createAttachFieldName(fieldNameIndex);
+            val attachFieldName = createAttachFieldName(fieldIndex);
             val cellData = createCellData(cell, null, row.getRowNum(), columnIndex);
             cellDataMap.put(attachFieldName, cellData);
         }
 
-        private String createAttachFieldName(int fieldNameIndex) {
-            val fieldName = beanField.getFieldName();
-            return fieldNameIndex < 0 ? fieldName : fieldName + "_" + fieldNameIndex;
+        private String createAttachFieldName(int fieldIndex) {
+            val fieldName = beanField.getField().getName();
+            return fieldIndex < 0 ? fieldName : fieldName + "_" + fieldIndex;
         }
 
-        private Object convertCellValue(Cell cell, String cellValue, int rowNum, int colIndex, int fieldNameIndex) {
-            CellData cd = null;
-            if (beanField.isCellDataType() || cellDataMapAttachable) {
-                cd = createCellData(cell, cellValue, rowNum, colIndex);
-            }
+        private Object convertCellValue(Cell cell, String cellValue, int rowNum, int colIndex, int fieldIndex) {
+            val cd = beanField.isCellDataType() || cellDataMapAttachable
+                    ? createCellData(cell, cellValue, rowNum, colIndex) : null;
 
             if (cellDataMapAttachable)
-                cellDataMap.put(createAttachFieldName(fieldNameIndex), cd);
+                cellDataMap.put(createAttachFieldName(fieldIndex), cd);
 
             if (StringUtils.isEmpty(cellValue)) return null;
 
             return beanField.isCellDataType() ? cd : beanField.convert(cellValue);
         }
     }
-
 
     private CellData createCellData(Cell cell, String cellValue, int rowNum, int colNum) {
         val builder = CellData.builder().value(cellValue).row(rowNum).col(colNum)

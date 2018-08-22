@@ -32,7 +32,7 @@ public class MemberImportBeanTest {
     @Data @Builder
     public static class MemberImportBean extends ExcelRowRef implements ExcelRowIgnorable {
         @ExcelColTitle("会员姓名") @AsmMaxSize(12) @AsmMessage("请填写会员姓名") String memberName; // 不超过12字
-        @ExcelColTitle("性别") @AsmRange("男,女") @AsmMessage("性别请填男或女") String sex;
+        @ExcelColTitle @AsmRange("男,女") @AsmMessage("性别请填男或女") String sex;
         @ExcelColTitle("手机号") @AsmMobile @AsmMessage("请填写正确的手机号码") String mobile;
         @ExcelColTitle("生日") @AsmBlankable @AsmMessage("请填写正确的生日") @MemberCardBirthDay String birthday;
         @ExcelColTitle("卡名称") @MemberCardName String cardName;

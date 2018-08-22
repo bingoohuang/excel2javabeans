@@ -14,7 +14,7 @@ public @interface ExcelColTitle {
      *
      * @return title keyword.
      */
-    String value();
+    String value() default "";
 
     /**
      * The column with title in excel should be required.
