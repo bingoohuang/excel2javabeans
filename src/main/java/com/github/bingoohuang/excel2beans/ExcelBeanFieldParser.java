@@ -36,7 +36,7 @@ public class ExcelBeanFieldParser {
     }
 
     private List<ExcelBeanField> filterTitledFields(List<ExcelBeanField> beanFields) {
-        val titledFields = beanFields.stream().filter(x -> x.hasTitle())
+        val titledFields = beanFields.stream().filter(ExcelBeanField::hasTitle)
                 .collect(Collectors.toList());
         if (titledFields.isEmpty()) return beanFields;
 
@@ -78,7 +78,7 @@ public class ExcelBeanFieldParser {
 
     private CellStyle createAlign(ExcelColStyle colStyle) {
         val style = sheet.getWorkbook().createCellStyle();
-        style.setAlignment(convertAlign(colStyle.align(), style.getAlignmentEnum()));
+        style.setAlignment(convertAlign(colStyle.align(), style.getAlignment()));
         return style;
     }
 

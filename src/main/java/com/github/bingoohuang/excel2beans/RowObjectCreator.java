@@ -26,6 +26,7 @@ class RowObjectCreator<T> {
 
     private int emptyNum;
 
+    @SuppressWarnings("unchecked")
     public RowObjectCreator(BeanInstantiator<T> instantiator,
                             List<ExcelBeanField> beanFields,
                             boolean cellDataMapAttachable,

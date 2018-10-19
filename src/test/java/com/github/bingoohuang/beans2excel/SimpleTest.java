@@ -7,18 +7,22 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.val;
+import lombok.*;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
 import static com.github.bingoohuang.excel2beans.annotations.ExcelColAlign.*;
+import static com.google.common.truth.Truth.assertThat;
 
 public class SimpleTest {
     @Test
@@ -41,6 +45,24 @@ public class SimpleTest {
 
         ExcelToBeansUtils.writeExcel(workbook, name);
         new File(name).delete();
+    }
+
+    @Test @SneakyThrows
+    public void testEmpty() {
+        val beansToExcel = new BeansToExcel();
+        String name = "test-empty.xlsx";
+
+        val workbook = beansToExcel.create();
+
+        Path path = Files.createTempFile("temp", ".xlsx");
+        File file = path.toFile();
+        file.deleteOnExit();
+
+        @Cleanup val fileOut = new FileOutputStream(file);
+        workbook.write(fileOut);
+
+        @Cleanup Workbook wb = WorkbookFactory.create(file);
+        assertThat(wb.getNumberOfSheets()).isEqualTo(1);
     }
 
     @Test

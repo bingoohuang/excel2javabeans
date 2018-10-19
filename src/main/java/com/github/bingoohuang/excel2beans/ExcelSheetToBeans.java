@@ -21,11 +21,11 @@ public class ExcelSheetToBeans<T> {
     private final Sheet sheet;
     private final Table<Integer, Integer, ImageData> imageDataTable;
     private final boolean cellDataMapAttachable;
-    private final ReflectAsmCache reflectAsmCache = new ReflectAsmCache();
 
     public ExcelSheetToBeans(Workbook workbook, Class<T> beanClass) {
         this.instantiator = BeanInstantiatorFactory.newBeanInstantiator(beanClass);
         this.sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
+        ReflectAsmCache reflectAsmCache = new ReflectAsmCache();
         this.beanFields = new ExcelBeanFieldParser(beanClass, sheet).parseBeanFields(reflectAsmCache);
         this.imageDataTable = hasImageDatas() ? ExcelImages.readAllCellImages(sheet) : null;
         this.hasTitle = hasTitle();
@@ -129,7 +129,7 @@ public class ExcelSheetToBeans<T> {
     }
 
     private void checkTitleColumnsAllFound() {
-        beanFields.stream().filter(x -> x.isTitleNotMatched()).findAny().ifPresent(x -> {
+        beanFields.stream().filter(ExcelBeanField::isTitleNotMatched).findAny().ifPresent(x -> {
             throw new IllegalArgumentException("找不到[" + x.getTitle() + "]的列");
         });
     }

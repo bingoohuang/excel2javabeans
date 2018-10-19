@@ -1,6 +1,5 @@
 package com.github.bingoohuang.excel2beans;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Primitives;
 import lombok.val;
@@ -8,13 +7,15 @@ import lombok.val;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
+import java.util.Optional;
 
 public class ValueOfs {
     public static final Map<Class, Optional<Method>> valueOfMethodCache = Maps.newConcurrentMap();
 
+    @SuppressWarnings("unchecked")
     public static Method getValueOfMethodFrom(Class returnClass) {
         val existsMethod = valueOfMethodCache.get(returnClass);
-        if (existsMethod != null) return existsMethod.orNull();
+        if (existsMethod != null) return existsMethod.orElse(null);
 
         val clazz = Primitives.wrap(returnClass);
         try {
@@ -24,7 +25,7 @@ public class ValueOfs {
                 return valueOfMethod;
             }
         } catch (Exception e) {
-            valueOfMethodCache.put(returnClass, Optional.absent());
+            valueOfMethodCache.put(returnClass, Optional.empty());
         }
 
         return null;

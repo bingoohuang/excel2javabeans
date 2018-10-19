@@ -30,11 +30,13 @@ public class ExcelToBeans implements Closeable {
         this.shouldBeClosedByMe = false;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> List<T> convert(Class<T> beanClass) {
         val converter = new ExcelSheetToBeans(workbook, beanClass);
         return converter.convert();
     }
 
+    @SuppressWarnings("unchecked")
     public void writeError(Class<?> beanClass, List<? extends ExcelRowReferable> rowRefs) {
         val sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
         val sheetToBeans = new ExcelSheetToBeans(workbook, beanClass);

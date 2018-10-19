@@ -40,7 +40,18 @@ public class BeansToExcel {
         return create(Maps.newHashMap(), lists);
     }
 
+    private boolean isAllEmpty(List<?>... lists) {
+        for (val list : lists) {
+            if (!list.isEmpty()) return false;
+        }
+        return true;
+    }
+
     public Workbook create(Map<String, Object> props, List<?>... lists) {
+        if (isAllEmpty(lists)) {
+            return workbook.createSheet("Empty").getWorkbook();
+        }
+
         Map<Class, BeanClassBag> beanClassBag = Maps.newHashMap();
         Arrays.stream(lists).forEach(x -> x.forEach(y -> writeBeanToExcel(props, beanClassBag, y)));
         autoSizeColumn(beanClassBag);
@@ -67,7 +78,7 @@ public class BeansToExcel {
         sheets.values().forEach(bag -> {
             val sheet = bag.getSheet();
             val lastCellNum = sheet.getRow(sheet.getLastRowNum()).getLastCellNum();
-            IntStream.rangeClosed(0, lastCellNum).forEach(i -> sheet.autoSizeColumn(i));
+            IntStream.rangeClosed(0, lastCellNum).forEach(sheet::autoSizeColumn);
         });
     }
 
