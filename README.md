@@ -213,3 +213,7 @@ mvn clean install -Dgpg.skip -DskipTests
 
 # TODO
 1. Support SXSSF (Streaming Usermodel API) for very large spreadsheets have to be produced.
+
+# Warning
+
+1. Avoid to upgrade  poi-ooxml to 4.0.0. that will cause shift rows go failing. See [Bug 62711 New: Calling shiftRows corrupts file in POI 4.0](http://apache-poi.1045710.n5.nabble.com/Bug-62711-New-Calling-shiftRows-corrupts-file-in-POI-4-0-td5731583.html)

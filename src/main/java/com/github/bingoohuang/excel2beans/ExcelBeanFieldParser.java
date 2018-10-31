@@ -78,7 +78,7 @@ public class ExcelBeanFieldParser {
 
     private CellStyle createAlign(ExcelColStyle colStyle) {
         val style = sheet.getWorkbook().createCellStyle();
-        style.setAlignment(convertAlign(colStyle.align(), style.getAlignment()));
+        style.setAlignment(convertAlign(colStyle.align(), style.getAlignmentEnum()));
         return style;
     }
 
