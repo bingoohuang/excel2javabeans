@@ -73,9 +73,9 @@ public class SimpleTest {
         createExcel(beansToExcel, name);
     }
 
-    @Test
+    @Test @SneakyThrows
     public void testTemplate() {
-        val workbook = ExcelToBeansUtils.getClassPathWorkbook("template.xlsx");
+        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("template.xlsx");
         val beansToExcel = new BeansToExcel(workbook);
         String name = "test-workbook-templ.xlsx";
 
