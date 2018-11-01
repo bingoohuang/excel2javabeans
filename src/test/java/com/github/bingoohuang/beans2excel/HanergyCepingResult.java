@@ -9,8 +9,11 @@ import java.util.List;
 
 @Data @Builder
 public class HanergyCepingResult {
+    @ExcelCell(sheetName = true)
+    private String sheetName;       // 表单名称
+
     @ExcelCell(value = "A2", replace = "XX")
-    private String interviewCode; // 面试编号
+    private String interviewCode;   // 面试编号
 
     @ExcelCell("B3")
     private String name;           // 身份证姓名
@@ -27,15 +30,15 @@ public class HanergyCepingResult {
     private String annualSalary;   // 期望年薪
 
     @ExcelCell("C5")
-    private double matchScore;    // 岗位匹配度
+    private double matchScore;     // 岗位匹配度
     @ExcelCell("C6")
-    private String matchComment;  // 岗位匹配度评语
+    private String matchComment;   // 岗位匹配度评语
 
-    @ExcelRows(fromRef = "C7",
+    @ExcelRows(fromRef = "C7",     // 起点单元格在C7
             mergeRows = {
-                    @MergeRow(fromRef = "A5"),
-                    @MergeRow(fromRef = "B7"),
-                    @MergeRow(fromRef = "C7", type = MergeType.SameValue)},
+                    @MergeRow(fromRef = "A5", type = MergeType.Direct), // 从A5单元格开始向下直接合并
+                    @MergeRow(fromRef = "B", type = MergeType.Direct),  // 从B列单元格开始向下直接合并
+                    @MergeRow(fromRef = "C")},                          // 从C列单元格开始向下按值合并
             mergeCols = {
                     @MergeCol(fromColRef = "D", toColRef = "G")})
     @Singular private List<ItemComment> itemComments; // 四种工具测评结论
@@ -46,21 +49,23 @@ public class HanergyCepingResult {
         private String comment;
     }
 
-    @ExcelRows(fromColRef = "A", fromKey = "核心素质",
+    @ExcelRows(fromRef = "A", searchKey = "核心素质", // 起点在A列的包含有"核心素质"关键字的单元格
             mergeRows = {
-                    @MergeRow(fromRef = "A"),
-                    @MergeRow(fromRef = "B"),
-                    @MergeRow(fromRef = "F", type = MergeType.SameValue, removePrefixBefore = "^")},
+                    @MergeRow(fromRef = "A"),                        // 从A列单元格开始向下按值合并
+                    @MergeRow(fromRef = "B", moreCols = 1),          // 从B列单元格开始向下按值合并，并且多合并1列
+                    @MergeRow(fromRef = "F", prefixSeperate = "^"),  // 从F列单元格开始向下按值合并，并且合并后去除^分割的前缀
+                    @MergeRow(fromRef = "G")},                       // 从G列单元格开始向下按值合并
             mergeCols = {
-                    @MergeCol(fromColRef = "B", toColRef = "C")})
+                    @MergeCol(fromColRef = "D", toColRef = "E")})    // 每一行，合并单元格：从D行到E行
     @Singular private List<Item> items;    // 附录
 
-    @Data
+    @Data @Builder
     public static class Item {
         private String category;     // 类别
-        private String blank;        // 留空，方便合并
         private String quality;      // 素质项
+        private String _1;           // 留空，方便合并
         private String dimension;    // 测评维度
+        private String _2;           // 留空，方便合并
         private String score;        // 得分
         private String remark;       // 备注
     }

@@ -9,7 +9,17 @@ import java.lang.annotation.*;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MergeCol {
+    /**
+     * EXCEL中以字母标识的开始列索引，例如A,B。
+     *
+     * @return 开始列索引。
+     */
     String fromColRef();
 
+    /**
+     * EXCEL中以字母标识的开始列索引，例如E,F。
+     *
+     * @return 结束列索引。
+     */
     String toColRef();
 }

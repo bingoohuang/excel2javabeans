@@ -159,4 +159,9 @@ public class ExcelToBeansUtils {
 
         throw new IllegalArgumentException("Unable to find sheet with name " + excelSheet.name());
     }
+
+    public boolean isNumeric(String strNum) {
+        return strNum.matches("-?\\d+(\\.\\d+)?");
+    }
+
 }

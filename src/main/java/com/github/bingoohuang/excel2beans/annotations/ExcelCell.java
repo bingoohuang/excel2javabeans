@@ -24,4 +24,12 @@ public @interface ExcelCell {
      * @return 替换内容
      */
     String replace() default "";
+
+
+    /**
+     * 是否是处理表单名称。
+     *
+     * @return 是否是处理表单名称
+     */
+    boolean sheetName() default false;
 }
