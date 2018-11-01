@@ -11,11 +11,11 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -37,27 +37,66 @@ public class BeansToExcelOnTemplate {
         val excelRows = field.getAnnotation(ExcelRows.class);
         if (excelRows == null) return;
 
-
-        final Type genericType = field.getGenericType();
+        val genericType = field.getGenericType();
         if (!(genericType instanceof ParameterizedType)) return;
 
         val pt = (ParameterizedType) genericType;
-
         if (pt.getRawType() != List.class) return;
-        Object fieldValue = invokeField(field, bean);
-        List list = (List) fieldValue;
-        if (list == null || list.isEmpty()) return;
 
-        val itemSize = list.size();
-        val cellRef = new CellReference(excelRows.fromRef());
-        final int fromRow = cellRef.getRow();
-        if (itemSize > 1) {
+        val templateCell = findTemplateCell(excelRows);
+        val list = (List) invokeField(field, bean);
+
+        val itemSize = shiftRows(templateCell, list);
+        if (itemSize > 0) {
+            writeRows(templateCell, list);
+            mergeRows(excelRows, templateCell, itemSize);
+        }
+    }
+
+    private void mergeRows(ExcelRows excelRows, Cell templateCell, int itemSize) {
+        for (val mergeRow : excelRows.mergeRows()) {
+            val fromCell = findCell(mergeRow.fromRef());
+            val fromRow = fromCell.getRow().getRowNum();
+            val lastRow = templateCell.getRowIndex() + itemSize - 1;
+            val col = fromCell.getColumnIndex();
+            switch (mergeRow.type()) {
+                case Direct:
+                    templateSheet.addMergedRegion(new CellRangeAddress(fromRow, lastRow, col, col));
+                    break;
+                case SameValue:
+//                    final String lastValue = fromCell.getStringCellValue();
+//                    int preRow = fromRow;
+//                    for (int i = 1; i < itemSize; ++i) {
+//                        val c = templateSheet.getRow(fromRow +i).getCell(col);
+//                        if (!c.getStringCellValue().equals(lastValue)) {
+//                            templateSheet.addMergedRegion(new CellRangeAddress(preRow, fromRow + i - 1, col, col));
+//                        }
+//
+//                    }
+
+                    break;
+            }
+        }
+    }
+
+    private int shiftRows(Cell templateCell, List list) {
+        val itemSize = list == null ? 0 : list.size();
+        int fromRow = templateCell.getRow().getRowNum();
+        if (fromRow == templateSheet.getLastRowNum()) {
+            templateSheet.removeRow(templateSheet.getRow(fromRow));
+        } else {
             templateSheet.shiftRows(fromRow + 1, templateSheet.getLastRowNum(), itemSize - 1);
         }
 
-        int rowOffset = 0;
+        return itemSize;
+    }
 
-        val templateRow = templateSheet.getRow(fromRow);
+    private void writeRows(Cell templateCell, List list) {
+        val templateRow = templateCell.getRow();
+        int fromRow = templateRow.getRowNum();
+
+        val templateCol = templateCell.getColumnIndex();
+        int rowOffset = 0;
         for (val item : list) {
             val itemClass = item.getClass();
 
@@ -68,23 +107,59 @@ public class BeansToExcelOnTemplate {
             for (val itemField : itemClass.getDeclaredFields()) {
                 val itemFieldValue = invokeField(itemField, item);
 
-                Cell cell = null;
-                if (rowOffset == 0) {
-                    cell = row.getCell(cellRef.getCol() + colOffset);
-                }
-
-                if (cell == null) {
-                    cell = row.createCell(cellRef.getCol() + colOffset);
-                    cell.setCellStyle(templateRow.getCell(cellRef.getCol() + colOffset).getCellStyle());
-                }
-
-                cell.setCellValue("" + itemFieldValue);
+                newCell(templateRow, templateCol, rowOffset, row, colOffset, itemFieldValue);
                 ++colOffset;
+            }
+
+            if (rowOffset > 0) {
+                for (int i = templateRow.getFirstCellNum(); i < templateCol; ++i) {
+                    newCell(templateRow, templateCol, rowOffset, row, i - templateCol, "");
+                }
+                for (int i = templateCol + colOffset, ii = templateRow.getLastCellNum(); i <= ii; ++i) {
+                    newCell(templateRow, templateCol, rowOffset, row, i - templateCol, "");
+                }
             }
 
             ++rowOffset;
         }
+    }
 
+    private void newCell(Row templateRow, int templateCol, int rowOffset, Row row, int colOffset, Object itemFieldValue) {
+        Cell cell = null;
+        if (rowOffset == 0) {
+            cell = row.getCell(templateCol + colOffset);
+        }
+
+        if (cell == null) {
+            cell = row.createCell(templateCol + colOffset);
+            val templateRowCell = templateRow.getCell(templateCol + colOffset);
+            if (templateRowCell != null) cell.setCellStyle(templateRowCell.getCellStyle());
+        }
+
+        cell.setCellValue("" + itemFieldValue);
+    }
+
+    private Cell findTemplateCell(ExcelRows excelRows) {
+        if (StringUtils.isNotEmpty(excelRows.fromRef())) {
+            val cellRef = new CellReference(excelRows.fromRef());
+            return templateSheet.getRow(cellRef.getRow()).getCell(cellRef.getCol());
+        }
+
+        val cellRef = new CellReference(excelRows.fromColRef() + "1");
+        for (int i = cellRef.getRow(); i <= templateSheet.getLastRowNum(); ++i) {
+            val row = templateSheet.getRow(i);
+            if (row == null) continue;
+
+            val cell = row.getCell(cellRef.getCol());
+            if (cell == null) continue;
+
+            if (excelRows.fromKey().equals(cell.getStringCellValue())) {
+                return cell;
+            }
+        }
+
+        throw new RuntimeException("unable to find template row for fromColRef="
+                + excelRows.fromColRef() + " and fromKey=" + excelRows.fromKey());
     }
 
     @SneakyThrows
@@ -110,7 +185,8 @@ public class BeansToExcelOnTemplate {
         }
     }
 
-    private Object invokeField(Field field, Object bean) throws IllegalAccessException {
+    @SneakyThrows
+    private Object invokeField(Field field, Object bean) {
         if (!field.isAccessible()) field.setAccessible(true);
         return field.get(bean);
     }

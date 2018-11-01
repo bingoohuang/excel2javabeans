@@ -4,7 +4,7 @@ public enum MergeType {
     /**
      * 直接合并。
      */
-    DIRECT,
+    Direct,
     /**
      * 按相同值合并。
      */

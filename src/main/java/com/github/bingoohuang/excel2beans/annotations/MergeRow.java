@@ -21,7 +21,7 @@ public @interface MergeRow {
      *
      * @return
      */
-    MergeType type() default MergeType.DIRECT;
+    MergeType type() default MergeType.Direct;
 
 
     /**
