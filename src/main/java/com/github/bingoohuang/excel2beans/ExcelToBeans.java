@@ -38,7 +38,7 @@ public class ExcelToBeans implements Closeable {
 
     @SuppressWarnings("unchecked")
     public void writeError(Class<?> beanClass, List<? extends ExcelRowReferable> rowRefs) {
-        val sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
+        val sheet = PoiUtil.findSheet(workbook, beanClass);
         val sheetToBeans = new ExcelSheetToBeans(workbook, beanClass);
         int lastCellNum = getLastCellNum(sheet, sheetToBeans, rowRefs);
         if (lastCellNum <= 0) return;
@@ -71,11 +71,11 @@ public class ExcelToBeans implements Closeable {
     }
 
     public void removeOkRows(Class<?> beanClass, List<? extends ExcelRowReferable> rowRefs) {
-        val sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
+        val sheet = PoiUtil.findSheet(workbook, beanClass);
         val rowsRemoved = new AtomicInteger();
 
         rowRefs.stream().filter(x -> StringUtils.isEmpty(x.error()))
-                .forEach(x -> ExcelToBeansUtils.removeRow(sheet, x.getRowNum() - rowsRemoved.getAndIncrement()));
+                .forEach(x -> PoiUtil.removeRow(sheet, x.getRowNum() - rowsRemoved.getAndIncrement()));
     }
 
     @Override public void close() throws IOException {

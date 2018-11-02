@@ -10,7 +10,7 @@ public class ObjenesisBeanInstantiator<T> implements BeanInstantiator<T> {
         this.instantiator = new ObjenesisStd().getInstantiatorOf(beanClass);
     }
 
-    @Override public <T> T newInstance() {
-        return (T) instantiator.newInstance();
+    @Override public T newInstance() {
+        return instantiator.newInstance();
     }
 }

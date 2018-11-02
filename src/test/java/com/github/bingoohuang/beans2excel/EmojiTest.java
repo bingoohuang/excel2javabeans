@@ -3,6 +3,7 @@ package com.github.bingoohuang.beans2excel;
 import com.github.bingoohuang.excel2beans.BeansToExcel;
 import com.github.bingoohuang.excel2beans.ExcelToBeans;
 import com.github.bingoohuang.excel2beans.ExcelToBeansUtils;
+import com.github.bingoohuang.excel2beans.PoiUtil;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.google.common.collect.Lists;
 import lombok.*;
@@ -21,7 +22,7 @@ public class EmojiTest {
         @Cleanup val wb = new BeansToExcel().create(wxNicks);
 
         val fileName = "test-emoji-out.xlsx";
-        ExcelToBeansUtils.writeExcel(wb, fileName);
+        PoiUtil.writeExcel(wb, fileName);
 
         @Cleanup val fis = new FileInputStream(fileName);
         val beans = new ExcelToBeans(fis).convert(WxNick.class);

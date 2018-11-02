@@ -1,6 +1,8 @@
 package com.github.bingoohuang.excel2beans;
 
+import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
+import com.google.common.collect.Lists;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
@@ -12,8 +14,11 @@ import org.apache.poi.ss.usermodel.*;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @UtilityClass
@@ -30,18 +35,6 @@ public class ExcelToBeansUtils {
         return classLoader.getResourceAsStream(classPathExcelName);
     }
 
-
-    public void removeRow(Sheet sheet, int rowIndex) {
-        val lastRowNum = sheet.getLastRowNum();
-        if (rowIndex >= 0 && rowIndex < lastRowNum) {
-            sheet.shiftRows(rowIndex + 1, lastRowNum, -1);
-        } else if (rowIndex == lastRowNum) {
-            val removingRow = sheet.getRow(rowIndex);
-            if (removingRow != null) {
-                sheet.removeRow(removingRow);
-            }
-        }
-    }
 
     @SneakyThrows
     public byte[] getWorkbookBytes(Workbook workbook) {
@@ -140,28 +133,48 @@ public class ExcelToBeansUtils {
         cell.setCellComment(comment);
     }
 
-    @SneakyThrows
-    public void writeExcel(Workbook workbook, String name) {
-        @Cleanup val fileOut = new FileOutputStream(name);
-        workbook.write(fileOut);
-    }
-
-    public Sheet findSheet(Workbook workbook, Class<?> beanClass) {
-        val excelSheet = beanClass.getAnnotation(ExcelSheet.class);
-        if (excelSheet == null) return workbook.getSheetAt(0);
-
-        for (int i = 0, ii = workbook.getNumberOfSheets(); i < ii; ++i) {
-            val sheetName = workbook.getSheetName(i);
-            if (sheetName.contains(excelSheet.name())) {
-                return workbook.getSheetAt(i);
-            }
-        }
-
-        throw new IllegalArgumentException("Unable to find sheet with name " + excelSheet.name());
-    }
-
     public boolean isNumeric(String strNum) {
         return strNum.matches("-?\\d+(\\.\\d+)?");
     }
 
+    /**
+     * 获取字段取值（null时，转换为长度为空字符串）。
+     *
+     * @param field JavaBean反射字段。
+     * @param bean  字段所在的JavaBean。
+     * @return 字段取值。
+     */
+    @SneakyThrows
+    public static Object invokeField(Field field, Object bean) {
+        if (!field.isAccessible()) field.setAccessible(true);
+        val fieldValue = field.get(bean);
+
+        return fieldValue == null ? "" : fieldValue;
+    }
+
+    /**
+     * 获取原始字段取值。
+     *
+     * @param field JavaBean反射字段。
+     * @param bean  字段所在的JavaBean。
+     * @return 字段取值。
+     */
+    @SneakyThrows
+    public static Object invokeRawField(Field field, Object bean) {
+        if (!field.isAccessible()) field.setAccessible(true);
+        return field.get(bean);
+    }
+
+    public static boolean isFieldShouldIgnored(Field field) {
+        if (Modifier.isStatic(field.getModifiers())) return true;
+        // A synthetic field is a compiler-created field that links a local inner class
+        // to a block's local variable or reference type parameter.
+        // refer: https://javapapers.com/core-java/java-synthetic-class-method-field/
+        if (field.isSynthetic()) return true;
+        if (field.isAnnotationPresent(ExcelColIgnore.class)) return true;
+        // ignore un-normal fields like $jacocoData
+        if (field.getName().startsWith("$")) return true;
+
+        return false;
+    }
 }

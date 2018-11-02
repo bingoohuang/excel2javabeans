@@ -2,6 +2,7 @@ package com.github.bingoohuang.beans2excel;
 
 import com.github.bingoohuang.excel2beans.BeansToExcel;
 import com.github.bingoohuang.excel2beans.ExcelToBeansUtils;
+import com.github.bingoohuang.excel2beans.PoiUtil;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.google.common.collect.Lists;
 import lombok.Builder;
@@ -32,7 +33,7 @@ public class AssignmentTest {
 
         val workbook = beansToExcel.create(members);
 
-        ExcelToBeansUtils.writeExcel(workbook, name);
+        PoiUtil.writeExcel(workbook, name);
         new File(name).delete();
     }
 

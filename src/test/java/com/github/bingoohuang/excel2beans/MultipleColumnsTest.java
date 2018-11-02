@@ -118,7 +118,7 @@ public class MultipleColumnsTest {
         ExcelToBeansUtils.writeRedComments(excelToBeans.getWorkbook(), cellDatas, 2, 3);
 
         excelToBeans.removeOkRows(AfTvPlayBeanAttach.class, beans);
-        ExcelToBeansUtils.writeExcel(excelToBeans.getWorkbook(), "af.xlsx");
+        PoiUtil.writeExcel(excelToBeans.getWorkbook(), "af.xlsx");
         new File("af.xlsx").delete();
 
         byte[] workbookBytes = ExcelToBeansUtils.getWorkbookBytes(excelToBeans.getWorkbook());
@@ -134,7 +134,7 @@ public class MultipleColumnsTest {
         byte[] bytes = jedis.get(keyBytes);
         val stream = new ByteArrayInputStream(bytes);
         val redisWorkbook = WorkbookFactory.create(stream);
-        ExcelToBeansUtils.writeExcel(redisWorkbook, "redis-af.xlsx");
+        PoiUtil.writeExcel(redisWorkbook, "redis-af.xlsx");
 //        new File("redis-af.xlsx").delete();
     }
 

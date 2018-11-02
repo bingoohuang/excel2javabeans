@@ -9,7 +9,8 @@ import java.lang.reflect.Constructor;
 public class ConstructorBeanInstantiator<T> implements BeanInstantiator<T> {
     private final Constructor<T> constructor;
 
-    @SneakyThrows @Override public <T> T newInstance() {
-        return (T) constructor.newInstance();
+    @SuppressWarnings("unchecked")
+    @SneakyThrows @Override public T newInstance() {
+        return constructor.newInstance();
     }
 }

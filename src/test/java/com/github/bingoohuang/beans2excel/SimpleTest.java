@@ -2,6 +2,7 @@ package com.github.bingoohuang.beans2excel;
 
 import com.github.bingoohuang.excel2beans.BeansToExcel;
 import com.github.bingoohuang.excel2beans.ExcelToBeansUtils;
+import com.github.bingoohuang.excel2beans.PoiUtil;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
@@ -43,7 +44,7 @@ public class SimpleTest {
         props.put("memberHead", "会员信息" + DateTime.now().toString("yyyy-MM-dd"));
         val workbook = beansToExcel.create(props, members, schedules);
 
-        ExcelToBeansUtils.writeExcel(workbook, name);
+        PoiUtil.writeExcel(workbook, name);
         new File(name).delete();
     }
 
@@ -98,7 +99,7 @@ public class SimpleTest {
 
         val workbook = beansToExcel.create(members, schedules, subscribes);
 
-        ExcelToBeansUtils.writeExcel(workbook, name);
+        PoiUtil.writeExcel(workbook, name);
         new File(name).delete();
     }
 

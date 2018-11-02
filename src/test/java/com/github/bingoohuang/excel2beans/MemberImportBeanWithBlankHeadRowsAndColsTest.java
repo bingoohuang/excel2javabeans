@@ -11,7 +11,7 @@ import java.util.List;
 import static com.google.common.truth.Truth.assertThat;
 
 public class MemberImportBeanWithBlankHeadRowsAndColsTest {
-    @SneakyThrows
+    @SneakyThrows @SuppressWarnings("unchecked")
     @Test public void testWithBlankHeadRowsAndCols() {
         @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("member-blankheadrowsandcols.xlsx");
         val excelToBeans = new ExcelSheetToBeans(workbook, MemberImportBeanWithBlankHeadRowsAndCols.class);

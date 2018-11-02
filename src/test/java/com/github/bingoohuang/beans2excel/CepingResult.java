@@ -8,10 +8,7 @@ import lombok.Singular;
 import java.util.List;
 
 @Data @Builder
-public class HanergyCepingResult {
-    @ExcelCell(sheetName = true)
-    private String sheetName;       // 表单名称
-
+public class CepingResult {
     @ExcelCell(value = "A2", replace = "XX")
     private String interviewCode;   // 面试编号
 

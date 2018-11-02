@@ -43,7 +43,7 @@ public class EtTest {
         mobile.setCommentAuthor("et-server");
 
         ExcelToBeansUtils.writeRedComments(workbook, Lists.newArrayList(mobile));
-        ExcelToBeansUtils.writeExcel(workbook, "test-et-out.xlsx");
+        PoiUtil.writeExcel(workbook, "test-et-out.xlsx");
         new File("test-et-out.xlsx").delete();
 
         val etCards = excelToBeans.convert(EtCard.class);

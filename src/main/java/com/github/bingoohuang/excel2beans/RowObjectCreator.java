@@ -1,6 +1,5 @@
 package com.github.bingoohuang.excel2beans;
 
-import com.github.bingoohuang.excel2beans.CellData.CellDataBuilder;
 import com.github.bingoohuang.util.instantiator.BeanInstantiator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -138,7 +137,7 @@ class RowObjectCreator<T> {
         return applyComment(cell, builder).build();
     }
 
-    private CellDataBuilder applyComment(Cell cell, CellDataBuilder cellData) {
+    private CellData.CellDataBuilder applyComment(Cell cell, CellData.CellDataBuilder cellData) {
         if (cell == null) return cellData;
 
         val comment = cell.getCellComment();

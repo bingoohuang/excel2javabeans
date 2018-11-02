@@ -1,23 +1,22 @@
 package com.github.bingoohuang.beans2excel;
 
-import com.github.bingoohuang.beans2excel.HanergyCepingResult.ItemComment;
+import com.github.bingoohuang.beans2excel.CepingResult.ItemComment;
 import com.github.bingoohuang.excel2beans.BeansToExcelOnTemplate;
 import com.github.bingoohuang.excel2beans.ExcelToBeansUtils;
+import com.github.bingoohuang.excel2beans.PoiUtil;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.Test;
 
-import static com.github.bingoohuang.beans2excel.HanergyCepingResult.Item;
+import static com.github.bingoohuang.beans2excel.CepingResult.Item;
 
 public class BeansToExcelOnTemplateTest {
     @Test @SneakyThrows
     public void test1() {
-        @Cleanup val wb = ExcelToBeansUtils.getClassPathWorkbook("hanergy-ceping.xlsx");
+        @Cleanup val wb = ExcelToBeansUtils.getClassPathWorkbook("ceping.xlsx");
         val beansToExcel = new BeansToExcelOnTemplate(wb.getSheet("有评语-模板"));
-        val bean = HanergyCepingResult.builder()
-//                .sheetName("东方不败")
-
+        val bean = CepingResult.builder()
                 .interviewCode("20181101.001")
                 .name("东方不败")
                 .gender("不男不女")
@@ -50,6 +49,6 @@ public class BeansToExcelOnTemplateTest {
 
         @Cleanup val newWb = beansToExcel.create(bean);
 
-        ExcelToBeansUtils.writeExcel(newWb, "东方不败.xlsx");
+        PoiUtil.writeExcel(newWb, "东方不败.xlsx");
     }
 }

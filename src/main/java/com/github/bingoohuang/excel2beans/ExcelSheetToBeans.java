@@ -24,7 +24,7 @@ public class ExcelSheetToBeans<T> {
 
     public ExcelSheetToBeans(Workbook workbook, Class<T> beanClass) {
         this.instantiator = BeanInstantiatorFactory.newBeanInstantiator(beanClass);
-        this.sheet = ExcelToBeansUtils.findSheet(workbook, beanClass);
+        this.sheet = PoiUtil.findSheet(workbook, beanClass);
         ReflectAsmCache reflectAsmCache = new ReflectAsmCache();
         this.beanFields = new ExcelBeanFieldParser(beanClass, sheet).parseBeanFields(reflectAsmCache);
         this.imageDataTable = hasImageDatas() ? ExcelImages.readAllCellImages(sheet) : null;
