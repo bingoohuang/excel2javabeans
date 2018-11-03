@@ -173,8 +173,7 @@ public class ExcelToBeansUtils {
         if (field.isSynthetic()) return true;
         if (field.isAnnotationPresent(ExcelColIgnore.class)) return true;
         // ignore un-normal fields like $jacocoData
-        if (field.getName().startsWith("$")) return true;
+        return field.getName().startsWith("$");
 
-        return false;
     }
 }

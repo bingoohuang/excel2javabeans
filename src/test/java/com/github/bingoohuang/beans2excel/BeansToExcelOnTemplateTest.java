@@ -17,6 +17,7 @@ public class BeansToExcelOnTemplateTest {
         @Cleanup val wb = ExcelToBeansUtils.getClassPathWorkbook("ceping.xlsx");
         val beansToExcel = new BeansToExcelOnTemplate(wb.getSheet("有评语-模板"));
         val bean = CepingResult.builder()
+                .sheetName("东方不败测评结论表")
                 .interviewCode("20181101.001")
                 .name("东方不败")
                 .gender("不男不女")

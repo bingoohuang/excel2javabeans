@@ -40,7 +40,7 @@ class RowObjectCreator<T> {
         this.imageDataTable = imageDataTable;
         this.cellFormatter = cellFormatter;
         this.row = sheet.getRow(rowNum);
-        this.object = this.row == null ? null : (T) instantiator.newInstance();
+        this.object = this.row == null ? null : instantiator.newInstance();
     }
 
     public T createObject() {

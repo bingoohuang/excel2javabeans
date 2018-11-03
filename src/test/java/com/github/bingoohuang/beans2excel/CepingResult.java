@@ -9,6 +9,9 @@ import java.util.List;
 
 @Data @Builder
 public class CepingResult {
+    @ExcelCell(sheetName = true)
+    private String sheetName;       // 表单名称
+
     @ExcelCell(value = "A2", replace = "XX")
     private String interviewCode;   // 面试编号
 

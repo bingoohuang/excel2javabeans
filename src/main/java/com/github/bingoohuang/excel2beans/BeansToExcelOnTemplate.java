@@ -26,6 +26,8 @@ public class BeansToExcelOnTemplate {
 
     // 根据JavaBean，在模板页基础上生成Excel.
     public Workbook create(Object bean) {
+        PoiUtil.removeOtherSheets(sheet);
+
         for (val field : bean.getClass().getDeclaredFields()) {
             if (ExcelToBeansUtils.isFieldShouldIgnored(field)) continue;
 
@@ -33,7 +35,6 @@ public class BeansToExcelOnTemplate {
             processExcelRowsAnnotation(field, bean);
         }
 
-        PoiUtil.removeOtherSheets(sheet);
         return sheet.getWorkbook();
     }
 
@@ -72,8 +73,8 @@ public class BeansToExcelOnTemplate {
     private void mergeCols(ExcelRows excelRowsAnn, Cell templateCell, int itemSize) {
         val tmplRowIndexRef = templateCell.getRowIndex() + 1;
         for (val mergeColAnn : excelRowsAnn.mergeCols()) {
-            val from = findCell(mergeColAnn.fromColRef() + tmplRowIndexRef);
-            val to = findCell(mergeColAnn.toColRef() + tmplRowIndexRef);
+            val from = PoiUtil.findCell(sheet, mergeColAnn.fromColRef() + tmplRowIndexRef);
+            val to = PoiUtil.findCell(sheet, mergeColAnn.toColRef() + tmplRowIndexRef);
 
             val fromRow = from.getRowIndex();
             val fromCol = from.getColumnIndex();
@@ -98,8 +99,7 @@ public class BeansToExcelOnTemplate {
         for (val mergeRowAnn : excelRowsAnn.mergeRows()) {
             val fr = mergeRowAnn.fromRef();
             val cellRef = PoiUtil.isFullCellReference(fr) ? fr : fr + (tmplCellRowIndex + 1);
-            val fromCell = findCell(cellRef);
-
+            val fromCell = PoiUtil.findCell(sheet, cellRef);
 
             val lastRow = tmplCellRowIndex + itemSize - 1;
             if (mergeRowAnn.type() == MergeType.Direct) {
@@ -308,26 +308,27 @@ public class BeansToExcelOnTemplate {
         if (ann == null) return;
 
         Object fv = ExcelToBeansUtils.invokeField(field, bean);
-        val cell = findCell(ann.value());
-        if (StringUtils.isNotEmpty(ann.replace())) { // 有内容需要替换
-            val old = cell.getStringCellValue();
-            fv = old.replace(ann.replace(), "" + fv);
+
+        if (ann.sheetName()) {
+            if (StringUtils.isNotEmpty(ann.replace())) { // 有内容需要替换
+                fv = sheet.getSheetName().replace(ann.replace(), "" + fv);
+            }
+
+            val wb = sheet.getWorkbook();
+            val oldSheetName = sheet.getSheetName();
+            val newSheetName = "" + fv;
+            wb.setSheetName(wb.getSheetIndex(sheet), newSheetName);
+
+            PoiUtil.fixChartSheetNameRef(sheet, oldSheetName, newSheetName);
+        } else {
+            val cell = PoiUtil.findCell(sheet, ann.value());
+            if (StringUtils.isNotEmpty(ann.replace())) { // 有内容需要替换
+                val old = cell.getStringCellValue();
+                fv = old.replace(ann.replace(), "" + fv);
+            }
+
+            PoiUtil.writeCellValue(cell, fv, true);
         }
-
-        PoiUtil.writeCellValue(cell, fv, true);
-
-    }
-
-    /**
-     * 根据单元格索引，找到单元格。
-     *
-     * @param cellRefValue 单元格索引，例如A1, AB12等。
-     * @return 单元格。
-     */
-    private Cell findCell(String cellRefValue) {
-        val cellRef = new CellReference(cellRefValue);
-        val row = sheet.getRow(cellRef.getRow());
-        return row.getCell(cellRef.getCol());
     }
 
 }

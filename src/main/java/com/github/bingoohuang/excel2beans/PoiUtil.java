@@ -7,6 +7,8 @@ import lombok.SneakyThrows;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.usermodel.XSSFDrawing;
 
 import java.io.FileOutputStream;
 import java.util.List;
@@ -130,5 +132,49 @@ public class PoiUtil {
         }
 
         throw new IllegalArgumentException("Unable to find sheet with name " + excelSheet.name());
+    }
+
+    /**
+     * 根据单元格索引，找到单元格。
+     *
+     * @param sheet        EXCEL表单。
+     * @param cellRefValue 单元格索引，例如A1, AB12等。
+     * @return 单元格。
+     */
+    public static Cell findCell(Sheet sheet, String cellRefValue) {
+        val cellRef = new CellReference(cellRefValue);
+        val row = sheet.getRow(cellRef.getRow());
+        return row.getCell(cellRef.getCol());
+    }
+
+    /**
+     * 修正图标中对于表单名字的引用。
+     *
+     * @param sheet        EXCEL表单。
+     * @param oldSheetName 旧的表单名字。
+     * @param newSheetName 新的表单名字。
+     */
+    public static void fixChartSheetNameRef(Sheet sheet, String oldSheetName, String newSheetName) {
+        val drawing = sheet.getDrawingPatriarch();
+        if (!(drawing instanceof XSSFDrawing)) return;
+
+        for (val chart : ((XSSFDrawing) drawing).getCharts()) {
+            for (val barChart : chart.getCTChart().getPlotArea().getBarChartList()) {
+                for (val ser : barChart.getSerList()) {
+                    val val = ser.getVal();
+                    if (val == null) continue;
+
+                    val numRef = val.getNumRef();
+                    if (numRef == null) continue;
+
+                    val f = numRef.getF();
+                    if (f == null) continue;
+
+                    if (f.contains(oldSheetName)) {
+                        numRef.setF(f.replace(oldSheetName, newSheetName));
+                    }
+                }
+            }
+        }
     }
 }
