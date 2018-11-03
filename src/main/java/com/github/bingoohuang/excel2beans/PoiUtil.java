@@ -148,7 +148,7 @@ public class PoiUtil {
     }
 
     /**
-     * 修正图标中对于表单名字的引用。
+     * 修正图表中对于表单名字的引用。
      *
      * @param sheet        EXCEL表单。
      * @param oldSheetName 旧的表单名字。
