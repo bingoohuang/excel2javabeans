@@ -1,4 +1,4 @@
-package com.github.bingoohuang.util.instantiator;
+package com.github.bingoohuang.instantiator;
 
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;

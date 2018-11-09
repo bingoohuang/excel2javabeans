@@ -86,20 +86,30 @@ public class PoiUtil {
      * @param cell           单元格。
      * @param fv             单元格值。
      * @param fixNumberValue 是否修正整型值写入。
+     * @return 单元格字符串取值。
      */
-    public static void writeCellValue(Cell cell, Object fv, boolean fixNumberValue) {
+    public static String writeCellValue(Cell cell, Object fv, boolean fixNumberValue) {
         if (fv instanceof Number) {
-            cell.setCellValue(((Number) fv).doubleValue());
-        } else if (fv instanceof String && fixNumberValue) {
+            val value = ((Number) fv).doubleValue();
+            cell.setCellValue(value);
+            return "" + value;
+        }
+
+        if (fv instanceof String && fixNumberValue) {
             val s = (String) fv;
             if (ExcelToBeansUtils.isNumeric(s)) {
-                cell.setCellValue(Double.parseDouble(s));
-            } else {
-                cell.setCellValue(s);
+                val value = Double.parseDouble(s);
+                cell.setCellValue(value);
+                return "" + value;
             }
-        } else {
-            cell.setCellValue("" + fv);
+
+            cell.setCellValue(s);
+            return s;
         }
+
+        final String value = "" + fv;
+        cell.setCellValue(value);
+        return value;
     }
 
     public static void removeRow(Sheet sheet, int rowIndex) {

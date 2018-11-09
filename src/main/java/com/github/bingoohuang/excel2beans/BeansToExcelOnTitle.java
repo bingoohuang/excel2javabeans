@@ -2,7 +2,7 @@ package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelTemplateSheet;
-import com.github.bingoohuang.util.GenericType;
+import com.github.bingoohuang.utils.type.Generic;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -67,7 +67,7 @@ public class BeansToExcelOnTitle {
             val fv = ExcelToBeansUtils.invokeField(field, record);
             val cell = row.getCell(col);
             PoiUtil.writeCellValue(cell, fv, true);
-        } else if (GenericType.of(field.getGenericType()).isRawType(Map.class)) {
+        } else if (Generic.of(field.getGenericType()).isRawType(Map.class)) {
             val fv = ExcelToBeansUtils.invokeRawField(field, record);
             if (fv == null) return;
 

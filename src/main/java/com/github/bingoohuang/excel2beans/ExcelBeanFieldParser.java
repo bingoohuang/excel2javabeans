@@ -75,9 +75,12 @@ public class ExcelBeanFieldParser {
 
     private HorizontalAlignment convertAlign(ExcelColAlign align, HorizontalAlignment defaultAlign) {
         switch (align) {
-            case LEFT: return HorizontalAlignment.LEFT;
-            case CENTER: return HorizontalAlignment.CENTER;
-            case RIGHT: return HorizontalAlignment.RIGHT;
+            case LEFT:
+                return HorizontalAlignment.LEFT;
+            case CENTER:
+                return HorizontalAlignment.CENTER;
+            case RIGHT:
+                return HorizontalAlignment.RIGHT;
         }
 
         return defaultAlign;

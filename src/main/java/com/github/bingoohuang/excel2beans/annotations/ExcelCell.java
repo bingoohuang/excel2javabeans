@@ -31,4 +31,12 @@ public @interface ExcelCell {
      * @return 是否是处理表单名称
      */
     boolean sheetName() default false;
+
+
+    /**
+     * 单元格一行最大字符数。
+     *
+     * @return 最大字符数
+     */
+    int maxLineLen() default 0;
 }

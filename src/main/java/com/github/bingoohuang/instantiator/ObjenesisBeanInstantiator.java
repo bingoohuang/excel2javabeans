@@ -1,4 +1,4 @@
-package com.github.bingoohuang.util.instantiator;
+package com.github.bingoohuang.instantiator;
 
 import org.objenesis.ObjenesisStd;
 import org.objenesis.instantiator.ObjectInstantiator;

@@ -1,4 +1,4 @@
-package com.github.bingoohuang.util.instantiator;
+package com.github.bingoohuang.instantiator;
 
 public interface BeanInstantiator<T> {
     T newInstance();

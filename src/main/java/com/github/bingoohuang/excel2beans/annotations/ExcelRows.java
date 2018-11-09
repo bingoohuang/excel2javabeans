@@ -27,6 +27,4 @@ public @interface ExcelRows {
     MergeRow[] mergeRows() default {};
 
     MergeCol[] mergeCols() default {};
-
-
 }

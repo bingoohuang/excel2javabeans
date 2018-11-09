@@ -64,6 +64,7 @@ public class CepingResult {
         private String category;     // 类别
         private String quality;      // 素质项
         private String _1;           // 留空，方便合并
+        @ExcelCell(maxLineLen = 15)
         private String dimension;    // 测评维度
         private String _2;           // 留空，方便合并
         private String score;        // 得分

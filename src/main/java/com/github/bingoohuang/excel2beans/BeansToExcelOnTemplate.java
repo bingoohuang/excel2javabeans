@@ -4,7 +4,7 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelCell;
 import com.github.bingoohuang.excel2beans.annotations.ExcelRows;
 import com.github.bingoohuang.excel2beans.annotations.MergeRow;
 import com.github.bingoohuang.excel2beans.annotations.MergeType;
-import com.github.bingoohuang.util.GenericType;
+import com.github.bingoohuang.utils.type.Generic;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -49,7 +49,7 @@ public class BeansToExcelOnTemplate {
         val excelRows = field.getAnnotation(ExcelRows.class);
         if (excelRows == null) return;
 
-        if (!GenericType.of(field.getGenericType()).isRawType(List.class)) return;
+        if (!Generic.of(field.getGenericType()).isRawType(List.class)) return;
 
         val templateCell = findTemplateCell(excelRows);
         @SuppressWarnings("unchecked")
@@ -192,15 +192,22 @@ public class BeansToExcelOnTemplate {
             val item = items.get(i);
             val row = i == 0 ? tmplRow : sheet.createRow(fromRow + i);
 
+            int maxRows = 1;
+
             val fields = item.getClass().getDeclaredFields();
             for (int j = 0; j < fields.length; ++j) {
-                if (ExcelToBeansUtils.isFieldShouldIgnored(fields[j])) continue;
+                val field = fields[j];
+                if (ExcelToBeansUtils.isFieldShouldIgnored(field)) continue;
 
-                val fv = ExcelToBeansUtils.invokeField(fields[j], item);
-                newCell(excelRowsAnn, tmplRow, tmplCol + j, i, row, fv);
+                val fv = ExcelToBeansUtils.invokeField(field, item);
+                final ExcelCell excelCell = field.getAnnotation(ExcelCell.class);
+                int maxLen = excelCell == null ? 0 : excelCell.maxLineLen();
+                maxRows = newCell(excelRowsAnn, tmplRow, tmplCol + j, i, row, fv, maxLen, maxRows);
             }
 
             emptyEndsCells(excelRowsAnn, tmplRow, tmplCol, i, row, fields.length);
+
+            if (maxRows > 1) row.setHeight((short) (maxRows * row.getHeight()));
         }
     }
 
@@ -233,7 +240,7 @@ public class BeansToExcelOnTemplate {
      */
     private void emptyCells(ExcelRows excelRowsAnn, Row tmplRow, int rowOffset, Row row, int colStart, int colEnd) {
         for (int i = colStart; i <= colEnd; ++i) {
-            newCell(excelRowsAnn, tmplRow, i, rowOffset, row, "");
+            newCell(excelRowsAnn, tmplRow, i, rowOffset, row, "", 0, 0);
         }
     }
 
@@ -247,7 +254,7 @@ public class BeansToExcelOnTemplate {
      * @param row          需要创建新单元格所在的行。
      * @param cellValue    新单元格取值。
      */
-    private void newCell(ExcelRows excelRowsAnn, Row tmplRow, int cellCol, int rowOffset, Row row, Object cellValue) {
+    private int newCell(ExcelRows excelRowsAnn, Row tmplRow, int cellCol, int rowOffset, Row row, Object cellValue, int maxLen, int maxRows) {
         Cell cell = null;
         if (rowOffset == 0) { // 偏移量为0，说明当前在模板行上，尝试直接获取单元格
             cell = row.getCell(cellCol);
@@ -263,7 +270,14 @@ public class BeansToExcelOnTemplate {
 
         // 没有合并的时候，修正写入值的数值类型
         val noMerge = excelRowsAnn.mergeCols().length == 0 && excelRowsAnn.mergeRows().length == 0;
-        PoiUtil.writeCellValue(cell, cellValue, noMerge);
+        val value = PoiUtil.writeCellValue(cell, cellValue, noMerge);
+
+        if (maxLen > 0) {
+            int rows = (int) Math.ceil(value.length() * 1.0 / maxLen);
+            return rows > maxRows ? rows : maxRows;
+        }
+
+        return maxRows;
     }
 
     /**

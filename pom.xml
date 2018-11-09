@@ -4,7 +4,7 @@
 
     <groupId>com.github.bingoohuang</groupId>
     <artifactId>excel2javabeans</artifactId>
-    <version>0.0.25-SNAPSHOT</version>
+    <version>0.0.26-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>excel to java beans</name>
@@ -49,6 +49,11 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.bingoohuang</groupId>
+            <artifactId>java-utils</artifactId>
+            <version>0.0.13</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>ooxml-schemas</artifactId>

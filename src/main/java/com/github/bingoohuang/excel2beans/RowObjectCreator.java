@@ -1,6 +1,6 @@
 package com.github.bingoohuang.excel2beans;
 
-import com.github.bingoohuang.util.instantiator.BeanInstantiator;
+import com.github.bingoohuang.instantiator.BeanInstantiator;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Table;

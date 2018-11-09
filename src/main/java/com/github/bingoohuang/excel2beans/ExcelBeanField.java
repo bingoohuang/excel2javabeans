@@ -1,7 +1,7 @@
 package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
-import com.github.bingoohuang.util.GenericType;
+import com.github.bingoohuang.utils.type.Generic;
 import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,7 +42,7 @@ public class ExcelBeanField {
         this.titleRequired = ct != null && ct.required();
         this.title = ct != null ? defaultIfEmpty(ct.value(), f.getName()).toUpperCase() : null;
 
-        val gtu = new GenericType(f.getGenericType());
+        val gtu = Generic.of(f.getGenericType());
         this.multipleColumns = gtu.isParameterized() && List.class.isAssignableFrom(f.getType());
         this.elementType = this.multipleColumns ? gtu.getActualTypeArg(0) : f.getType();
         this.cellDataType = this.elementType == CellData.class;
