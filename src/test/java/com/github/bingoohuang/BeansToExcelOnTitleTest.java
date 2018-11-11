@@ -43,6 +43,6 @@ public class BeansToExcelOnTitleTest {
 
         @Cleanup val newWb = beansToExcel.create(records);
 
-        PoiUtil.writeExcel(newWb, "批量导出.xlsx");
+        PoiUtil.writeExcel(newWb, "批量导出-result.xlsx");
     }
 }

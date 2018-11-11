@@ -6,3 +6,4 @@ target
 ~*.xls*
 
 test-*.xls*
+*-result.xlsx

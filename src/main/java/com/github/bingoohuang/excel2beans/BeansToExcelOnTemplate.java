@@ -5,6 +5,7 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelRows;
 import com.github.bingoohuang.excel2beans.annotations.MergeRow;
 import com.github.bingoohuang.excel2beans.annotations.MergeType;
 import com.github.bingoohuang.utils.type.Generic;
+import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -18,11 +19,14 @@ import org.apache.poi.ss.util.CellReference;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 public class BeansToExcelOnTemplate {
     // 模板表单
     private final Sheet sheet;
+    // RowIndex -> RowHeight ratio
+    private Map<Integer, Integer> rowHeightRatioMap = Maps.newHashMap();
 
     // 根据JavaBean，在模板页基础上生成Excel.
     public Workbook create(Object bean) {
@@ -35,7 +39,21 @@ public class BeansToExcelOnTemplate {
             processExcelRowsAnnotation(field, bean);
         }
 
+        fixRowsHeight();
+
         return sheet.getWorkbook();
+    }
+
+    private void fixRowsHeight() {
+        for (int i = sheet.getFirstRowNum(), ii = sheet.getLastRowNum(); i <= ii; ++i) {
+            val maxRows = rowHeightRatioMap.getOrDefault(i, 1);
+            if (maxRows <= 1) continue;
+
+            val row = sheet.getRow(i);
+            if (row == null) continue;
+
+            row.setHeight((short) (maxRows * row.getHeight()));
+        }
     }
 
     /**
@@ -192,8 +210,6 @@ public class BeansToExcelOnTemplate {
             val item = items.get(i);
             val row = i == 0 ? tmplRow : sheet.createRow(fromRow + i);
 
-            int maxRows = 1;
-
             val fields = item.getClass().getDeclaredFields();
             for (int j = 0; j < fields.length; ++j) {
                 val field = fields[j];
@@ -202,12 +218,10 @@ public class BeansToExcelOnTemplate {
                 val fv = ExcelToBeansUtils.invokeField(field, item);
                 final ExcelCell excelCell = field.getAnnotation(ExcelCell.class);
                 int maxLen = excelCell == null ? 0 : excelCell.maxLineLen();
-                maxRows = newCell(excelRowsAnn, tmplRow, tmplCol + j, i, row, fv, maxLen, maxRows);
+                newCell(excelRowsAnn, tmplRow, tmplCol + j, i, row, fv, maxLen);
             }
 
             emptyEndsCells(excelRowsAnn, tmplRow, tmplCol, i, row, fields.length);
-
-            if (maxRows > 1) row.setHeight((short) (maxRows * row.getHeight()));
         }
     }
 
@@ -240,7 +254,7 @@ public class BeansToExcelOnTemplate {
      */
     private void emptyCells(ExcelRows excelRowsAnn, Row tmplRow, int rowOffset, Row row, int colStart, int colEnd) {
         for (int i = colStart; i <= colEnd; ++i) {
-            newCell(excelRowsAnn, tmplRow, i, rowOffset, row, "", 0, 0);
+            newCell(excelRowsAnn, tmplRow, i, rowOffset, row, "", 0);
         }
     }
 
@@ -254,7 +268,7 @@ public class BeansToExcelOnTemplate {
      * @param row          需要创建新单元格所在的行。
      * @param cellValue    新单元格取值。
      */
-    private int newCell(ExcelRows excelRowsAnn, Row tmplRow, int cellCol, int rowOffset, Row row, Object cellValue, int maxLen, int maxRows) {
+    private void newCell(ExcelRows excelRowsAnn, Row tmplRow, int cellCol, int rowOffset, Row row, Object cellValue, int maxLen) {
         Cell cell = null;
         if (rowOffset == 0) { // 偏移量为0，说明当前在模板行上，尝试直接获取单元格
             cell = row.getCell(cellCol);
@@ -272,12 +286,18 @@ public class BeansToExcelOnTemplate {
         val noMerge = excelRowsAnn.mergeCols().length == 0 && excelRowsAnn.mergeRows().length == 0;
         val value = PoiUtil.writeCellValue(cell, cellValue, noMerge);
 
-        if (maxLen > 0) {
-            int rows = (int) Math.ceil(value.length() * 1.0 / maxLen);
-            return rows > maxRows ? rows : maxRows;
-        }
+        fixMaxRowHeightRatio(tmplRow, maxLen, value);
 
-        return maxRows;
+    }
+
+    private void fixMaxRowHeightRatio(Row row, int maxLen, String value) {
+        if (maxLen <= 0) return;
+
+        val max = rowHeightRatioMap.getOrDefault(row.getRowNum(), 1);
+        int rows = (int) Math.ceil(value.length() * 1.0 / maxLen);
+        if (rows > max) {
+            rowHeightRatioMap.put(row.getRowNum(), rows);
+        }
     }
 
     /**
@@ -341,7 +361,8 @@ public class BeansToExcelOnTemplate {
                 fv = old.replace(ann.replace(), "" + fv);
             }
 
-            PoiUtil.writeCellValue(cell, fv, true);
+            val strCellValue = PoiUtil.writeCellValue(cell, fv, true);
+            fixMaxRowHeightRatio(cell.getRow(), ann.maxLineLen(), strCellValue);
         }
     }
 

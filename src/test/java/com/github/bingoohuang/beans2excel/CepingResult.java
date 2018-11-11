@@ -31,7 +31,7 @@ public class CepingResult {
 
     @ExcelCell("C5")
     private double matchScore;     // 岗位匹配度
-    @ExcelCell("C6")
+    @ExcelCell(value = "C6", maxLineLen = 40)
     private String matchComment;   // 岗位匹配度评语
 
     @ExcelRows(fromRef = "C7",     // 起点单元格在C7
