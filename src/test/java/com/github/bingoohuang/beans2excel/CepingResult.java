@@ -34,7 +34,7 @@ public class CepingResult {
     @ExcelCell(value = "C6", maxLineLen = 40)
     private String matchComment;   // 岗位匹配度评语
 
-    @ExcelRows(fromRef = "C7",     // 起点单元格在C7
+    @ExcelRows(fromRef = "C", searchKey = "心理健康",     // 起点在A列的包含有"四种工具"关键字的单元格
             mergeRows = {
                     @MergeRow(fromRef = "A5", type = MergeType.Direct), // 从A5单元格开始向下直接合并
                     @MergeRow(fromRef = "B", type = MergeType.Direct),  // 从B列单元格开始向下直接合并

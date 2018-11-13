@@ -1,7 +1,9 @@
 package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.excel2beans.annotations.ExcelColAlign;
+import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
+import com.github.bingoohuang.utils.reflect.Fields;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -47,7 +49,7 @@ public class ExcelBeanFieldParser {
     }
 
     private void processField(Field field, List<ExcelBeanField> fields, ReflectAsmCache reflectAsmCache) {
-        if (ExcelToBeansUtils.isFieldShouldIgnored(field)) return;
+        if (Fields.shouldIgnored(field, ExcelColIgnore.class)) return;
 
         val bf = new ExcelBeanField(field, fields.size(), reflectAsmCache);
         if (bf.isElementTypeSupported()) {

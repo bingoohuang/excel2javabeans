@@ -1,13 +1,12 @@
 package com.github.bingoohuang.excel2beans;
 
-import com.github.bingoohuang.excel2beans.annotations.ExcelCell;
-import com.github.bingoohuang.excel2beans.annotations.ExcelRows;
-import com.github.bingoohuang.excel2beans.annotations.MergeRow;
-import com.github.bingoohuang.excel2beans.annotations.MergeType;
+import com.github.bingoohuang.excel2beans.annotations.*;
+import com.github.bingoohuang.utils.reflect.Fields;
 import com.github.bingoohuang.utils.type.Generic;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
@@ -21,7 +20,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor @Slf4j
 public class BeansToExcelOnTemplate {
     // 模板表单
     private final Sheet sheet;
@@ -33,7 +32,7 @@ public class BeansToExcelOnTemplate {
         PoiUtil.removeOtherSheets(sheet);
 
         for (val field : bean.getClass().getDeclaredFields()) {
-            if (ExcelToBeansUtils.isFieldShouldIgnored(field)) continue;
+            if (Fields.shouldIgnored(field, ExcelColIgnore.class)) continue;
 
             processExcelCellAnnotation(field, bean);
             processExcelRowsAnnotation(field, bean);
@@ -70,6 +69,11 @@ public class BeansToExcelOnTemplate {
         if (!Generic.of(field.getGenericType()).isRawType(List.class)) return;
 
         val templateCell = findTemplateCell(excelRows);
+        if (templateCell == null) {
+            log.warn("unable to locate template cell for field {}", field);
+            return; // 找不到模板单元格，直接忽略字段处理。
+        }
+
         @SuppressWarnings("unchecked")
         val list = (List<Object>) ExcelToBeansUtils.invokeField(field, bean);
 
@@ -213,10 +217,10 @@ public class BeansToExcelOnTemplate {
             val fields = item.getClass().getDeclaredFields();
             for (int j = 0; j < fields.length; ++j) {
                 val field = fields[j];
-                if (ExcelToBeansUtils.isFieldShouldIgnored(field)) continue;
+                if (Fields.shouldIgnored(field, ExcelColIgnore.class)) continue;
 
                 val fv = ExcelToBeansUtils.invokeField(field, item);
-                final ExcelCell excelCell = field.getAnnotation(ExcelCell.class);
+                val excelCell = field.getAnnotation(ExcelCell.class);
                 int maxLen = excelCell == null ? 0 : excelCell.maxLineLen();
                 newCell(excelRowsAnn, tmplRow, tmplCol + j, i, row, fv, maxLen);
             }
@@ -304,7 +308,7 @@ public class BeansToExcelOnTemplate {
      * 查找模板单元格。
      *
      * @param excelRowsAnn ExcelRows注解
-     * @return 模板单元格。
+     * @return 模板单元格。返回null，没有找到。
      */
     private Cell findTemplateCell(ExcelRows excelRowsAnn) {
         val fromRef = excelRowsAnn.fromRef();
@@ -314,20 +318,19 @@ public class BeansToExcelOnTemplate {
         }
 
         val cellRef = new CellReference(fromRef + "1");
+        val col = cellRef.getCol();
         val searchKey = excelRowsAnn.searchKey();
-        for (int i = cellRef.getRow(); i <= sheet.getLastRowNum(); ++i) {
+        for (int i = cellRef.getRow(), ii = sheet.getLastRowNum(); i <= ii; ++i) {
             val row = sheet.getRow(i);
             if (row == null) continue;
-
-            val cell = row.getCell(cellRef.getCol());
+            val cell = row.getCell(col);
             if (cell == null) continue;
 
-            val cellValue = cell.getStringCellValue();
+            val cellValue = PoiUtil.getCellStringValue(cell);
             if (StringUtils.contains(cellValue, searchKey)) return cell;
         }
 
-        throw new RuntimeException("unable to find template row for fromColRef="
-                + fromRef + " and searchKey=" + searchKey);
+        return null;
     }
 
     /**

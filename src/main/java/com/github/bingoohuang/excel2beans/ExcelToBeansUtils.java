@@ -1,6 +1,6 @@
 package com.github.bingoohuang.excel2beans;
 
-import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
+import com.github.bingoohuang.utils.reflect.Fields;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
@@ -12,7 +12,6 @@ import org.apache.poi.ss.usermodel.*;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -142,7 +141,7 @@ public class ExcelToBeansUtils {
      */
     @SneakyThrows
     public static Object invokeField(Field field, Object bean) {
-        if (!field.isAccessible()) field.setAccessible(true);
+        Fields.setAccessible(field);
         val fieldValue = field.get(bean);
 
         return fieldValue == null ? "" : fieldValue;
@@ -157,19 +156,7 @@ public class ExcelToBeansUtils {
      */
     @SneakyThrows
     public static Object invokeRawField(Field field, Object bean) {
-        if (!field.isAccessible()) field.setAccessible(true);
+        Fields.setAccessible(field);
         return field.get(bean);
-    }
-
-    public static boolean isFieldShouldIgnored(Field field) {
-        if (Modifier.isStatic(field.getModifiers())) return true;
-        // A synthetic field is a compiler-created field that links a local inner class
-        // to a block's local variable or reference type parameter.
-        // refer: https://javapapers.com/core-java/java-synthetic-class-method-field/
-        if (field.isSynthetic()) return true;
-        if (field.isAnnotationPresent(ExcelColIgnore.class)) return true;
-        // ignore un-normal fields like $jacocoData
-        return field.getName().startsWith("$");
-
     }
 }

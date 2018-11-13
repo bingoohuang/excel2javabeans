@@ -1,7 +1,9 @@
 package com.github.bingoohuang.excel2beans;
 
+import com.github.bingoohuang.excel2beans.annotations.ExcelColIgnore;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelTemplateSheet;
+import com.github.bingoohuang.utils.reflect.Fields;
 import com.github.bingoohuang.utils.type.Generic;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +49,7 @@ public class BeansToExcelOnTitle {
 
     private void writeRecordToRow(Object record, Row row, Map<String, Integer> titledColMap) {
         for (val field : record.getClass().getDeclaredFields()) {
-            if (ExcelToBeansUtils.isFieldShouldIgnored(field)) continue;
+            if (Fields.shouldIgnored(field, ExcelColIgnore.class)) continue;
 
             writeFieldValue(record, row, titledColMap, field);
         }

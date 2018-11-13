@@ -4,6 +4,7 @@ import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
 import com.google.common.collect.Lists;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
@@ -13,6 +14,7 @@ import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import java.io.FileOutputStream;
 import java.util.List;
 
+@Slf4j
 public class PoiUtil {
     public static void blankCell(Row row, int col) {
         val cell = row.getCell(col);
@@ -27,8 +29,7 @@ public class PoiUtil {
         val cell = row.getCell(col);
         if (cell == null) return null;
 
-        val cellValue = cell.getStringCellValue();
-        return StringUtils.trim(cellValue);
+        return getCellStringValue(cell);
     }
 
     /**
@@ -185,6 +186,39 @@ public class PoiUtil {
                     }
                 }
             }
+        }
+    }
+
+    public static String getCellStringValue(Cell cell) {
+        switch (cell.getCellTypeEnum()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                return String.valueOf(cell.getNumericCellValue());
+            case BLANK:
+                return "";
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                CellValue cv = getFormulaCellValue(cell);
+                return cv.getStringValue();
+            case ERROR:
+                return FormulaError.forInt(cell.getErrorCellValue()).getString();
+        }
+
+        cell.setCellType(CellType.STRING);
+        return StringUtils.trimToEmpty(cell.getStringCellValue());
+    }
+
+    public static CellValue getFormulaCellValue(Cell cell) {
+        if (cell == null) return null;
+
+        try {
+            return cell.getSheet().getWorkbook().getCreationHelper().createFormulaEvaluator().evaluate(cell);
+        } catch (Exception e) {
+            log.warn("get formula cell value[{}, {}] error : ", cell.getRowIndex(), cell.getColumnIndex(), e);
+
+            return null;
         }
     }
 }
