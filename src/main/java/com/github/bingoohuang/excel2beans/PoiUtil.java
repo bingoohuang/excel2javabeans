@@ -10,12 +10,28 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileOutputStream;
 import java.util.List;
 
 @Slf4j
 public class PoiUtil {
+    /**
+     * 用密码保护工作簿。只有在xlsx格式才起作用。
+     *
+     * @param workbook 工作簿。
+     * @param password 保护密码。
+     */
+    public static void protectWorkbook(Workbook workbook, String password) {
+        if (workbook instanceof XSSFWorkbook) {
+            val xsswb = (XSSFWorkbook) workbook;
+            for (int i = 0, ii = xsswb.getNumberOfSheets(); i < ii; ++i) {
+                xsswb.getSheetAt(i).protectSheet(password);
+            }
+        }
+    }
+
     public static void blankCell(Row row, int col) {
         val cell = row.getCell(col);
         if (cell == null) return;

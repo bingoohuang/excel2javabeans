@@ -112,6 +112,7 @@ public class BeansToExcelOnTemplateTest {
         val beansToExcel = new BeansToExcelOnTemplate(wb.getSheet(templateName));
 
         @Cleanup val newWb = beansToExcel.create(bean);
+        PoiUtil.protectWorkbook(newWb, "123456");
 
         PoiUtil.writeExcel(newWb, templateName + "-" + bean.getName() + ".xlsx");
     }
