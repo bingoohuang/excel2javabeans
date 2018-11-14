@@ -84,19 +84,18 @@ public class PoiUtil {
     /**
      * 向单元格写入值，处理值为整型时的写入情况。
      *
-     * @param cell           单元格。
-     * @param fv             单元格值。
-     * @param fixNumberValue 是否修正整型值写入。
+     * @param cell 单元格。
+     * @param fv   单元格值。
      * @return 单元格字符串取值。
      */
-    public static String writeCellValue(Cell cell, Object fv, boolean fixNumberValue) {
+    public static String writeCellValue(Cell cell, Object fv) {
         if (fv instanceof Number) {
             val value = ((Number) fv).doubleValue();
             cell.setCellValue(value);
             return "" + value;
         }
 
-        if (fv instanceof String && fixNumberValue) {
+        if (fv instanceof String) {
             val s = (String) fv;
             if (ExcelToBeansUtils.isNumeric(s)) {
                 val value = Double.parseDouble(s);

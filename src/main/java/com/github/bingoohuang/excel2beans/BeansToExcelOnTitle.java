@@ -68,7 +68,7 @@ public class BeansToExcelOnTitle {
 
             val fv = ExcelToBeansUtils.invokeField(field, record);
             val cell = row.getCell(col);
-            PoiUtil.writeCellValue(cell, fv, true);
+            PoiUtil.writeCellValue(cell, fv);
         } else if (Generic.of(field.getGenericType()).isRawType(Map.class)) {
             val fv = ExcelToBeansUtils.invokeRawField(field, record);
             if (fv == null) return;
@@ -83,7 +83,7 @@ public class BeansToExcelOnTitle {
                 }
 
                 val cell = row.getCell(col);
-                PoiUtil.writeCellValue(cell, entry.getValue(), true);
+                PoiUtil.writeCellValue(cell, entry.getValue());
             }
         }
     }

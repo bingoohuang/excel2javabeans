@@ -46,6 +46,7 @@ public class CepingResult {
     @Data @Builder
     public static class ItemComment {
         private String item;
+        @ExcelCell(maxLineLen = 36)
         private String comment;
     }
 

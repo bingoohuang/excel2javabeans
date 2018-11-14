@@ -28,6 +28,7 @@ public class BeansToExcelOnTemplate {
     private Map<Integer, Integer> rowHeightRatioMap = Maps.newHashMap();
 
     // 根据JavaBean，在模板页基础上生成Excel.
+    @SuppressWarnings("unchecked")
     public Workbook create(Object bean) {
         PoiUtil.removeOtherSheets(sheet);
 
@@ -61,7 +62,7 @@ public class BeansToExcelOnTemplate {
      * @param field JavaBean反射字段。
      * @param bean  字段所在的JavaBean。
      */
-    @SneakyThrows
+    @SneakyThrows @SuppressWarnings("unchecked")
     private void processExcelRowsAnnotation(Field field, Object bean) {
         val excelRows = field.getAnnotation(ExcelRows.class);
         if (excelRows == null) return;
@@ -74,12 +75,10 @@ public class BeansToExcelOnTemplate {
             return; // 找不到模板单元格，直接忽略字段处理。
         }
 
-        @SuppressWarnings("unchecked")
         val list = (List<Object>) ExcelToBeansUtils.invokeField(field, bean);
-
         val itemSize = PoiUtil.shiftRows(sheet, list, templateCell.getRowIndex());
         if (itemSize > 0) {
-            writeRows(excelRows, templateCell, list);
+            writeRows(templateCell, list);
             mergeRows(excelRows, templateCell, itemSize);
             mergeCols(excelRows, templateCell, itemSize);
         }
@@ -118,17 +117,17 @@ public class BeansToExcelOnTemplate {
     private void mergeRows(ExcelRows excelRowsAnn, Cell templateCell, int itemSize) {
         val tmplCellRowIndex = templateCell.getRowIndex();
 
-        for (val mergeRowAnn : excelRowsAnn.mergeRows()) {
-            val fr = mergeRowAnn.fromRef();
+        for (val ann : excelRowsAnn.mergeRows()) {
+            val fr = ann.fromRef();
             val cellRef = PoiUtil.isFullCellReference(fr) ? fr : fr + (tmplCellRowIndex + 1);
             val fromCell = PoiUtil.findCell(sheet, cellRef);
 
             val lastRow = tmplCellRowIndex + itemSize - 1;
-            if (mergeRowAnn.type() == MergeType.Direct) {
+            if (ann.type() == MergeType.Direct) {
                 val fromRow = fromCell.getRow().getRowNum();
-                directMergeRows(mergeRowAnn, fromRow, lastRow, fromCell.getColumnIndex());
-            } else if (mergeRowAnn.type() == MergeType.SameValue) {
-                sameValueMergeRows(mergeRowAnn, itemSize, fromCell);
+                directMergeRows(ann, fromRow, lastRow, fromCell.getColumnIndex());
+            } else if (ann.type() == MergeType.SameValue) {
+                sameValueMergeRows(ann, itemSize, fromCell);
             }
         }
     }
@@ -141,14 +140,14 @@ public class BeansToExcelOnTemplate {
      * @param fromCell    开始合并单元格。
      */
     private void sameValueMergeRows(MergeRow mergeRowAnn, int itemSize, Cell fromCell) {
-        String lastValue = fromCell.getStringCellValue();
+        String lastValue = PoiUtil.getCellStringValue(fromCell);
         int preRow = fromCell.getRowIndex();
         val col = fromCell.getColumnIndex();
         int i = preRow + 1;
 
         for (final int ii = preRow + itemSize; i < ii; ++i) {
             val cell = sheet.getRow(i).getCell(col);
-            val cellValue = cell.getStringCellValue();
+            val cellValue = PoiUtil.getCellStringValue(cell);
             if (StringUtils.equals(cellValue, lastValue)) continue;
 
             directMergeRows(mergeRowAnn, preRow, i - 1, col);
@@ -191,21 +190,27 @@ public class BeansToExcelOnTemplate {
         if (StringUtils.isEmpty(sep)) return;
 
         val cell = sheet.getRow(fromRow).getCell(col);
-        val old = cell.getStringCellValue();
-        val indexOf = old.indexOf(sep);
-        val fixed = indexOf < 0 ? old : old.substring(indexOf + sep.length());
+        val old = PoiUtil.getCellStringValue(cell);
+        val fixed = substringAfterSep(old, sep);
 
-        PoiUtil.writeCellValue(cell, fixed, true);
+        PoiUtil.writeCellValue(cell, fixed);
+    }
+
+    public static String substringAfterSep(String str, String sep) {
+        if (StringUtils.isEmpty(str)) return str;
+
+        int pos = str.indexOf(sep);
+        return pos < 0 ? str : str.substring(pos + sep.length());
     }
 
     /**
      * 根据JavaBean列表，向Excel中写入多行。
      *
-     * @param excelRowsAnn @ExcelRows注解值。
      * @param templateCell 模板单元格。
      * @param items        写入JavaBean列表。
      */
-    private void writeRows(ExcelRows excelRowsAnn, Cell templateCell, List<Object> items) {
+    @SuppressWarnings("unchecked")
+    private void writeRows(Cell templateCell, List<Object> items) {
         val tmplRow = templateCell.getRow();
         val fromRow = tmplRow.getRowNum();
 
@@ -222,76 +227,73 @@ public class BeansToExcelOnTemplate {
                 val fv = ExcelToBeansUtils.invokeField(field, item);
                 val excelCell = field.getAnnotation(ExcelCell.class);
                 int maxLen = excelCell == null ? 0 : excelCell.maxLineLen();
-                newCell(excelRowsAnn, tmplRow, tmplCol + j, i, row, fv, maxLen);
+                newCell(tmplRow, tmplCol + j, i, row, fv, maxLen);
             }
 
-            emptyEndsCells(excelRowsAnn, tmplRow, tmplCol, i, row, fields.length);
+            emptyEndsCells(tmplRow, tmplCol, i, row, fields.length);
         }
     }
 
     /**
      * 置空写入行两端单元格。
      *
-     * @param excelRowsAnn @ExcelRows注解值。
-     * @param tmplRow      模板行。
-     * @param tmplCol      模板单元格所在列。
-     * @param rowOffset    写入行偏移号。
-     * @param row          写入行。
-     * @param fieldsNum    写入JavaBean属性的数量。
+     * @param tmplRow   模板行。
+     * @param tmplCol   模板单元格所在列。
+     * @param rowOffset 写入行偏移号。
+     * @param row       写入行。
+     * @param fieldsNum 写入JavaBean属性的数量。
      */
-    private void emptyEndsCells(ExcelRows excelRowsAnn, Row tmplRow, int tmplCol, int rowOffset, Row row, int fieldsNum) {
+    private void emptyEndsCells(Row tmplRow, int tmplCol, int rowOffset, Row row, int fieldsNum) {
         if (rowOffset <= 0) return;
 
-        emptyCells(excelRowsAnn, tmplRow, rowOffset, row, tmplRow.getFirstCellNum(), tmplCol - 1);
-        emptyCells(excelRowsAnn, tmplRow, rowOffset, row, tmplCol + fieldsNum, tmplRow.getLastCellNum());
+        emptyCells(tmplRow, rowOffset, row, tmplRow.getFirstCellNum(), tmplCol - 1);
+        emptyCells(tmplRow, rowOffset, row, tmplCol + fieldsNum, tmplRow.getLastCellNum());
     }
 
     /**
      * 置空非JavaBean属性字段关联的单元格。
      *
-     * @param excelRowsAnn @ExcelRows注解值。
-     * @param tmplRow      模板行。
-     * @param rowOffset    写入行偏移号。
-     * @param row          需要创建新单元格所在的行。
-     * @param colStart     开始列索引。
-     * @param colEnd       结束列索引。
+     * @param tmplRow   模板行。
+     * @param rowOffset 写入行偏移号。
+     * @param row       需要创建新单元格所在的行。
+     * @param colStart  开始列索引。
+     * @param colEnd    结束列索引。
      */
-    private void emptyCells(ExcelRows excelRowsAnn, Row tmplRow, int rowOffset, Row row, int colStart, int colEnd) {
+    private void emptyCells(Row tmplRow, int rowOffset, Row row, int colStart, int colEnd) {
         for (int i = colStart; i <= colEnd; ++i) {
-            newCell(excelRowsAnn, tmplRow, i, rowOffset, row, "", 0);
+            newCell(tmplRow, i, rowOffset, row, "", 0);
         }
     }
 
     /**
      * 创建新的单元格。
      *
-     * @param excelRowsAnn @ExcelRows注解值。
-     * @param tmplRow      模板行。
-     * @param cellCol      单元格所在的列索引。
-     * @param rowOffset    行偏移号。
-     * @param row          需要创建新单元格所在的行。
-     * @param cellValue    新单元格取值。
+     * @param tmplRow   模板行。
+     * @param cellCol   单元格所在的列索引。
+     * @param rowOffset 行偏移号。
+     * @param row       需要创建新单元格所在的行。
+     * @param cellValue 新单元格取值。
      */
-    private void newCell(ExcelRows excelRowsAnn, Row tmplRow, int cellCol, int rowOffset, Row row, Object cellValue, int maxLen) {
-        Cell cell = null;
+    private void newCell(Row tmplRow, int cellCol, int rowOffset, Row row, Object cellValue, int maxLen) {
+        val cell = getOrCreateCell(tmplRow, cellCol, rowOffset, row);
+
+        val value = PoiUtil.writeCellValue(cell, cellValue);
+
+        fixMaxRowHeightRatio(row, maxLen, value);
+    }
+
+    private Cell getOrCreateCell(Row tmplRow, int cellCol, int rowOffset, Row row) {
         if (rowOffset == 0) { // 偏移量为0，说明当前在模板行上，尝试直接获取单元格
-            cell = row.getCell(cellCol);
+            return row.getCell(cellCol);
         }
 
-        if (cell == null) { // 获取不到时，创建新的单元格
-            cell = row.createCell(cellCol);
+        val cell = row.createCell(cellCol);
 
-            // 并且从对应列的模板单元格套取样式
-            val tmplRowCell = tmplRow.getCell(cellCol);
-            if (tmplRowCell != null) cell.setCellStyle(tmplRowCell.getCellStyle());
-        }
+        // 从对应列的模板单元格套取样式
+        val tmplRowCell = tmplRow.getCell(cellCol);
+        if (tmplRowCell != null) cell.setCellStyle(tmplRowCell.getCellStyle());
 
-        // 没有合并的时候，修正写入值的数值类型
-        val noMerge = excelRowsAnn.mergeCols().length == 0 && excelRowsAnn.mergeRows().length == 0;
-        val value = PoiUtil.writeCellValue(cell, cellValue, noMerge);
-
-        fixMaxRowHeightRatio(tmplRow, maxLen, value);
-
+        return cell;
     }
 
     private void fixMaxRowHeightRatio(Row row, int maxLen, String value) {
@@ -299,9 +301,7 @@ public class BeansToExcelOnTemplate {
 
         val max = rowHeightRatioMap.getOrDefault(row.getRowNum(), 1);
         int rows = (int) Math.ceil(value.length() * 1.0 / maxLen);
-        if (rows > max) {
-            rowHeightRatioMap.put(row.getRowNum(), rows);
-        }
+        if (rows > max) rowHeightRatioMap.put(row.getRowNum(), rows);
     }
 
     /**
@@ -364,7 +364,7 @@ public class BeansToExcelOnTemplate {
                 fv = old.replace(ann.replace(), "" + fv);
             }
 
-            val strCellValue = PoiUtil.writeCellValue(cell, fv, true);
+            val strCellValue = PoiUtil.writeCellValue(cell, fv);
             fixMaxRowHeightRatio(cell.getRow(), ann.maxLineLen(), strCellValue);
         }
     }
