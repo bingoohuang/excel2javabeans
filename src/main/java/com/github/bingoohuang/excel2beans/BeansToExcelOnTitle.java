@@ -46,7 +46,7 @@ public class BeansToExcelOnTitle {
         return sheet.getWorkbook();
     }
 
-
+    @SuppressWarnings("unchecked")
     private void writeRecordToRow(Object record, Row row, Map<String, Integer> titledColMap) {
         for (val field : record.getClass().getDeclaredFields()) {
             if (Fields.shouldIgnored(field, ExcelColIgnore.class)) continue;
@@ -66,11 +66,11 @@ public class BeansToExcelOnTitle {
                 return;
             }
 
-            val fv = ExcelToBeansUtils.invokeField(field, record);
+            val fv = Fields.invokeField(field, record);
             val cell = row.getCell(col);
             PoiUtil.writeCellValue(cell, fv);
         } else if (Generic.of(field.getGenericType()).isRawType(Map.class)) {
-            val fv = ExcelToBeansUtils.invokeRawField(field, record);
+            val fv = Fields.invokeField(field, record);
             if (fv == null) return;
 
             val map = (Map<String, String>) fv;

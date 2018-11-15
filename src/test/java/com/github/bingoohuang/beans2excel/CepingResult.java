@@ -68,7 +68,10 @@ public class CepingResult {
         @ExcelCell(maxLineLen = 15)
         private String dimension;    // 测评维度
         private String _2;           // 留空，方便合并
+        @ExcelCell(templateCells = {"FAIL:F12", "DEFAULT:F9"})
         private String score;        // 得分
+        private String scoreTmpl;    // 得分套用模板名称，传PASS/FAIL
+
         private String remark;       // 备注
     }
 }

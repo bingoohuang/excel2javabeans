@@ -1,6 +1,7 @@
 package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.excel2beans.annotations.*;
+import com.github.bingoohuang.utils.lang.Str;
 import com.github.bingoohuang.utils.reflect.Fields;
 import com.github.bingoohuang.utils.type.Generic;
 import com.google.common.collect.Maps;
@@ -15,6 +16,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
+import org.joor.Reflect;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -22,24 +24,25 @@ import java.util.Map;
 
 @RequiredArgsConstructor @Slf4j
 public class BeansToExcelOnTemplate {
-    // 模板表单
-    private final Sheet sheet;
-    // RowIndex -> RowHeight ratio
-    private Map<Integer, Integer> rowHeightRatioMap = Maps.newHashMap();
+    private final Sheet sheet;         // 模板表单
+    private Sheet optionsSheet;  // 选项表单
+    private final Map<Integer, Integer> rowHeightRatioMap = Maps.newHashMap();   // RowIndex -> RowHeight ratio
 
     // 根据JavaBean，在模板页基础上生成Excel.
     @SuppressWarnings("unchecked")
     public Workbook create(Object bean) {
-        PoiUtil.removeOtherSheets(sheet);
+        optionsSheet = sheet.getWorkbook().getSheet("Options");
 
         for (val field : bean.getClass().getDeclaredFields()) {
             if (Fields.shouldIgnored(field, ExcelColIgnore.class)) continue;
+            if (field.getName().endsWith("Tmpl")) continue;
 
             processExcelCellAnnotation(field, bean);
             processExcelRowsAnnotation(field, bean);
         }
 
         fixRowsHeight();
+        PoiUtil.removeOtherSheets(sheet);
 
         return sheet.getWorkbook();
     }
@@ -75,7 +78,7 @@ public class BeansToExcelOnTemplate {
             return; // 找不到模板单元格，直接忽略字段处理。
         }
 
-        val list = (List<Object>) ExcelToBeansUtils.invokeField(field, bean);
+        val list = (List<Object>) Fields.invokeField(field, bean);
         val itemSize = PoiUtil.shiftRows(sheet, list, templateCell.getRowIndex());
         if (itemSize > 0) {
             writeRows(templateCell, list);
@@ -179,7 +182,6 @@ public class BeansToExcelOnTemplate {
     /**
      * 修复合并单元格的数据。
      * 1. 去除指导合并的取值前缀，例如1^a中的1^;
-     * 2. 修正合并后单元格的数值型取值。
      *
      * @param mergeRowAnn 纵向合并单元格注解。
      * @param fromRow     开始合并行索引。
@@ -220,14 +222,23 @@ public class BeansToExcelOnTemplate {
             val row = i == 0 ? tmplRow : sheet.createRow(fromRow + i);
 
             val fields = item.getClass().getDeclaredFields();
+            int cutoff = 0;
             for (int j = 0; j < fields.length; ++j) {
                 val field = fields[j];
-                if (Fields.shouldIgnored(field, ExcelColIgnore.class)) continue;
+                if (Fields.shouldIgnored(field, ExcelColIgnore.class)) {
+                    ++cutoff;
+                    continue;
+                }
+                if (field.getName().endsWith("Tmpl")) {
+                    ++cutoff;
+                    continue;
+                }
 
-                val fv = ExcelToBeansUtils.invokeField(field, item);
+                val fv = Fields.invokeField(field, item);
                 val excelCell = field.getAnnotation(ExcelCell.class);
                 int maxLen = excelCell == null ? 0 : excelCell.maxLineLen();
-                newCell(tmplRow, tmplCol + j, i, row, fv, maxLen);
+                val cell = newCell(tmplRow, tmplCol + j - cutoff, i, row, fv, maxLen);
+                applyTemplateCellStyle(field, item, excelCell, cell);
             }
 
             emptyEndsCells(tmplRow, tmplCol, i, row, fields.length);
@@ -273,13 +284,15 @@ public class BeansToExcelOnTemplate {
      * @param rowOffset 行偏移号。
      * @param row       需要创建新单元格所在的行。
      * @param cellValue 新单元格取值。
+     * @return 新的单元格。
      */
-    private void newCell(Row tmplRow, int cellCol, int rowOffset, Row row, Object cellValue, int maxLen) {
+    private Cell newCell(Row tmplRow, int cellCol, int rowOffset, Row row, Object cellValue, int maxLen) {
         val cell = getOrCreateCell(tmplRow, cellCol, rowOffset, row);
 
         val value = PoiUtil.writeCellValue(cell, cellValue);
 
         fixMaxRowHeightRatio(row, maxLen, value);
+        return cell;
     }
 
     private Cell getOrCreateCell(Row tmplRow, int cellCol, int rowOffset, Row row) {
@@ -344,11 +357,11 @@ public class BeansToExcelOnTemplate {
         val ann = field.getAnnotation(ExcelCell.class);
         if (ann == null) return;
 
-        Object fv = ExcelToBeansUtils.invokeField(field, bean);
+        Object fv = Fields.invokeField(field, bean);
 
         if (ann.sheetName()) {
             if (StringUtils.isNotEmpty(ann.replace())) { // 有内容需要替换
-                fv = sheet.getSheetName().replace(ann.replace(), "" + fv);
+                fv = sheet.getSheetName().replace(ann.replace(), Str.nullThen(fv, ""));
             }
 
             val wb = sheet.getWorkbook();
@@ -360,13 +373,36 @@ public class BeansToExcelOnTemplate {
         } else {
             val cell = PoiUtil.findCell(sheet, ann.value());
             if (StringUtils.isNotEmpty(ann.replace())) { // 有内容需要替换
-                val old = cell.getStringCellValue();
-                fv = old.replace(ann.replace(), "" + fv);
+                val old = PoiUtil.getCellStringValue(cell);
+                fv = old.replace(ann.replace(), Str.nullThen(fv, ""));
             }
+
+            applyTemplateCellStyle(field, bean, ann, cell);
 
             val strCellValue = PoiUtil.writeCellValue(cell, fv);
             fixMaxRowHeightRatio(cell.getRow(), ann.maxLineLen(), strCellValue);
         }
+    }
+
+    private void applyTemplateCellStyle(Field field, Object bean, ExcelCell excelCell, Cell cell) {
+        if (excelCell == null || optionsSheet == null) return;
+
+        val templateCells = excelCell.templateCells();
+        if (templateCells.length == 0) return;
+
+        Map<String, String> templateCellMap = Maps.newHashMap();
+        for (val templateCell : templateCells) {
+            val split = templateCell.split(":");
+            templateCellMap.put(split[0], split[1]);
+        }
+
+        String tmplName = Reflect.on(bean).get(field.getName() + "Tmpl");
+        String tmplCellReference = templateCellMap.get(tmplName);
+        if (tmplCellReference == null) tmplCellReference = templateCellMap.get("DEFAULT");
+        if (tmplCellReference == null) return;
+
+        val tmplCell = PoiUtil.findCell(optionsSheet, tmplCellReference);
+        cell.setCellStyle(tmplCell.getCellStyle());
     }
 
 }

@@ -24,6 +24,8 @@ public class PoiUtil {
      * @param password 保护密码。
      */
     public static void protectWorkbook(Workbook workbook, String password) {
+        if (StringUtils.isEmpty(password)) return;
+
         if (workbook instanceof XSSFWorkbook) {
             val xsswb = (XSSFWorkbook) workbook;
             for (int i = 0, ii = xsswb.getNumberOfSheets(); i < ii; ++i) {
@@ -105,6 +107,11 @@ public class PoiUtil {
      * @return 单元格字符串取值。
      */
     public static String writeCellValue(Cell cell, Object fv) {
+        if (fv == null) {
+            cell.setCellType(CellType.BLANK);
+            return "";
+        }
+
         if (fv instanceof Number) {
             val value = ((Number) fv).doubleValue();
             cell.setCellValue(value);
@@ -112,18 +119,11 @@ public class PoiUtil {
         }
 
         if (fv instanceof String) {
-            val s = (String) fv;
-            if (ExcelToBeansUtils.isNumeric(s)) {
-                val value = Double.parseDouble(s);
-                cell.setCellValue(value);
-                return "" + value;
-            }
-
-            cell.setCellValue(s);
-            return s;
+            cell.setCellValue((String) fv);
+            return (String) fv;
         }
 
-        final String value = "" + fv;
+        val value = "" + fv;
         cell.setCellValue(value);
         return value;
     }
@@ -170,7 +170,17 @@ public class PoiUtil {
     public static Cell findCell(Sheet sheet, String cellRefValue) {
         val cellRef = new CellReference(cellRefValue);
         val row = sheet.getRow(cellRef.getRow());
-        return row.getCell(cellRef.getCol());
+        if (row == null) {
+            log.warn("unable to find row for " + cellRefValue);
+            return null;
+        }
+
+        val cell = row.getCell(cellRef.getCol());
+        if (cell == null) {
+            log.warn("unable to find cell for " + cellRefValue);
+        }
+
+        return cell;
     }
 
     /**

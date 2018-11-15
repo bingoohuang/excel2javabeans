@@ -1,6 +1,6 @@
 package com.github.bingoohuang.excel2beans;
 
-import com.github.bingoohuang.utils.reflect.Fields;
+import com.github.bingoohuang.utils.lang.Classpath;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
@@ -10,8 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,16 +18,9 @@ import java.util.Map;
 public class ExcelToBeansUtils {
     @SneakyThrows
     public Workbook getClassPathWorkbook(String classPathExcelName) {
-        @Cleanup val is = getClassPathInputStream(classPathExcelName);
+        @Cleanup val is = Classpath.loadRes(classPathExcelName);
         return WorkbookFactory.create(is);
     }
-
-    @SneakyThrows
-    public InputStream getClassPathInputStream(String classPathExcelName) {
-        val classLoader = ExcelToBeansUtils.class.getClassLoader();
-        return classLoader.getResourceAsStream(classPathExcelName);
-    }
-
 
     @SneakyThrows
     public byte[] getWorkbookBytes(Workbook workbook) {
@@ -126,37 +117,5 @@ public class ExcelToBeansUtils {
         if (StringUtils.isNotEmpty(author)) comment.setAuthor(author);
 
         cell.setCellComment(comment);
-    }
-
-    public boolean isNumeric(String strNum) {
-        return strNum.matches("-?\\d+(\\.\\d+)?");
-    }
-
-    /**
-     * 获取字段取值（null时，转换为长度为空字符串）。
-     *
-     * @param field JavaBean反射字段。
-     * @param bean  字段所在的JavaBean。
-     * @return 字段取值。
-     */
-    @SneakyThrows
-    public static Object invokeField(Field field, Object bean) {
-        Fields.setAccessible(field);
-        val fieldValue = field.get(bean);
-
-        return fieldValue == null ? "" : fieldValue;
-    }
-
-    /**
-     * 获取原始字段取值。
-     *
-     * @param field JavaBean反射字段。
-     * @param bean  字段所在的JavaBean。
-     * @return 字段取值。
-     */
-    @SneakyThrows
-    public static Object invokeRawField(Field field, Object bean) {
-        Fields.setAccessible(field);
-        return field.get(bean);
     }
 }

@@ -39,4 +39,16 @@ public @interface ExcelCell {
      * @return 最大字符数
      */
     int maxLineLen() default 0;
+
+
+    /**
+     * 模板单元格定义。
+     * 注意：模板单元请在最上面的独立行中进行定义。EXCEL生成完毕后，会删除模板单元格所在行。
+     * 例如 {"PASS:F10", "FAIL:F11"}
+     * private String score;        // 得分
+     * private String scoreTmpl;    // 得分套用模板名称，传PASS/FAIL
+     *
+     * @return 模板单元格定义。
+     */
+    String[] templateCells() default {};
 }

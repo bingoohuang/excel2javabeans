@@ -46,7 +46,7 @@ public class BeansToExcelOnTemplateTest {
         ;
 
         builder
-                .item(Item.builder().category("核心素质").quality("使命认同").dimension("文化价值观匹配").score("6.8").remark("工作场景偏好").build())
+                .item(Item.builder().category("核心素质").quality("使命认同").dimension("文化价值观匹配").score("6.8").scoreTmpl("FAIL").remark("工作场景偏好").build())
                 .item(Item.builder().category("基本素质").quality("心理健康").dimension("焦虑不安,抑郁消沉,偏执多疑,冷漠孤僻,特立独行,冲动暴躁,喜怒无常,社交回避,僵化固执,依赖顺从,夸张做作,狂妄自恋").score("无高风险").remark("").build())
 
         ;
