@@ -195,6 +195,38 @@ request.onload = function(e) {
 }
 request.send(JSON.stringify({firstBlood:false,export:true}));
 ```
+## Ajax js
+```javascript
+export const downloadBlobFile = (response) => {
+  const blob = new Blob([response.data], {type: response.data.type})
+  const contentDisposition = response.headers['content-disposition']
+  let fileName = 'unknown'
+  if (contentDisposition) {
+    const fileNameMatch = contentDisposition.match(/filename="(.+)"/)
+    if (fileNameMatch.length === 2) {
+      fileName = decodeURIComponent(fileNameMatch[1])
+    }
+  }
+
+  if (window.navigator.msSaveOrOpenBlob) {
+    navigator.msSaveBlob(blob, fileName)
+  } else {
+    const link = document.createElement('a')
+    link.href = window.URL.createObjectURL(blob)
+    link.download = fileName
+    link.click()
+    window.URL.revokeObjectURL(link.href)
+  }
+}
+
+import {downloadBlobFile} from 'utils'
+this.$http.post('/BasicParametersController/exportPositions/', {}, {
+  responseType: 'blob'
+}).then((response) => {
+  downloadBlobFile(response)
+})
+
+```
 
 # gpg
 ```bash
