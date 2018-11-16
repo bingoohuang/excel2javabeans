@@ -2,7 +2,6 @@ package com.github.bingoohuang;
 
 import com.github.bingoohuang.beans2excel.CepingRecord;
 import com.github.bingoohuang.excel2beans.BeansToExcelOnTitle;
-import com.github.bingoohuang.excel2beans.ExcelToBeansUtils;
 import com.github.bingoohuang.excel2beans.PoiUtil;
 import com.google.common.collect.Lists;
 import lombok.Cleanup;
@@ -17,7 +16,7 @@ public class BeansToExcelOnTitleTest {
     @Test @SneakyThrows
     public void test1() {
         List<CepingRecord> records = Lists.newArrayList();
-        @Cleanup val wb = ExcelToBeansUtils.getClassPathWorkbook("ceping.xlsx");
+        @Cleanup val wb = PoiUtil.getClassPathWorkbook("ceping.xlsx");
         val beansToExcel = new BeansToExcelOnTitle(wb.getSheet("批量导出"));
 
         records.add(CepingRecord.builder()

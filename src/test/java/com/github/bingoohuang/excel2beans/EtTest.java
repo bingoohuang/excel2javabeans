@@ -13,7 +13,7 @@ import static com.google.common.truth.Truth.assertThat;
 public class EtTest {
     @Test @SneakyThrows
     public void member() {
-        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("et.xlsx");
+        @Cleanup val workbook = PoiUtil.getClassPathWorkbook("et.xlsx");
         val excelToBeans = new ExcelToBeans(workbook);
         val etMembers = excelToBeans.convert(EtMember.class);
         val member1 = EtMember.builder().memberName("黄同学").teachers("林老师")

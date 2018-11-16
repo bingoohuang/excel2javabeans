@@ -2,7 +2,6 @@ package com.github.bingoohuang.beans2excel;
 
 import com.github.bingoohuang.beans2excel.CepingResult.ItemComment;
 import com.github.bingoohuang.excel2beans.BeansToExcelOnTemplate;
-import com.github.bingoohuang.excel2beans.ExcelToBeansUtils;
 import com.github.bingoohuang.excel2beans.PoiUtil;
 import com.github.bingoohuang.utils.lang.Collects;
 import lombok.Cleanup;
@@ -101,7 +100,7 @@ public class BeansToExcelOnTemplateTest {
 
     @SneakyThrows
     private void export(CepingResult.CepingResultBuilder builder) {
-        @Cleanup val wb = ExcelToBeansUtils.getClassPathWorkbook("ceping.xlsx");
+        @Cleanup val wb = PoiUtil.getClassPathWorkbook("ceping.xlsx");
         val bean = builder.build();
 
         val templateName = Collects.isEmpty(bean.getItemComments())

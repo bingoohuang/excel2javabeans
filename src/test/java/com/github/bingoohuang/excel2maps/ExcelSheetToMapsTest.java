@@ -1,11 +1,11 @@
 package com.github.bingoohuang.excel2maps;
 
+import com.github.bingoohuang.excel2beans.PoiUtil;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.Test;
 
-import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathWorkbook;
 import static com.google.common.collect.ImmutableMap.of;
 import static com.google.common.truth.Truth.assertThat;
 
@@ -14,7 +14,7 @@ public class ExcelSheetToMapsTest {
         val excel2MapsConfig = new ExcelToMapsConfig();
         excel2MapsConfig.add(new ColumnDef("会员姓名", "memberName", "示例-*"));
         excel2MapsConfig.add(new ColumnDef("SEX", "sex"));
-        val workbook = getClassPathWorkbook("member.xlsx");
+        val workbook = PoiUtil.getClassPathWorkbook("member.xlsx");
         @Cleanup val excel2Maps = new ExcelToMaps(workbook);
 
         val maps = excel2Maps.convert(excel2MapsConfig, 0);

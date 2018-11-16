@@ -5,7 +5,7 @@ import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathWorkbook;
+import static com.github.bingoohuang.excel2beans.PoiUtil.getClassPathWorkbook;
 import static com.google.common.truth.Truth.assertThat;
 
 @SuppressWarnings("unchecked")

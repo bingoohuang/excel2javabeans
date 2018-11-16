@@ -1,7 +1,6 @@
 package com.github.bingoohuang.beans2excel;
 
 import com.github.bingoohuang.excel2beans.BeansToExcel;
-import com.github.bingoohuang.excel2beans.ExcelToBeansUtils;
 import com.github.bingoohuang.excel2beans.PoiUtil;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColStyle;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
@@ -76,7 +75,7 @@ public class SimpleTest {
 
     @Test @SneakyThrows
     public void testTemplate() {
-        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("template.xlsx");
+        @Cleanup val workbook = PoiUtil.getClassPathWorkbook("template.xlsx");
         val beansToExcel = new BeansToExcel(workbook);
         String name = "test-workbook-templ.xlsx";
 

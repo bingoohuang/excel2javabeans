@@ -1,7 +1,6 @@
 package com.github.bingoohuang.beans2excel;
 
 import com.github.bingoohuang.excel2beans.BeansToExcel;
-import com.github.bingoohuang.excel2beans.ExcelToBeansUtils;
 import com.github.bingoohuang.excel2beans.PoiUtil;
 import com.github.bingoohuang.excel2beans.annotations.ExcelColTitle;
 import com.google.common.collect.Lists;
@@ -17,7 +16,7 @@ import java.util.List;
 public class AssignmentTest {
     @Test
     public void test() {
-        val templateWorkbook = ExcelToBeansUtils.getClassPathWorkbook("assignment.xlsx");
+        val templateWorkbook = PoiUtil.getClassPathWorkbook("assignment.xlsx");
         val beansToExcel = new BeansToExcel(templateWorkbook);
         val name = "test-assignment.xlsx";
 

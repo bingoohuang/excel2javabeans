@@ -1,6 +1,7 @@
 package com.github.bingoohuang.instantiator;
 
 import lombok.Data;
+import lombok.val;
 import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -23,15 +24,15 @@ public class BeanInstantiatorFactoryTest {
 
     @Test
     public void test1() {
-        BeanInstantiator<NullaryConstructorBean> instantiator = BeanInstantiatorFactory.newBeanInstantiator(NullaryConstructorBean.class);
-        NullaryConstructorBean bean = instantiator.newInstance();
+        val instantiator = BeanInstantiatorFactory.newBeanInstantiator(NullaryConstructorBean.class);
+        val bean = instantiator.newInstance();
         assertThat(bean.getName()).isEqualTo("bingoo");
     }
 
     @Test
     public void test2() {
-        BeanInstantiator<NonNullaryConstructorBean> instantiator = BeanInstantiatorFactory.newBeanInstantiator(NonNullaryConstructorBean.class);
-        NonNullaryConstructorBean bean = instantiator.newInstance();
+        val instantiator = BeanInstantiatorFactory.newBeanInstantiator(NonNullaryConstructorBean.class);
+        val bean = instantiator.newInstance();
         assertThat(bean.getName()).isNull();
     }
 }

@@ -8,13 +8,12 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathWorkbook;
 import static com.google.common.truth.Truth.assertThat;
 
 @SuppressWarnings("unchecked")
 public class SimpleBeanTest {
     @Test @SneakyThrows public void test() {
-        val workbook = getClassPathWorkbook("simplebeans.xlsx");
+        val workbook = PoiUtil.getClassPathWorkbook("simplebeans.xlsx");
 
         val excelToBeans = new ExcelSheetToBeans(workbook, SimpleBean.class);
         List<SimpleBean> beans = excelToBeans.convert();
@@ -25,7 +24,7 @@ public class SimpleBeanTest {
     }
 
     @Test @SneakyThrows public void testWithBlanklines() {
-        val workbook = getClassPathWorkbook("simplebeans-blanklines.xlsx");
+        val workbook = PoiUtil.getClassPathWorkbook("simplebeans-blanklines.xlsx");
 
         val excelToBeans = new ExcelSheetToBeans(workbook, SimpleBean.class);
         List<SimpleBean> beans = excelToBeans.convert();

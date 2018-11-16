@@ -1,33 +1,17 @@
 package com.github.bingoohuang.excel2beans;
 
-import com.github.bingoohuang.utils.lang.Classpath;
-import lombok.Cleanup;
-import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import lombok.val;
 import lombok.var;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 
-import java.io.ByteArrayOutputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 @UtilityClass
 public class ExcelToBeansUtils {
-    @SneakyThrows
-    public Workbook getClassPathWorkbook(String classPathExcelName) {
-        @Cleanup val is = Classpath.loadRes(classPathExcelName);
-        return WorkbookFactory.create(is);
-    }
-
-    @SneakyThrows
-    public byte[] getWorkbookBytes(Workbook workbook) {
-        @Cleanup val bout = new ByteArrayOutputStream();
-        workbook.write(bout);
-        return bout.toByteArray();
-    }
 
     public void writeRedComments(Workbook workbook, Collection<CellData> cellDatas) {
         writeRedComments(workbook, cellDatas, 3, 5);

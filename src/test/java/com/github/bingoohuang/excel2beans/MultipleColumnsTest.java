@@ -27,7 +27,7 @@ import static com.google.common.truth.Truth.assertThat;
 public class MultipleColumnsTest {
     @SneakyThrows
     @Test public void testAf() {
-        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("af-tvplays.xlsx");
+        @Cleanup val workbook = PoiUtil.getClassPathWorkbook("af-tvplays.xlsx");
         val excelToBeans = new ExcelToBeans(workbook);
         val beans = excelToBeans.convert(AfTvPlayBean.class);
         assertThat(beans).hasSize(2);
@@ -56,7 +56,7 @@ public class MultipleColumnsTest {
 
     @SneakyThrows
     @Test public void testAfAttach() {
-        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("af-tvplays.xlsx");
+        @Cleanup val workbook = PoiUtil.getClassPathWorkbook("af-tvplays.xlsx");
         val excelToBeans = new ExcelToBeans(workbook);
         val beans = excelToBeans.convert(AfTvPlayBeanAttach.class);
         assertThat(beans).hasSize(2);
@@ -121,7 +121,7 @@ public class MultipleColumnsTest {
         PoiUtil.writeExcel(excelToBeans.getWorkbook(), "af.xlsx");
         new File("af.xlsx").delete();
 
-        byte[] workbookBytes = ExcelToBeansUtils.getWorkbookBytes(excelToBeans.getWorkbook());
+        byte[] workbookBytes = PoiUtil.getWorkbookBytes(excelToBeans.getWorkbook());
 
         Jedis jedis = new Jedis();
         String userId = "12345";
@@ -166,7 +166,7 @@ public class MultipleColumnsTest {
 
     @SneakyThrows
     @Test public void test() {
-        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("listColumns.xlsx");
+        @Cleanup val workbook = PoiUtil.getClassPathWorkbook("listColumns.xlsx");
         val excelToBeans = new ExcelToBeans(workbook);
         val beans = excelToBeans.convert(MultipleColumnsBeanWithTitle.class);
         assertThat(beans).hasSize(4);

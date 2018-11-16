@@ -36,7 +36,7 @@ public class ImageTest {
 
     @Test @SneakyThrows
     public void testImageList() {
-        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("multi-images.xlsx");
+        @Cleanup val workbook = PoiUtil.getClassPathWorkbook("multi-images.xlsx");
         val excelToBeans = new ExcelToBeans(workbook);
         val beans = excelToBeans.convert(ImageListBean.class);
         assertThat(beans.size()).isEqualTo(3);
@@ -63,25 +63,25 @@ public class ImageTest {
 
     @Test @SneakyThrows
     public void testXls() {
-        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("images.xls");
+        @Cleanup val workbook = PoiUtil.getClassPathWorkbook("images.xls");
         testImage(workbook);
     }
 
     @Test @SneakyThrows
     public void testXlsx() {
-        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("images.xlsx");
+        @Cleanup val workbook = PoiUtil.getClassPathWorkbook("images.xlsx");
         testImage(workbook);
     }
 
     @Test @SneakyThrows
     public void testCenterXls() {
-        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("center-images.xls");
+        @Cleanup val workbook = PoiUtil.getClassPathWorkbook("center-images.xls");
         testImage(workbook);
     }
 
     @Test @SneakyThrows
     public void testCenterXlsx() {
-        @Cleanup val workbook = ExcelToBeansUtils.getClassPathWorkbook("center-images.xlsx");
+        @Cleanup val workbook = PoiUtil.getClassPathWorkbook("center-images.xlsx");
         testImage(workbook);
     }
 

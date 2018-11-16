@@ -1,6 +1,7 @@
 package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
+import com.github.bingoohuang.utils.lang.Classpath;
 import com.google.common.collect.Lists;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
@@ -12,6 +13,7 @@ import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.util.List;
 
@@ -288,5 +290,18 @@ public class PoiUtil {
         }
 
         return null;
+    }
+
+    @SneakyThrows
+    public static Workbook getClassPathWorkbook(String classPathExcelName) {
+        @Cleanup val is = Classpath.loadRes(classPathExcelName);
+        return WorkbookFactory.create(is);
+    }
+
+    @SneakyThrows
+    public static byte[] getWorkbookBytes(Workbook workbook) {
+        @Cleanup val bout = new ByteArrayOutputStream();
+        workbook.write(bout);
+        return bout.toByteArray();
     }
 }

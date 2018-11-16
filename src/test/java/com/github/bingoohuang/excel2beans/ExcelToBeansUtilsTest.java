@@ -5,13 +5,12 @@ import lombok.SneakyThrows;
 import lombok.val;
 import org.junit.Test;
 
-import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathWorkbook;
 import static com.google.common.truth.Truth.assertThat;
 
 public class ExcelToBeansUtilsTest {
     @Test @SneakyThrows
     public void test() {
-        @Cleanup val wb = getClassPathWorkbook("af-comments.xlsx");
+        @Cleanup val wb = PoiUtil.getClassPathWorkbook("af-comments.xlsx");
         ExcelToBeansUtils.removeAllComments(wb);
 
 //        ExcelToBeansUtils.writeExcel(workbook, "af-without-comments.xlsx");
@@ -28,8 +27,8 @@ public class ExcelToBeansUtilsTest {
 
     @Test @SneakyThrows
     public void getWorkbookBytes() {
-        @Cleanup val wb = getClassPathWorkbook("af-comments.xlsx");
-        byte[] bytes = ExcelToBeansUtils.getWorkbookBytes(wb);
+        @Cleanup val wb = PoiUtil.getClassPathWorkbook("af-comments.xlsx");
+        byte[] bytes = PoiUtil.getWorkbookBytes(wb);
         assertThat(bytes).isNotEmpty();
     }
 }

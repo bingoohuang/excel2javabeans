@@ -10,12 +10,10 @@ import org.junit.Test;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathWorkbook;
-
 public class ImportMemberExcelRowTest {
     @Test @SneakyThrows
     public void test() {
-        @Cleanup val workbook = getClassPathWorkbook("amita.xlsx");
+        @Cleanup val workbook = PoiUtil.getClassPathWorkbook("amita.xlsx");
         val excelToBeans = new ExcelToBeans(workbook);
         excelToBeans.convert(ImportMemberExcelRow.class);
 

@@ -6,13 +6,12 @@ import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
-import static com.github.bingoohuang.excel2beans.ExcelToBeansUtils.getClassPathWorkbook;
 import static com.google.common.truth.Truth.assertThat;
 
 public class MemberImportBeanTest {
     @SneakyThrows
     @Test public void testWithoutBlankHeadRowsAndCols() {
-        @Cleanup val workbook = getClassPathWorkbook("member.xlsx");
+        @Cleanup val workbook = PoiUtil.getClassPathWorkbook("member.xlsx");
         val excelToBeans = new ExcelToBeans(workbook);
         val beans = excelToBeans.convert(MemberImportBean.class);
         assertThat(beans).hasSize(4);
