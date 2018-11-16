@@ -141,6 +141,46 @@ public class ImportMembersController {
 }
 ```
 
+# BeansToExcelOnTemplate
+![image](https://user-images.githubusercontent.com/1940588/48628405-003aa180-e9f2-11e8-83d7-429df9157a38.png)
+
+
+```java
+@Data @Builder
+public class CepingResult {
+    @ExcelCell(sheetName = true)
+    private String sheetName;       // 表单名称
+
+    @ExcelCell(value = "A2", replace = "XX")
+    private String interviewCode;   // 面试编号
+
+    @ExcelCell
+    private String name;           // 身份证姓名
+    @ExcelCell
+    private String gender;         // 性别
+    @ExcelCell
+    private String age;            // 年龄
+
+    @ExcelCell("B4")
+    private String position;       // 应聘职位
+    @ExcelCell("E4")
+    private String level;          // 推荐职级
+    @ExcelCell("G4")
+    private String annualSalary;   // 期望年薪
+
+    @ExcelCell("C5")
+    private double matchScore;     // 岗位匹配度
+    @ExcelCell(value = "C6", maxLineLen = 40)
+    private String matchComment;   // 岗位匹配度评语
+}
+
+@Cleanup val wb = ExcelToBeansUtils.getClassPathWorkbook("template.xlsx");
+val beansToExcel = new BeansToExcelOnTemplate(wb.getSheet("templateName"));
+
+@Cleanup val newWb = beansToExcel.create(bean);
+PoiUtil.protectWorkbook(newWb, "123456");
+PoiUtil.writeExcel(newWb, "exported.xlsx");
+```
 
 # Sonarqube
 ```bash
