@@ -1,6 +1,7 @@
 package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.excel2beans.annotations.*;
+import com.github.bingoohuang.utils.lang.Mapp;
 import com.github.bingoohuang.utils.lang.Str;
 import com.github.bingoohuang.utils.reflect.Fields;
 import com.github.bingoohuang.utils.type.Generic;
@@ -24,7 +25,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor @Slf4j
 public class BeansToExcelOnTemplate {
-    private final Sheet sheet;         // 模板表单
+    private final Sheet sheet;   // 模板表单
     private Sheet optionsSheet;  // 选项表单
     private final Map<Integer, Integer> rowHeightRatioMap = Maps.newHashMap();   // RowIndex -> RowHeight ratio
 
@@ -47,6 +48,9 @@ public class BeansToExcelOnTemplate {
         return sheet.getWorkbook();
     }
 
+    /**
+     * 修正行高。
+     */
     private void fixRowsHeight() {
         for (int i = sheet.getFirstRowNum(), ii = sheet.getLastRowNum(); i <= ii; ++i) {
             val maxRows = rowHeightRatioMap.getOrDefault(i, 1);
@@ -296,12 +300,10 @@ public class BeansToExcelOnTemplate {
     }
 
     private Cell getOrCreateCell(Row tmplRow, int cellCol, int rowOffset, Row row) {
-        if (rowOffset == 0) { // 偏移量为0，说明当前在模板行上，尝试直接获取单元格
-            return row.getCell(cellCol);
-        }
+        // 偏移量为0，说明当前在模板行上，尝试直接获取单元格
+        if (rowOffset == 0) return row.getCell(cellCol);
 
         val cell = row.createCell(cellCol);
-
         // 从对应列的模板单元格套取样式
         val tmplRowCell = tmplRow.getCell(cellCol);
         if (tmplRowCell != null) cell.setCellStyle(tmplRowCell.getCellStyle());
@@ -371,7 +373,12 @@ public class BeansToExcelOnTemplate {
 
             PoiUtil.fixChartSheetNameRef(sheet, oldSheetName, newSheetName);
         } else {
-            val cell = PoiUtil.findCell(sheet, ann.value());
+            val cell = PoiUtil.findCell(sheet, ann.value(), StringUtils.defaultIfEmpty(ann.searchKey(), "{" + field.getName() + "}"));
+            if (cell == null) {
+                log.warn("unable to find cell for {} in field {}", ann, field);
+                return;
+            }
+
             if (StringUtils.isNotEmpty(ann.replace())) { // 有内容需要替换
                 val old = PoiUtil.getCellStringValue(cell);
                 fv = old.replace(ann.replace(), Str.nullThen(fv, ""));
@@ -390,19 +397,12 @@ public class BeansToExcelOnTemplate {
         val templateCells = excelCell.templateCells();
         if (templateCells.length == 0) return;
 
-        Map<String, String> templateCellMap = Maps.newHashMap();
-        for (val templateCell : templateCells) {
-            val split = templateCell.split(":");
-            templateCellMap.put(split[0], split[1]);
-        }
+        val templateCellMap = Mapp.createMap(":", templateCells);
 
         String tmplName = Reflect.on(bean).get(field.getName() + "Tmpl");
-        String tmplCellReference = templateCellMap.get(tmplName);
-        if (tmplCellReference == null) tmplCellReference = templateCellMap.get("DEFAULT");
-        if (tmplCellReference == null) return;
+        val tmplCellReference = Mapp.firstNonNull(templateCellMap, tmplName, "DEFAULT");
 
         val tmplCell = PoiUtil.findCell(optionsSheet, tmplCellReference);
         cell.setCellStyle(tmplCell.getCellStyle());
     }
-
 }

@@ -48,6 +48,7 @@ public class ExcelBeanFieldParser {
         return titledFields;
     }
 
+    @SuppressWarnings("unchecked")
     private void processField(Field field, List<ExcelBeanField> fields, ReflectAsmCache reflectAsmCache) {
         if (Fields.shouldIgnored(field, ExcelColIgnore.class)) return;
 

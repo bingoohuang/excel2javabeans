@@ -246,4 +246,47 @@ public class PoiUtil {
             return null;
         }
     }
+
+    /**
+     * 查找单元格。
+     *
+     * @param sheet         表单
+     * @param cellReference 单元格索引
+     * @param searchKey     单元格中包含的关键字
+     * @return 单元格，没有找到时返回null
+     */
+    public static Cell findCell(Sheet sheet, String cellReference, String searchKey) {
+        if (StringUtils.isNotEmpty(cellReference)) {
+            return findCell(sheet, cellReference);
+        }
+
+
+        return searchCell(sheet, searchKey);
+    }
+
+    /**
+     * 查找单元格。
+     *
+     * @param sheet     表单
+     * @param searchKey 单元格中包含的关键字
+     * @return 单元格，没有找到时返回null
+     */
+    public static Cell searchCell(Sheet sheet, String searchKey) {
+        if (StringUtils.isEmpty(searchKey)) return null;
+
+        for (int i = sheet.getFirstRowNum(), ii = sheet.getLastRowNum(); i < ii; ++i) {
+            val row = sheet.getRow(i);
+            if (row == null) continue;
+
+            for (int j = row.getFirstCellNum(), jj = row.getLastCellNum(); j < jj; ++j) {
+                val cell = row.getCell(j);
+                if (cell == null) continue;
+
+                val value = getCellStringValue(cell);
+                if (StringUtils.contains(value, searchKey)) return cell;
+            }
+        }
+
+        return null;
+    }
 }

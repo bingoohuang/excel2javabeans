@@ -16,6 +16,12 @@ public @interface ExcelCell {
      */
     String value() default "";
 
+    /**
+     * 单元格中内容所包含的关键字，用于定位单元格。
+     *
+     * @return 单元格中内容所包含的关键字
+     */
+    String searchKey() default "";
 
     /**
      * 替换单元格中取值的指定内容。例如把XX替换成真实取值。

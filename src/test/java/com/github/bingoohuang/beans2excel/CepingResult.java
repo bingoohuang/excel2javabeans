@@ -15,11 +15,11 @@ public class CepingResult {
     @ExcelCell(value = "A2", replace = "XX")
     private String interviewCode;   // 面试编号
 
-    @ExcelCell("B3")
+    @ExcelCell
     private String name;           // 身份证姓名
-    @ExcelCell("E3")
+    @ExcelCell
     private String gender;         // 性别
-    @ExcelCell("G3")
+    @ExcelCell
     private String age;            // 年龄
 
     @ExcelCell("B4")
