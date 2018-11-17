@@ -1,6 +1,5 @@
-package com.github.bingoohuang;
+package com.github.bingoohuang.beans2excel;
 
-import com.github.bingoohuang.beans2excel.CepingRecord;
 import com.github.bingoohuang.excel2beans.BeansToExcelOnTitle;
 import com.github.bingoohuang.excel2beans.PoiUtil;
 import com.google.common.collect.Lists;
