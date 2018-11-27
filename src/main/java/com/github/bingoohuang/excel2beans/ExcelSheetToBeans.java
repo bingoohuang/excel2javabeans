@@ -135,7 +135,7 @@ public class ExcelSheetToBeans<T> {
     }
 
     private boolean findColumn(Row row, ExcelBeanField beanField) {
-        for (int k = row.getFirstCellNum(), kk = row.getLastCellNum(); k <= kk; ++k) {
+        for (int k = row.getFirstCellNum(), kk = row.getLastCellNum(); k < kk; ++k) {
             val cell = row.getCell(k);
             if (cell == null) continue;
 

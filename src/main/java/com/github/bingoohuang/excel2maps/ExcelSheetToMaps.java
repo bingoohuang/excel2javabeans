@@ -103,7 +103,7 @@ public class ExcelSheetToMaps {
     }
 
     private boolean findColumn(Row row, ColumnDef columnDef) {
-        for (int k = row.getFirstCellNum(), kk = row.getLastCellNum(); k <= kk; ++k) {
+        for (int k = row.getFirstCellNum(), kk = row.getLastCellNum(); k < kk; ++k) {
             val cell = row.getCell(k);
             if (cell == null) continue;
 

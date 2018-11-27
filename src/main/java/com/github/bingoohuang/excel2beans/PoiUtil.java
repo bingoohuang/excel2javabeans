@@ -17,6 +17,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.util.List;
 
+import static com.github.bingoohuang.utils.codec.Bytes.toByteArray;
+import static org.apache.commons.lang3.StringUtils.endsWithIgnoreCase;
+
 @Slf4j
 public class PoiUtil {
     /**
@@ -79,6 +82,26 @@ public class PoiUtil {
      */
     public static boolean isFullCellReference(String cellReference) {
         return cellReference.matches("\\w+\\d+");
+    }
+
+    /**
+     * 是否是列索引。例如A是列索引。
+     *
+     * @param cellReference EXCEL中的单元格索引。
+     * @return true时是列索引。
+     */
+    public static boolean isColReference(String cellReference) {
+        return cellReference.matches("\\w+");
+    }
+
+    /**
+     * 是否是行索引。例如5是列索引。
+     *
+     * @param cellReference EXCEL中的单元格索引。
+     * @return true时是行索引。
+     */
+    public static boolean isRowReference(String cellReference) {
+        return cellReference.matches("\\d+");
     }
 
     /**
@@ -258,12 +281,57 @@ public class PoiUtil {
      * @return 单元格，没有找到时返回null
      */
     public static Cell findCell(Sheet sheet, String cellReference, String searchKey) {
-        if (StringUtils.isNotEmpty(cellReference)) {
+        if (isFullCellReference(cellReference)) {
             return findCell(sheet, cellReference);
         }
 
+        if (isColReference(cellReference)) {
+            val cellRef = new CellReference(cellReference + "1");
+            return searchColCell(sheet, cellRef.getCol(), searchKey);
+        }
+
+        if (isRowReference(cellReference)) {
+            val cellRef = new CellReference("A" + cellReference);
+            return searchRowCell(sheet, cellRef.getRow(), searchKey);
+        }
 
         return searchCell(sheet, searchKey);
+    }
+
+    /**
+     * 查找单元格。
+     *
+     * @param sheet     表单
+     * @param colIndex  列索引
+     * @param searchKey 单元格中包含的关键字
+     * @return 单元格，没有找到时返回null
+     */
+    public static Cell searchColCell(Sheet sheet, short colIndex, String searchKey) {
+        if (StringUtils.isEmpty(searchKey)) return null;
+
+        for (int i = sheet.getFirstRowNum(), ii = sheet.getLastRowNum(); i < ii; ++i) {
+            val row = sheet.getRow(i);
+            if (row == null) continue;
+
+            val cell = matchCell(row, colIndex, searchKey);
+            if (cell != null) return cell;
+        }
+
+        return null;
+    }
+
+    /**
+     * 查找单元格。
+     *
+     * @param sheet     表单
+     * @param rowIndex  行索引
+     * @param searchKey 单元格中包含的关键字
+     * @return 单元格，没有找到时返回null
+     */
+    public static Cell searchRowCell(Sheet sheet, int rowIndex, String searchKey) {
+        if (StringUtils.isEmpty(searchKey)) return null;
+
+        return searchRow(sheet.getRow(rowIndex), searchKey);
     }
 
     /**
@@ -277,17 +345,44 @@ public class PoiUtil {
         if (StringUtils.isEmpty(searchKey)) return null;
 
         for (int i = sheet.getFirstRowNum(), ii = sheet.getLastRowNum(); i < ii; ++i) {
-            val row = sheet.getRow(i);
-            if (row == null) continue;
-
-            for (int j = row.getFirstCellNum(), jj = row.getLastCellNum(); j < jj; ++j) {
-                val cell = row.getCell(j);
-                if (cell == null) continue;
-
-                val value = getCellStringValue(cell);
-                if (StringUtils.contains(value, searchKey)) return cell;
-            }
+            Cell cell = searchRow(sheet.getRow(i), searchKey);
+            if (cell != null) return cell;
         }
+
+        return null;
+    }
+
+    /**
+     * 在行中查找。
+     *
+     * @param row       行
+     * @param searchKey 单元格中包含的关键字
+     * @return 单元格，没有找到时返回null
+     */
+    public static Cell searchRow(Row row, String searchKey) {
+        if (row == null) return null;
+
+        for (int j = row.getFirstCellNum(), jj = row.getLastCellNum(); j < jj; ++j) {
+            Cell cell = matchCell(row, j, searchKey);
+            if (cell != null) return cell;
+        }
+        return null;
+    }
+
+    /**
+     * 匹配单元格
+     *
+     * @param row       行
+     * @param colIndex  列索引
+     * @param searchKey 单元格中包含的关键字
+     * @return 单元格，没有找到时返回null
+     */
+    public static Cell matchCell(Row row, int colIndex, String searchKey) {
+        val cell = row.getCell(colIndex);
+        if (cell == null) return null;
+
+        val value = getCellStringValue(cell);
+        if (StringUtils.contains(value, searchKey)) return cell;
 
         return null;
     }
@@ -303,5 +398,66 @@ public class PoiUtil {
         @Cleanup val bout = new ByteArrayOutputStream();
         workbook.write(bout);
         return bout.toByteArray();
+    }
+
+    /**
+     * 增加一张图片。
+     *
+     * @param sheet               表单
+     * @param cpImageName         类路径中的图片文件名称
+     * @param anchorCellReference 图片锚定单元格索引
+     */
+    @SneakyThrows
+    public static void addImage(Sheet sheet, String cpImageName, String anchorCellReference) {
+        // add a picture shape
+        val anchor = sheet.getWorkbook().getCreationHelper().createClientAnchor();
+        anchor.setAnchorType(ClientAnchor.AnchorType.DONT_MOVE_AND_RESIZE);
+        // subsequent call of Picture#resize() will operate relative to it
+        val cr = new CellReference(anchorCellReference);
+        anchor.setCol1(cr.getCol());
+        anchor.setRow1(cr.getRow());
+
+        // Create the drawing patriarch.  This is the top level container for all shapes.
+        @Cleanup val p = Classpath.loadRes(cpImageName);
+
+        val picIndex = sheet.getWorkbook().addPicture(toByteArray(p), getPictureType(cpImageName));
+        val pic = sheet.createDrawingPatriarch().createPicture(anchor, picIndex);
+        // auto-size picture relative to its top-left corner
+        pic.resize();
+    }
+
+    private static int getPictureType(String classpathImageName) {
+        if (endsWithIgnoreCase(classpathImageName, "png")) return Workbook.PICTURE_TYPE_PNG;
+        if (endsWithIgnoreCase(classpathImageName, "jpg")) return Workbook.PICTURE_TYPE_JPEG;
+        if (endsWithIgnoreCase(classpathImageName, "jpeg")) return Workbook.PICTURE_TYPE_JPEG;
+
+        throw new RuntimeException("unknown format for image file " + classpathImageName);
+    }
+
+    /**
+     * 查找有值得最大列索引。
+     *
+     * @param sheet 表单
+     * @return 最大列索引
+     */
+    public static int findMaxCol(Sheet sheet) {
+        int maxCol = 0;
+        for (int i = 0, ii = sheet.getLastRowNum(); i <= ii; ++i) {
+            val row = sheet.getRow(i);
+            if (row == null) continue;
+
+            for (int j = row.getLastCellNum() - 1; j > maxCol; --j) {
+                val cell = row.getCell(j);
+                if (cell == null) continue;
+
+                val value = getCellStringValue(cell);
+                if (StringUtils.isNotEmpty(value)) {
+                    maxCol = j;
+                    break;
+                }
+            }
+        }
+
+        return maxCol;
     }
 }

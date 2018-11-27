@@ -93,7 +93,8 @@ public class BeansToExcelOnTitle {
 
         val row = sheet.createRow(templateRowNum + offset);
         for (int j = titleRow.getFirstCellNum(), jj = titleRow.getLastCellNum(); j < jj; ++j) {
-            final Cell cell = row.createCell(j);
+            val cell = row.createCell(j);
+
             cell.setCellStyle(tmplRow.getCell(j).getCellStyle());
         }
 

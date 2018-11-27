@@ -45,7 +45,10 @@ public class BeansToExcelOnTemplate {
         fixRowsHeight();
         PoiUtil.removeOtherSheets(sheet);
 
-        return sheet.getWorkbook();
+
+        val wb = sheet.getWorkbook();
+        wb.setPrintArea(0, 0, PoiUtil.findMaxCol(sheet), 0, sheet.getLastRowNum());
+        return wb;
     }
 
     /**

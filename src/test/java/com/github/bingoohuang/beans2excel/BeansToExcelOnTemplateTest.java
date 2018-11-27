@@ -106,13 +106,10 @@ public class BeansToExcelOnTemplateTest {
         val templateName = Collects.isEmpty(bean.getItemComments())
                 ? StringUtils.isEmpty(bean.getMatchComment()) ? "无总评语-模板" : "无评语-模板" : "有评语-模板";
 
-        System.out.println(templateName);
+        @Cleanup val newWb = new BeansToExcelOnTemplate(wb.getSheet(templateName)).create(bean);
 
-        val beansToExcel = new BeansToExcelOnTemplate(wb.getSheet(templateName));
-
-        @Cleanup val newWb = beansToExcel.create(bean);
+        PoiUtil.addImage(newWb.getSheetAt(0), "p.png", "G5");
         PoiUtil.protectWorkbook(newWb, "123456");
-
         PoiUtil.writeExcel(newWb, templateName + "-" + bean.getName() + ".xlsx");
     }
 }
