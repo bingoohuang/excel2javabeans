@@ -14,6 +14,7 @@ import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.util.List;
 
@@ -166,9 +167,13 @@ public class PoiUtil {
     }
 
     @SneakyThrows
-    public static void writeExcel(Workbook workbook, String name) {
+    public static void writeExcel(Workbook workbook, File name) {
         @Cleanup val fileOut = new FileOutputStream(name);
         workbook.write(fileOut);
+    }
+
+    public static void writeExcel(Workbook workbook, String name) {
+        writeExcel(workbook, new File(name));
     }
 
     public static Sheet findSheet(Workbook workbook, Class<?> beanClass) {
