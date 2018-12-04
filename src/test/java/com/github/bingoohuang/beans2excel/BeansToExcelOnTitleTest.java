@@ -20,7 +20,9 @@ public class BeansToExcelOnTitleTest {
                         .source("外部")
                         .detail("积极乐观", "98")
                         .detail("偏执多疑", "8")
-                        .detail("1.测试完成时间", "2018-11-02 11:03:25")
+                        .more("1.测试完成时间", "2018-11-02 11:03:25")
+                        .candidateBasic(CepingRecord.CandidateBasic.builder()
+                                .mobile("12311112222").edu("博士研究生").graduate("2010").build())
                         .build(),
 
                 CepingRecord.builder()
@@ -29,8 +31,9 @@ public class BeansToExcelOnTitleTest {
                         .source("外部")
                         .detail("施展才华", "99")
                         .detail("数学能力", "100")
-                        .detail("空间能力", "200")
-                        .detail("2.测试完成时间", "2018-11-02 11:03:37")
+                        .more("空间能力", "200")
+                        .more("2.测试完成时间", "2018-11-02 11:03:37")
+                        .candidateBasic(null)
                         .build()
         );
 

@@ -52,10 +52,7 @@ public class BeansToExcelOnTitle {
         val titledColMap = parseTitledMap(records);
 
         for (int i = 0, ii = records.size(); i < ii; ++i) {
-            val row = createRow(i);
-            val record = records.get(i);
-
-            writeRecordToRow(record, row, titledColMap);
+            writeRecordToRow(records.get(i), createRow(i), titledColMap);
         }
 
         PoiUtil.removeOtherSheets(sheet);
@@ -63,34 +60,28 @@ public class BeansToExcelOnTitle {
     }
 
     @SuppressWarnings("unchecked")
-    private void writeRecordToRow(Object record, Row row, Map<String, Integer> titledColMap) {
+    private int writeRecordToRow(Object record, Row row, Map<String, Integer> titledColMap) {
+        int count = 0;
         for (val field : record.getClass().getDeclaredFields()) {
             if (Fields.shouldIgnored(field, ExcelColIgnore.class)) continue;
 
-            writeFieldValue(record, row, titledColMap, field);
+            count += writeFieldValue(record, row, titledColMap, field);
         }
+
+        return count;
     }
 
     @SuppressWarnings("unchecked")
-    private void writeFieldValue(Object record, Row row, Map<String, Integer> titledColMap, Field field) {
+    private int writeFieldValue(Object record, Row row, Map<String, Integer> titledColMap, Field field) {
         val colTitle = field.getAnnotation(ExcelColTitle.class);
-        if (colTitle != null && isNotEmpty(colTitle.value())) {
-            val col = titledColMap.get(colTitle.value());
-            if (col == null) {
-                log.warn("@ExcelColTitle({}) for {} does not exists in template excel sheet",
-                        colTitle.value(), field.getName());
-                return;
-            }
+        if (colTitle == null) return 0;
 
-            val fv = Fields.invokeField(field, record);
-            val cell = row.getCell(col);
-            PoiUtil.writeCellValue(cell, fv);
-        } else if (Generic.of(field.getGenericType()).isRawType(Map.class)) {
-            val fv = Fields.invokeField(field, record);
-            if (fv == null) return;
+        val fv = Fields.invokeField(field, record);
+        if (fv == null) return 0;
 
-            val map = (Map<String, String>) fv;
-            for (val entry : map.entrySet()) {
+        if (Generic.of(field.getGenericType()).isRawType(Map.class)) {
+            int count = 0;
+            for (val entry : ((Map<String, String>) fv).entrySet()) {
                 val col = titledColMap.get(entry.getKey());
                 if (col == null) {
                     log.warn("Map key title {} for {} does not exists in template excel sheet",
@@ -98,10 +89,26 @@ public class BeansToExcelOnTitle {
                     continue;
                 }
 
-                val cell = row.getCell(col);
-                PoiUtil.writeCellValue(cell, entry.getValue());
+                PoiUtil.writeCellValue(row.getCell(col), entry.getValue());
+                ++count;
             }
+            return count;
         }
+
+
+        val title = StringUtils.defaultIfEmpty(colTitle.value(), field.getName());
+        val col = titledColMap.get(title);
+        if (col != null) {
+            PoiUtil.writeCellValue(row.getCell(col), fv);
+            return 1;
+        }
+
+        int count = writeRecordToRow(fv, row, titledColMap);
+        if (count == 0) {
+            log.warn("@ExcelColTitle({}) for {} does not exist in template excel sheet",
+                    colTitle.value(), field.getName());
+        }
+        return count;
     }
 
     private Row createRow(int offset) {
@@ -109,9 +116,7 @@ public class BeansToExcelOnTitle {
 
         val row = sheet.createRow(templateRowNum + offset);
         for (int j = titleRow.getFirstCellNum(), jj = titleRow.getLastCellNum(); j < jj; ++j) {
-            val cell = row.createCell(j);
-
-            cell.setCellStyle(tmplRow.getCell(j).getCellStyle());
+            row.createCell(j).setCellStyle(tmplRow.getCell(j).getCellStyle());
         }
 
         return row;
@@ -119,7 +124,6 @@ public class BeansToExcelOnTitle {
 
     private Map<String, Integer> parseTitledMap(List<?> records) {
         val excelTemplateSheet = javabeanClass.getAnnotation(ExcelTemplateSheet.class);
-
         titleRow = sheet.getRow(excelTemplateSheet.titleRowRef() - 1);
         templateRowNum = excelTemplateSheet.templateRowRef() - 1;
         tmplRow = sheet.getRow(templateRowNum);
@@ -127,14 +131,11 @@ public class BeansToExcelOnTitle {
         PoiUtil.shiftRows(sheet, records, tmplRow.getRowNum());
 
         Multimap<String, Integer> duplicateTitles = HashMultimap.create();
-
         for (int i = titleRow.getFirstCellNum(), ii = titleRow.getLastCellNum(); i < ii; ++i) {
             val title = findTitle(i);
             PoiUtil.blankCell(tmplRow, i);
 
-            if (StringUtils.isEmpty(title)) continue;
-
-            duplicateTitles.put(title, i);
+            if (StringUtils.isNotEmpty(title)) duplicateTitles.put(title, i);
         }
 
         return logDuplicateTitles(duplicateTitles);
