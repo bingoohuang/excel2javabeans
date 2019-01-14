@@ -68,19 +68,31 @@ public class SimpleTest {
     @Test
     public void test() {
         val beansToExcel = new BeansToExcel();
-        String name = "test-workbook.xlsx";
+        createExcel(beansToExcel, "test-workbook.xlsx");
+    }
 
-        createExcel(beansToExcel, name);
+    @Test
+    public void testIncludeColumns() {
+        val beansToExcel = new BeansToExcel();
+        beansToExcel.includes(Member.class, "total", "effective");
+        createExcel(beansToExcel, "test-workbook-total-effective.xlsx");
     }
 
     @Test @SneakyThrows
     public void testTemplate() {
         @Cleanup val workbook = PoiUtil.getClassPathWorkbook("template.xlsx");
         val beansToExcel = new BeansToExcel(workbook);
-        String name = "test-workbook-templ.xlsx";
-
-        createExcel(beansToExcel, name);
+        createExcel(beansToExcel, "test-workbook-templ.xlsx");
     }
+
+    @Test @SneakyThrows
+    public void testTemplateIncludeColumns() {
+        @Cleanup val workbook = PoiUtil.getClassPathWorkbook("template.xlsx");
+        val beansToExcel = new BeansToExcel(workbook);
+        beansToExcel.includes(Member.class, "total", "effective");
+        createExcel(beansToExcel, "test-workbook-templ-total-effective.xlsx");
+    }
+
 
     private void createExcel(BeansToExcel beansToExcel, String name) {
 

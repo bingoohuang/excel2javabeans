@@ -34,6 +34,8 @@ public class ExcelBeanField {
     @Getter private final boolean multipleColumns;
     @Getter private final List<Integer> multipleColumnIndexes = Lists.newArrayList();
 
+    @Getter @Setter private int titleColumnIndex = -1;
+
     public ExcelBeanField(Field f, int columnIndex, ReflectAsmCache reflectAsmCache) {
         this.field = f;
         this.columnIndex = columnIndex;

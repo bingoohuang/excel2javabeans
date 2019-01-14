@@ -1,29 +1,30 @@
 package com.github.bingoohuang.excel2beans;
 
 import com.github.bingoohuang.excel2beans.annotations.ExcelSheet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.val;
 import lombok.var;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.IntStream;
 
 public class BeansToExcel {
     private final Workbook workbook;
     private final Workbook styleTemplate;
     private final ReflectAsmCache reflectAsmCache = new ReflectAsmCache();
+    private final Map<Class<?>, Set<String>> mapIncludedFields = Maps.newHashMap();
 
     public BeansToExcel() {
         this(null);
+    }
+
+    public void includes(Class<?> beanClass, String... includedFields) {
+        mapIncludedFields.put(beanClass, new HashSet<>(Lists.newArrayList(includedFields)));
     }
 
     /**
@@ -88,14 +89,14 @@ public class BeansToExcel {
             val field = bag.getBeanField(i);
 
             val value = field.getFieldValue(bean);
-            cell.setCellValue(value == null ? "" : String.valueOf(value));
+            PoiUtil.writeCellValue(cell, value);
 
             val style = field.getCellStyle();
             if (style != null) cell.setCellStyle(style);
         });
     }
 
-    private BeanClassBag insureBagCreated(Map<String, Object> props, Map<Class, BeanClassBag> bagMap, Object bean) {
+    protected BeanClassBag insureBagCreated(Map<String, Object> props, Map<Class, BeanClassBag> bagMap, Object bean) {
         val beanClass = bean.getClass();
         var bag = bagMap.get(beanClass);
         if (bag != null) return bag;
@@ -104,7 +105,9 @@ public class BeansToExcel {
         bagMap.put(beanClass, bag);
 
         bag.setSheet(createSheet(beanClass));
-        bag.setBeanFields(new ExcelBeanFieldParser(beanClass, bag.getSheet()).parseBeanFields(reflectAsmCache));
+        Set<String> includedFields = mapIncludedFields.get(beanClass);
+        bag.setBeanFields(new ExcelBeanFieldParser(beanClass, bag.getSheet())
+                .parseBeanFields(includedFields, reflectAsmCache));
 
         addHeadToSheet(props, bag);
         addTitleToSheet(bag);
@@ -143,15 +146,39 @@ public class BeansToExcel {
         if (styleTemplate == null) return;
 
         val templateSheet = parseTemplateSheet(bag);
-        IntStream.range(0, fields.size()).forEach(colIndex -> {
-            val headStyle = cloneCellStyle(templateSheet, 0, colIndex);
-            row.getCell(colIndex).setCellStyle(headStyle);
 
+        IntStream.range(0, fields.size()).forEach(colIndex -> {
+            val excelBeanField = fields.get(colIndex);
+            val titledColIndex = findTitledColIndex(colIndex, excelBeanField, templateSheet);
+
+            val headStyle = cloneCellStyle(templateSheet, 0, titledColIndex);
+            row.getCell(colIndex).setCellStyle(headStyle);
             row.setHeight(templateSheet.getRow(0).getHeight());
 
-            val dataStyle = cloneCellStyle(templateSheet, 1, colIndex);
-            fields.get(colIndex).setCellStyle(dataStyle);
+            val dataStyle = cloneCellStyle(templateSheet, 1, titledColIndex);
+            excelBeanField.setCellStyle(dataStyle);
         });
+    }
+
+    private int findTitledColIndex(int colIndex, ExcelBeanField excelBeanField, Sheet templateSheet) {
+        if (excelBeanField.getTitleColumnIndex() >= 0) return excelBeanField.getTitleColumnIndex();
+
+        excelBeanField.setTitleColumnIndex(colIndex);
+        if (!excelBeanField.hasTitle()) return colIndex;
+
+        val row = templateSheet.getRow(0);
+        val colCell = row.getCell(colIndex);
+        if (PoiUtil.getCellStringValue(colCell).contains(excelBeanField.getTitle())) return colIndex;
+
+        for (short cn = row.getFirstCellNum(), cellMax = row.getLastCellNum(); cn < cellMax; ++cn ) {
+            val cell = row.getCell(cn);
+            if (PoiUtil.getCellStringValue(cell).contains(excelBeanField.getTitle())) {
+                excelBeanField.setTitleColumnIndex(cn);
+                return cn;
+            }
+        }
+
+        return colIndex;
     }
 
     private Sheet parseTemplateSheet(BeanClassBag bag) {

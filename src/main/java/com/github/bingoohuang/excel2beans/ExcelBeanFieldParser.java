@@ -13,6 +13,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -25,19 +26,18 @@ public class ExcelBeanFieldParser {
         this.declaredFields = beanClass.getDeclaredFields();
     }
 
-    public List<ExcelBeanField> parseBeanFields(ReflectAsmCache reflectAsmCache) {
+    public List<ExcelBeanField> parseBeanFields(Set<String> includedFields, ReflectAsmCache reflectAsmCache) {
         List<ExcelBeanField> beanFields = new ArrayList<>(declaredFields.length);
 
         for (val field : declaredFields) {
-            processField(field, beanFields, reflectAsmCache);
+            processField(field, beanFields, includedFields, reflectAsmCache);
         }
 
         return filterTitledFields(beanFields);
     }
 
     private List<ExcelBeanField> filterTitledFields(List<ExcelBeanField> beanFields) {
-        val titledFields = beanFields.stream().filter(ExcelBeanField::hasTitle)
-                .collect(Collectors.toList());
+        val titledFields = beanFields.stream().filter(ExcelBeanField::hasTitle).collect(Collectors.toList());
         if (titledFields.isEmpty()) return beanFields;
 
         if (log.isDebugEnabled()) {
@@ -49,8 +49,13 @@ public class ExcelBeanFieldParser {
     }
 
     @SuppressWarnings("unchecked")
-    private void processField(Field field, List<ExcelBeanField> fields, ReflectAsmCache reflectAsmCache) {
+    private void processField(
+            Field field, List<ExcelBeanField> fields,
+            Set<String> includedFields,
+            ReflectAsmCache reflectAsmCache) {
+
         if (Fields.shouldIgnored(field, ExcelColIgnore.class)) return;
+        if (includedFields != null && !includedFields.contains(field.getName())) return;
 
         val bf = new ExcelBeanField(field, fields.size(), reflectAsmCache);
         if (bf.isElementTypeSupported()) {
