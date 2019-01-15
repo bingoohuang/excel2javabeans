@@ -115,11 +115,23 @@ public class PoiUtil {
      */
     public static int shiftRows(Sheet sheet, List<?> list, int templateRowNum) {
         val itemSize = list == null ? 0 : list.size();
+        return shiftRows(sheet, itemSize, templateRowNum);
+    }
+
+    /**
+     * 插入新的行（向下移动表格中的行），方便写入数据。
+     *
+     * @param sheet        表单页。
+     * @param itemSize     插入行数列。
+     * @param targetRowNum 模板行号。
+     * @return 插入行数列。
+     */
+    public static int shiftRows(Sheet sheet, int itemSize, int targetRowNum) {
         int lastRowNum = sheet.getLastRowNum();
-        if (itemSize == 0 && templateRowNum == lastRowNum) { // 没有写入行，直接删除模板行
-            sheet.removeRow(sheet.getRow(templateRowNum));
-        } else if (itemSize != 1 && templateRowNum < lastRowNum) {
-            sheet.shiftRows(templateRowNum + 1, lastRowNum, itemSize - 1);
+        if (itemSize == 0 && targetRowNum == lastRowNum) { // 没有写入行，直接删除模板行
+            sheet.removeRow(sheet.getRow(targetRowNum));
+        } else if (itemSize != 1 && targetRowNum < lastRowNum) {
+            sheet.shiftRows(targetRowNum + 1, lastRowNum, itemSize - 1, true, true);
         }
 
         return itemSize;
