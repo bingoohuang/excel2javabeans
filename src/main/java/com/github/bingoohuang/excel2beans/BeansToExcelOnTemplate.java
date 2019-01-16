@@ -227,6 +227,9 @@ public class BeansToExcelOnTemplate {
         for (int i = 0, ii = items.size(); i < ii; ++i) {
             val item = items.get(i);
             val row = i == 0 ? tmplRow : sheet.createRow(fromRow + i);
+            if (row != tmplRow) {
+                row.setHeight(tmplRow.getHeight());
+            }
 
             val fields = item.getClass().getDeclaredFields();
             int cutoff = 0;

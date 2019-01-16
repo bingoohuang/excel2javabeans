@@ -79,7 +79,7 @@ public class CepingTest {
         @Builder
         public static class ItemComment {
             private String item;
-            @ExcelCell(maxLineLen = 31)
+            @ExcelCell
             private String comment;
         }
 
