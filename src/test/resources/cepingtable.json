@@ -1,0 +1,319 @@
+{
+  "age": "29",
+  "education": "小本",
+  "gender": "女",
+  "itemComments": [
+    {
+      "comment": "抑郁消沉高风险",
+      "item": "心理健康"
+    },
+    {
+      "comment": "学习能力:习惯深入分析事物的内在联系，,能够对问题进行比较深入的研究，,追求个人成长。。",
+      "item": "优势"
+    },
+    {
+      "comment": "执行力:喜欢不断体验，强调即兴发挥，不常按固定的程序工作，,愿意改变自己的行为，主动适应多变的环境，对不同的人采用不同的方式。,喜欢工作中的充实感。。",
+      "item": "优势"
+    },
+    {
+      "comment": "团队合作:愿意主动提供帮助支持他人解决困难，乐于培养和鼓励他人进步，,希望与人相处，愿意花时间维护友好关系。,关注工作中的同事关系。。",
+      "item": "优势"
+    },
+    {
+      "comment": "高管思维:能够从全新的角度去思考问题，。",
+      "item": "优势"
+    },
+    {
+      "comment": "关系建维:与人交往时轻松、自在，,从自己的角度思考和处理问题，较少换位思考，易误解或忽略他人的情绪，。",
+      "item": "优势"
+    },
+    {
+      "comment": "正能量:遇到困难时心态不够积极，,非常自信。。",
+      "item": "优势"
+    },
+    {
+      "comment": "坚韧不拔:对压力非常敏感，容易受到压力的困扰，,能够坚持较长时间。。",
+      "item": "待提升"
+    },
+    {
+      "comment": "勤奋:喜欢平稳的节奏，不愿意涉入过多亊情，,对困难和挑战的耐受度不高，努力的热情比较短暂，克服困难的信念不强，,喜欢工作中的充实感。。",
+      "item": "待提升"
+    },
+    {
+      "comment": "目标结果导向:对困难和挑战的耐受度不高，努力的热情比较短暂，克服困难的信念不强，,看待成败豁达，对事不强求，更看重目标的可实现性。,能够从工作中获得成就感。。",
+      "item": "待提升"
+    },
+    {
+      "comment": "责任心:视规矩、条例为约束，对达成组织目标的追随感不强，,行亊略显草率，行动前对后果考虑不甚周全。。",
+      "item": "待提升"
+    },
+    {
+      "comment": "诚信:测评过程中能够真实作答，没有明显装好行为。。",
+      "item": "待提升"
+    }
+  ],
+  "items": [
+    {
+      "category": "核心素质",
+      "dimension": "文化价值观匹配",
+      "quality": "使命认同",
+      "remark": "使命认同^工作场景偏好(>=5)",
+      "score": "使命认同^9.00",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "责任感",
+      "quality": "责任心",
+      "remark": "责任心^个性/高潜(>=3)",
+      "score": "责任心^3.95",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "审慎的",
+      "quality": "责任心",
+      "remark": "责任心^个性/高潜(>=3)",
+      "score": "责任心^3.95",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "洞察力",
+      "quality": "学习能力",
+      "remark": "学习能力^个性/高潜,职业价值观(>=3)",
+      "score": "学习能力^5.30",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "敏锐学习",
+      "quality": "学习能力",
+      "remark": "学习能力^个性/高潜,职业价值观(>=3)",
+      "score": "学习能力^5.30",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "培训机会",
+      "quality": "学习能力",
+      "remark": "学习能力^个性/高潜,职业价值观(>=3)",
+      "score": "学习能力^5.30",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "压力耐受",
+      "quality": "坚韧不拔",
+      "remark": "坚韧不拔^职业行为风险(>=3)",
+      "score": "坚韧不拔^5.05",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "坚韧不拔",
+      "quality": "坚韧不拔",
+      "remark": "坚韧不拔^职业行为风险(>=3)",
+      "score": "坚韧不拔^5.05",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "意志力",
+      "quality": "目标结果导向",
+      "remark": "目标结果导向^个性/高潜,职业价值观(>=3)",
+      "score": "目标结果导向^4.07",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "成功愿望",
+      "quality": "目标结果导向",
+      "remark": "目标结果导向^个性/高潜,职业价值观(>=3)",
+      "score": "目标结果导向^4.07",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "获得成就",
+      "quality": "目标结果导向",
+      "remark": "目标结果导向^个性/高潜,职业价值观(>=3)",
+      "score": "目标结果导向^4.07",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "条理性",
+      "quality": "执行力",
+      "remark": "执行力^个性/高潜,职业价值观(>=3)",
+      "score": "执行力^5.73",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "适应性",
+      "quality": "执行力",
+      "remark": "执行力^个性/高潜,职业价值观(>=3)",
+      "score": "执行力^5.73",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "工作强度",
+      "quality": "执行力",
+      "remark": "执行力^个性/高潜,职业价值观(>=3)",
+      "score": "执行力^5.73",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "支持性",
+      "quality": "团队合作",
+      "remark": "团队合作^个性/高潜,职业价值观(>=3)",
+      "score": "团队合作^6.23",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "亲和动机",
+      "quality": "团队合作",
+      "remark": "团队合作^个性/高潜,职业价值观(>=3)",
+      "score": "团队合作^6.23",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "同事关系",
+      "quality": "团队合作",
+      "remark": "团队合作^个性/高潜,职业价值观(>=3)",
+      "score": "团队合作^6.23",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "活力",
+      "quality": "勤奋",
+      "remark": "勤奋^个性/高潜,职业价值观(>=3)",
+      "score": "勤奋^4.50",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "意志力",
+      "quality": "勤奋",
+      "remark": "勤奋^个性/高潜,职业价值观(>=3)",
+      "score": "勤奋^4.50",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "工作强度",
+      "quality": "勤奋",
+      "remark": "勤奋^个性/高潜,职业价值观(>=3)",
+      "score": "勤奋^4.50",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "积极乐观",
+      "quality": "正能量",
+      "remark": "正能量^职业行为风险(>=3)",
+      "score": "正能量^6.80",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "合理自信",
+      "quality": "正能量",
+      "remark": "正能量^职业行为风险(>=3)",
+      "score": "正能量^6.80",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "情绪管理能力",
+      "quality": "情商",
+      "remark": "情商^情绪管理能力(>=3)",
+      "score": "情商^1.00",
+      "scoreTmpl": "FAIL"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "自我情绪管理",
+      "quality": "情商",
+      "remark": "情商^情绪管理能力(>=3)",
+      "score": "情商^1.00",
+      "scoreTmpl": "FAIL"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "他人情绪管理",
+      "quality": "情商",
+      "remark": "情商^情绪管理能力(>=3)",
+      "score": "情商^1.00",
+      "scoreTmpl": "FAIL"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "社交自信",
+      "quality": "关系建维",
+      "remark": "关系建维^个性/高潜,职业价值观(>=3)",
+      "score": "关系建维^6.53",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "同理心",
+      "quality": "关系建维",
+      "remark": "关系建维^个性/高潜,职业价值观(>=3)",
+      "score": "关系建维^6.53",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "核心素质",
+      "dimension": "他人认可",
+      "quality": "关系建维",
+      "remark": "关系建维^个性/高潜,职业价值观(>=3)",
+      "score": "关系建维^6.53",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "基础素质",
+      "dimension": "称许性",
+      "quality": "诚信",
+      "remark": "诚信^职业行为风险(正常)",
+      "score": "诚信^正常",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "基础素质",
+      "dimension": "焦虑不安,抑郁消沉,偏执多疑,冷漠孤僻,特立独行,冲动暴躁,喜怒无常,社交回避,僵化固执,依赖顺从,夸张做作,狂妄自恋",
+      "quality": "心理健康",
+      "remark": "心理健康^职业行为风险(无高风险)",
+      "score": "心理健康^抑郁消沉高风险",
+      "scoreTmpl": "FAIL"
+    },
+    {
+      "category": "基础素质",
+      "dimension": "权力动机",
+      "quality": "高管思维",
+      "remark": "高管思维^个性/高潜",
+      "score": "高管思维^6.45",
+      "scoreTmpl": "PASS"
+    },
+    {
+      "category": "基础素质",
+      "dimension": "跨界思考",
+      "quality": "高管思维",
+      "remark": "高管思维^个性/高潜",
+      "score": "高管思维^6.45",
+      "scoreTmpl": "PASS"
+    }
+  ],
+  "level": "25级及以上",
+  "matchScore": 5.42,
+  "name": "suntingting",
+  "position": "销售类",
+  "sheetName": "结论表",
+  "title": "社招-销售类测评结论表(25级及以上)20190109"
+}

@@ -50,6 +50,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>1.2.54</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>joor-java-8</artifactId>
             <version>0.9.9</version>
