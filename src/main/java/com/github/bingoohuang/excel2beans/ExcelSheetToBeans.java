@@ -95,37 +95,37 @@ public class ExcelSheetToBeans<T> {
         for (int ii = sheet.getLastRowNum(); i <= ii; ++i) {
             val row = sheet.getRow(i);
 
-            val containsTitle = parseContainsTitle(row);
-            if (containsTitle) {
+            parseContainsTitle(row);
+            if (isTitleColumnsAllFound()) {
                 resetNotFoundColumnIndex();
-                checkTitleColumnsAllFound();
                 return i + 1;
             }
         }
 
+        checkTitleColumnsAllFound();
         throw new IllegalArgumentException("找不到标题行");
     }
 
-    private boolean parseContainsTitle(Row row) {
-        boolean containsTitle = false;
+    private void parseContainsTitle(Row row) {
         for (int j = 0, jj = beanFields.size(); j < jj; ++j) {
             val beanField = beanFields.get(j);
             if (!beanField.hasTitle()) {
                 beanField.setColumnIndex(j + row.getFirstCellNum());
             } else {
-                if (findColumn(row, beanField) && !containsTitle) {
-                    containsTitle = true;
-                }
+                findColumn(row, beanField);
             }
         }
 
-        return containsTitle;
     }
 
     private void resetNotFoundColumnIndex() {
         beanFields.forEach(x -> {
             if (x.hasTitle() && !x.isTitleColumnFound()) x.setColumnIndex(-1);
         });
+    }
+
+    private boolean isTitleColumnsAllFound() {
+        return !beanFields.stream().filter(ExcelBeanField::isTitleNotMatched).findAny().isPresent();
     }
 
     private void checkTitleColumnsAllFound() {
