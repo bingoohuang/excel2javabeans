@@ -12,3 +12,7 @@ test-*.xls*
 有评语-模板-suntingting.xlsx
 有评语-模板-东方不败.xlsx
 有评语-模板-王雷.xlsx
+.classpath
+.factorypath
+.project
+.settings
