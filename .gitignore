@@ -16,3 +16,4 @@ test-*.xls*
 .factorypath
 .project
 .settings
+.vscode/
