@@ -195,6 +195,16 @@ Maybe there is not relative fonts installed. Methods:
 1. Create fonts folder:`mkdir ~/.fonts` 
 2. Copy fonts to the fold:`scp /System/Library/Fonts/STHeiti\ Light.ttc yogaapp@test.ino01:./.fonts/`
 3. Install the fonts:`fc-cache -f -v`
+4. 查看字体: `fc-list|grep SimSun`
+
+```bash
+[betaoper@beta-hetong ~]$ fc-list|grep SimSun
+/usr/share/fonts/winfonts/simsun.ttc: 宋体,SimSun:style=常规,Regular
+/usr/share/fonts/winfonts/simsun.ttc: 新宋体,NSimSun:style=常规,Regular
+/usr/share/fonts/winfonts/simsunb.ttf: SimSun\-ExtB:style=Regular,obyčejné
+```
+
+
 
 For all users available, just copy the fonts file to the `/usr/share/fonts` directory and then `fc-cache -f -v`.
 
