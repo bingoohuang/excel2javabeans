@@ -2,7 +2,7 @@
 convert excel rows to javabeans and vice visa.
 <br/>
 [![Build Status](https://travis-ci.org/bingoohuang/excel2javabeans.svg?branch=master)](https://travis-ci.org/bingoohuang/excel2javabeans)
-[![Quality Gate](https://sonarcloud.io/api/badges/gate?key=com.github.bingoohuang%3Aexcel2javabeans)](https://sonarcloud.io/dashboard/index/com.github.bingoohuang%3Aexcel2javabeans)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=com.github.bingoohuang%3Aexcel2javabeans&metric=alert_status)](https://sonarcloud.io/dashboard/index/com.github.bingoohuang%3Aexcel2javabeans)
 [![Coverage Status](https://coveralls.io/repos/github/bingoohuang/excel2javabeans/badge.svg?branch=master)](https://coveralls.io/github/bingoohuang/excel2javabeans?branch=master)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.bingoohuang/excel2javabeans/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/com.github.bingoohuang/excel2javabeans/)
 [![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
