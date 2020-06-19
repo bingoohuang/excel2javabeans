@@ -26,6 +26,8 @@ public class MemberImportBeanTest {
 
         excelToBeans.writeError(MemberImportBean.class, beans);
         excelToBeans.removeOkRows(MemberImportBean.class, beans);
+
+        PoiUtil.writeExcel(excelToBeans.getWorkbook(), "member-error.xlsx");
     }
 
     @Data @Builder
