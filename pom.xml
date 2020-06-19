@@ -52,13 +52,13 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.54</version>
+            <version>1.2.71</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>joor-java-8</artifactId>
-            <version>0.9.9</version>
+            <version>0.9.13</version>
         </dependency>
         <dependency>
             <groupId>com.github.bingoohuang</groupId>
@@ -78,17 +78,17 @@
         <dependency>
             <groupId>org.apache.xmlbeans</groupId>
             <artifactId>xmlbeans</artifactId>
-            <version>3.0.2</version>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>3.17</version>
+            <version>4.1.2</version>
         </dependency>
         <dependency>
             <groupId>org.objenesis</groupId>
             <artifactId>objenesis</artifactId>
-            <version>3.0.1</version>
+            <version>3.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -98,12 +98,12 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>27.0-jre</version>
+            <version>29.0-jre</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.25</version>
+            <version>1.7.30</version>
         </dependency>
 
         <dependency>
@@ -115,7 +115,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.4</version>
+            <version>1.18.12</version>
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
@@ -146,7 +146,7 @@
         <dependency>
             <groupId>com.google.truth</groupId>
             <artifactId>truth</artifactId>
-            <version>0.40</version>
+            <version>1.0.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>

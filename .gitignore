@@ -17,3 +17,5 @@ test-*.xls*
 .project
 .settings
 .vscode/
+/column-extend.xlsx
+/member-error.xlsx
